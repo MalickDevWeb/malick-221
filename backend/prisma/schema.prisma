@@ -195,3 +195,4 @@ model CommissionLedger {
 
   @@map("commission_ledger")
 }
+

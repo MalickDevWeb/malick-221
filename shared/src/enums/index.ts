@@ -65,3 +65,4 @@ export enum ProductCondition {
   TRES_BON_ETAT = 'TRES_BON_ETAT',
   BON_ETAT = 'BON_ETAT',
 }
+
