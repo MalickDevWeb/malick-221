@@ -1,38 +1,34 @@
 import React from 'react';
 import { Crown } from 'lucide-react';
 
-export function BrandLogo({ variant = 'dark', size = 'md' }: { variant?: 'light' | 'dark' | 'gold'; size?: 'sm' | 'md' | 'lg' }) {
-  const isDark = variant === 'dark';
+export function BrandLogo({
+  variant = 'dark',
+  size = 'md',
+}: {
+  variant?: 'light' | 'dark' | 'gold';
+  size?: 'sm' | 'md' | 'lg';
+}) {
   const isLight = variant === 'light';
 
-  const sizeClasses = {
-    sm: { box: 'w-7 h-7 text-xs', crown: 'w-3 h-3', title: 'text-sm', sub: 'text-[9px]' },
-    md: { box: 'w-9 h-9 text-sm', crown: 'w-4 h-4', title: 'text-base', sub: 'text-[10px]' },
-    lg: { box: 'w-14 h-14 text-xl', crown: 'w-6 h-6', title: 'text-2xl', sub: 'text-xs' },
-  }[size];
-
   return (
-    <div className="flex flex-col items-center select-none">
-      <div className="flex items-center gap-1.5">
-        <Crown className={`${sizeClasses.crown} text-amber-400 fill-amber-400`} />
-      </div>
-      <div className="flex items-center gap-1.5 mt-0.5">
+    <div className="flex flex-col items-center select-none leading-none">
+      <div className="relative flex items-center justify-center">
+        <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400 absolute -top-2.5 left-1/2 -translate-x-1/2 drop-shadow-xs" />
         <span
-          className={`font-black tracking-tight ${sizeClasses.title} ${
-            isLight ? 'text-white' : 'text-slate-900'
+          className={`font-black tracking-tight text-xl ${
+            isLight ? 'text-white' : 'text-slate-950'
           }`}
         >
           MB
         </span>
-        <span
-          className={`font-extrabold tracking-wider ${sizeClasses.title} ${
-            isLight ? 'text-white' : 'text-slate-900'
-          }`}
-        >
-          MALICK BUSS
-        </span>
       </div>
+      <span
+        className={`font-extrabold text-[10px] tracking-[0.16em] uppercase mt-0.5 ${
+          isLight ? 'text-slate-200' : 'text-slate-900'
+        }`}
+      >
+        MALICK BUSS
+      </span>
     </div>
   );
 }
-

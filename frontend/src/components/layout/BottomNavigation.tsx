@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Store, LayoutGrid, ShoppingBag, User } from 'lucide-react';
+import { Home, LayoutGrid, Heart, ShoppingCart, User } from 'lucide-react';
 
 export function BottomNavigation() {
   const pathname = usePathname();
@@ -13,15 +13,15 @@ export function BottomNavigation() {
   }
 
   const navItems = [
-    { label: 'Accueil', href: '/', icon: Home },
-    { label: 'Boutiques', href: '/boutiques', icon: Store },
+    { label: 'Accueil', href: '/', icon: Home, isHome: true },
     { label: 'Catégories', href: '/categories', icon: LayoutGrid },
-    { label: 'Panier', href: '/panier', icon: ShoppingBag, badge: 2 },
+    { label: 'Boutiques', href: '/boutiques', icon: Heart },
+    { label: 'Panier', href: '/panier', icon: ShoppingCart, badge: 2 },
     { label: 'Profil', href: '/profil', icon: User },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 py-2 px-3 flex justify-around items-center max-w-md mx-auto shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 py-2 px-2 flex justify-around items-center max-w-md mx-auto shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive =
@@ -34,18 +34,36 @@ export function BottomNavigation() {
             key={item.href}
             href={item.href}
             className={`flex flex-col items-center gap-1 relative px-2 transition-all ${
-              isActive ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-600'
+              isActive
+                ? 'text-amber-500 font-bold'
+                : 'text-slate-500 hover:text-slate-700'
             }`}
           >
             <div className="relative">
-              <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : 'stroke-[1.8px]'}`} />
+              <Icon
+                className={`w-5 h-5 ${
+                  isActive
+                    ? 'fill-amber-400 stroke-amber-500'
+                    : 'stroke-[1.8px]'
+                }`}
+              />
               {item.badge && (
-                <span className="absolute -top-1.5 -right-2 bg-emerald-600 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
+                <span className="absolute -top-1.5 -right-2 bg-amber-400 text-slate-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
                   {item.badge}
                 </span>
               )}
             </div>
-            <span className="text-[10px] tracking-tight">{item.label}</span>
+            <span
+              className={`text-[10px] tracking-tight ${
+                isActive ? 'text-slate-900 font-black' : 'text-slate-500 font-medium'
+              }`}
+            >
+              {item.label}
+            </span>
+            {/* Petit trait indicateur actif sous Accueil */}
+            {isActive && (
+              <span className="w-5 h-0.5 bg-amber-400 rounded-full -mt-0.5" />
+            )}
           </Link>
         );
       })}
