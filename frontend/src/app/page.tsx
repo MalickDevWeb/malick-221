@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
   ChevronRight,
@@ -28,6 +28,40 @@ import { BrandLogo } from '../components/ui/BrandLogo';
 
 export default function HomePage() {
   const [activeSlide, setActiveSlide] = useState(0);
+
+  // 2 Bannières Ultra-HD fournies par l'utilisateur
+  const heroSlides = [
+    {
+      id: 0,
+      image: '/images/hero/banner_woman_hd.png',
+      tag: 'SHOPPEZ FACILEMENT AU SÉNÉGAL',
+      title: 'Des milliers de produits',
+      titleHighlight: 'à portée de clic !',
+      subtitle:
+        'Mode, high-tech, beauté, maison, sport, enfants... Trouvez tout sur Malick Buss, la marketplace qui vous simplifie la vie !',
+      buttonText: 'Découvrir maintenant',
+      buttonHref: '/categories',
+    },
+    {
+      id: 1,
+      image: '/images/hero/banner_man_hd.png',
+      tag: 'ÉLÉGANCE & SHOPPING PREMIUM AU SÉNÉGAL 🇸🇳',
+      title: 'Le meilleur de Dakar',
+      titleHighlight: 'livré chez vous !',
+      subtitle:
+        'Explorez les collections exclusives de Dakar Plateau, Almadies et Médina avec paiement instantané Wave & Orange Money.',
+      buttonText: 'Explorer les collections',
+      buttonHref: '/categories',
+    },
+  ];
+
+  // Défilement automatique doux toutes les 8 secondes
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
 
   // 8 Catégories de la barre latérale gauche (exacte maquette)
   const sidebarCategories = [
@@ -99,13 +133,15 @@ export default function HomePage() {
     },
   ];
 
+  const currentSlide = heroSlides[activeSlide];
+
   return (
     <div className="w-full bg-[#f8fafc] min-h-screen pb-16 font-sans">
       
       {/* Conteneur principal fluide */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 sm:space-y-8">
         
-        {/* ================= 1. SECTION HERO COMPLÈTE (SIDEBAR + BANNIÈRE COLLAGE) ================= */}
+        {/* ================= 1. SECTION HERO COMPLÈTE (SIDEBAR + BANNIÈRE COLLAGE HD) ================= */}
         <div className="flex flex-col lg:flex-row gap-5 items-stretch">
           
           {/* A. Barre Latérale "Nos catégories" (Desktop uniquement) */}
@@ -147,49 +183,56 @@ export default function HomePage() {
             </div>
           </aside>
 
-          {/* B. Grande Bannière Hero avec Photo Collage Africain */}
+          {/* B. Grande Bannière Hero avec les Bannières HD Fournies */}
           <div className="flex-1 bg-gradient-to-r from-[#071630] via-[#0a1e3f] to-[#0f2c58] text-white rounded-3xl overflow-hidden shadow-xl relative min-h-[340px] sm:min-h-[380px] lg:min-h-[410px] flex flex-col justify-between border border-slate-800">
             
-            {/* Image du Collage sur la droite (Femme africaine souriante + Produits) */}
-            <div className="absolute top-0 right-0 bottom-0 w-full lg:w-[58%] z-0 pointer-events-none overflow-hidden">
-              <img
-                src="/images/mockup/hero_collage_clean.jpg"
-                alt="Shoppez facilement au Sénégal sur Malick Buss"
-                className="w-full h-full object-cover object-right"
-              />
-              {/* Fondu subtil vers le bleu nuit sur la gauche */}
-              <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[#071630] via-[#071630]/90 to-transparent hidden lg:block" />
-              {/* Fondu mobile sombre pour lisibilité du texte */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#071630] via-[#071630]/70 to-transparent lg:hidden" />
-            </div>
+            {/* Image HD du Hero en arrière-plan avec transition douce */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSlide}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6 }}
+                className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+              >
+                <img
+                  src={currentSlide.image}
+                  alt={currentSlide.title}
+                  className="w-full h-full object-cover object-right"
+                />
+                {/* Fondu bleu nuit sur la gauche pour lisibilité du texte */}
+                <div className="absolute inset-y-0 left-0 w-full sm:w-2/3 lg:w-1/2 bg-gradient-to-r from-[#071630] via-[#071630]/90 to-transparent" />
+              </motion.div>
+            </AnimatePresence>
 
             {/* Contenu Texte & Call to Action (Gauche) */}
             <div className="relative z-10 p-6 sm:p-8 lg:p-10 max-w-xl space-y-4 flex-1 flex flex-col justify-center">
               
               <div className="inline-block">
                 <span className="text-[10px] font-black tracking-widest uppercase text-amber-400 bg-amber-400/15 border border-amber-400/30 px-3 py-1 rounded-full">
-                  SHOPPEZ FACILEMENT AU SÉNÉGAL
+                  {currentSlide.tag}
                 </span>
               </div>
 
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md">
-                Des milliers de produits <br className="hidden sm:block" />
+                {currentSlide.title} <br className="hidden sm:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-200">
-                  à portée de clic !
+                  {currentSlide.titleHighlight}
                 </span>
               </h1>
 
               <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-md drop-shadow-sm font-medium">
-                Mode, high-tech, beauté, maison, sport, enfants... Trouvez tout sur Malick Buss, la marketplace qui vous simplifie la vie !
+                {currentSlide.subtitle}
               </p>
 
               <div className="pt-2">
                 <Link
-                  href="/categories"
+                  href={currentSlide.buttonHref}
                   className="inline-flex items-center gap-2.5 bg-[#f59e0b] hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs sm:text-sm px-6 py-3.5 rounded-full shadow-lg shadow-amber-500/25 transition duration-200"
                 >
                   <ShoppingBag className="w-4 h-4 stroke-[2.5px]" />
-                  <span>Découvrir maintenant</span>
+                  <span>{currentSlide.buttonText}</span>
                   <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
                 </Link>
               </div>
@@ -234,14 +277,14 @@ export default function HomePage() {
               {/* Flèches */}
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setActiveSlide((prev) => (prev > 0 ? prev - 1 : 2))}
+                  onClick={() => setActiveSlide((prev) => (prev > 0 ? prev - 1 : heroSlides.length - 1))}
                   className="w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center transition"
                   aria-label="Précédent"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setActiveSlide((prev) => (prev < 2 ? prev + 1 : 0))}
+                  onClick={() => setActiveSlide((prev) => (prev < heroSlides.length - 1 ? prev + 1 : 0))}
                   className="w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center transition"
                   aria-label="Suivant"
                 >
@@ -251,12 +294,14 @@ export default function HomePage() {
 
               {/* Indicateurs à pastilles */}
               <div className="flex items-center gap-1.5">
-                {[0, 1, 2].map((dot) => (
-                  <span
+                {heroSlides.map((_, dot) => (
+                  <button
                     key={dot}
+                    onClick={() => setActiveSlide(dot)}
                     className={`h-2 rounded-full transition-all ${
                       activeSlide === dot ? 'w-6 bg-amber-400' : 'w-2 bg-white/40'
                     }`}
+                    aria-label={`Aller au slide ${dot + 1}`}
                   />
                 ))}
               </div>
