@@ -168,7 +168,7 @@ export default function ClientOrdersPage() {
                   <span className="font-black text-sm text-slate-900">{formatFCFA(ord.total)}</span>
                 </div>
                 <Link
-                  href="/confirmation"
+                  href={`/suivre-commande?id=${ord.id}`}
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/60"
                 >
                   <span>Suivre la commande</span>

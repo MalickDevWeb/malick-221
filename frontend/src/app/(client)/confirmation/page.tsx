@@ -102,10 +102,20 @@ export default function OrderConfirmationPage() {
         >
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
             <Link
-              href="/profil"
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition"
+              href={`/suivre-commande?id=${orderNumber}`}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition"
             >
-              <span>Voir mes commandes</span>
+              <span>Suivre ma commande</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+            <Link
+              href="/commandes"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-700/60 transition"
+            >
+              <span>Toutes mes commandes</span>
             </Link>
           </motion.div>
 

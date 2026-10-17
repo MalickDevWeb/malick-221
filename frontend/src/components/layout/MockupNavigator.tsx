@@ -28,11 +28,11 @@ export function MockupNavigator() {
     { num: 8, name: 'Panier', path: '/panier' },
     { num: 9, name: 'Validation commande', path: '/checkout' },
     { num: 10, name: 'Confirmation', path: '/confirmation' },
-    { num: 11, name: 'Espace vendeur', path: '/vendeur/dashboard' },
-    { num: 12, name: 'Ajouter un produit', path: '/vendeur/produits/ajouter' },
-    { num: 13, name: 'Espace administrateur', path: 'http://localhost:3001', external: true },
-    { num: 14, name: 'Détail des commissions', path: '/vendeur/commissions' },
-    { num: 15, name: 'Notifications', path: '/notifications' },
+    { num: 11, name: 'Suivre ma commande', path: '/suivre-commande' },
+    { num: 12, name: 'Mes commandes', path: '/commandes' },
+    { num: 13, name: 'Espace vendeur', path: '/vendeur/dashboard' },
+    { num: 14, name: 'Ajouter un produit', path: '/vendeur/produits/ajouter' },
+    { num: 15, name: 'Espace administrateur', path: 'http://localhost:3001', external: true },
     { num: 16, name: 'Profil client', path: '/profil' },
   ];
 
