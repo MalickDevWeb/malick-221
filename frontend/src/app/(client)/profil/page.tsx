@@ -270,13 +270,19 @@ export default function ProfilePage() {
 
       {/* ================= MODAL 1 : MES ADRESSES ================= */}
       {activeModal === 'adresses' && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom">
+        <div
+          onClick={() => setActiveModal(null)}
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto"
+          >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-base text-slate-900">Mes adresses de livraison</h3>
               <button
                 onClick={() => setActiveModal(null)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -286,9 +292,9 @@ export default function ProfilePage() {
               {addresses.map((addr) => (
                 <div
                   key={addr.id}
-                  className={`p-3.5 rounded-xl border transition ${
+                  className={`p-3.5 rounded-2xl border transition ${
                     addr.isDefault
-                      ? 'border-emerald-500 bg-emerald-50/30'
+                      ? 'border-emerald-500 bg-emerald-50/40'
                       : 'border-slate-200 bg-white'
                   }`}
                 >
@@ -308,10 +314,10 @@ export default function ProfilePage() {
 
             <button
               onClick={() => {
-                alert('Formulaire d’ajout d’adresse validé pour Dakar.');
+                alert('Nouvelle adresse enregistrée avec succès.');
                 setActiveModal(null);
               }}
-              className="w-full flex items-center justify-center gap-1.5 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs"
+              className="w-full flex items-center justify-center gap-1.5 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition"
             >
               <Plus className="w-4 h-4" />
               <span>Ajouter une nouvelle adresse</span>
@@ -322,13 +328,19 @@ export default function ProfilePage() {
 
       {/* ================= MODAL 2 : PARAMÈTRES ================= */}
       {activeModal === 'parametres' && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom max-h-[85vh] overflow-y-auto">
+        <div
+          onClick={() => setActiveModal(null)}
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto"
+          >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-base text-slate-900">Paramètres du compte</h3>
               <button
                 onClick={() => setActiveModal(null)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -409,7 +421,7 @@ export default function ProfilePage() {
                     <button
                       type="button"
                       onClick={() => setLanguage('FR')}
-                      className={`py-2 px-3 rounded-xl border text-xs font-bold ${
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold transition ${
                         language === 'FR'
                           ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
                           : 'border-slate-200 text-slate-600'
@@ -420,7 +432,7 @@ export default function ProfilePage() {
                     <button
                       type="button"
                       onClick={() => setLanguage('WO')}
-                      className={`py-2 px-3 rounded-xl border text-xs font-bold ${
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold transition ${
                         language === 'WO'
                           ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
                           : 'border-slate-200 text-slate-600'
@@ -445,13 +457,19 @@ export default function ProfilePage() {
 
       {/* ================= MODAL 3 : AIDE & SUPPORT ================= */}
       {activeModal === 'support' && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom">
+        <div
+          onClick={() => setActiveModal(null)}
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl"
+          >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-base text-slate-900">Service Client Malick Buss</h3>
               <button
                 onClick={() => setActiveModal(null)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -494,31 +512,50 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* ================= MODAL 4 : DÉCONNEXION ================= */}
+      {/* ================= MODAL 4 : DÉCONNEXION (CENTRE ET ACCESSIBLE) ================= */}
       {activeModal === 'deconnexion' && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom text-center">
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
-              <LogOut className="w-6 h-6 stroke-[2.2px]" />
+        <div
+          onClick={() => setActiveModal(null)}
+          className="fixed inset-0 z-[100] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-sm rounded-3xl p-6 space-y-5 shadow-2xl relative text-center animate-in zoom-in-95"
+          >
+            {/* Bouton fermer en haut à droite */}
+            <button
+              onClick={() => setActiveModal(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto shadow-inner">
+              <LogOut className="w-7 h-7 stroke-[2.2px]" />
             </div>
 
-            <div className="space-y-1">
-              <h3 className="font-bold text-base text-slate-900">Souhaitez-vous vous déconnecter ?</h3>
-              <p className="text-xs text-slate-500">
-                Vous devrez vous reconnecter pour suivre vos commandes et voir vos favoris.
+            <div className="space-y-1.5 px-2">
+              <h3 className="font-black text-lg text-slate-900">
+                Souhaitez-vous vous déconnecter ?
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Vous devrez vous reconnecter pour suivre vos commandes et retrouver vos favoris.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 pt-2">
+            {/* 2 Boutons toujours parfaitement visibles et cliquables */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
               <button
+                type="button"
                 onClick={() => setActiveModal(null)}
-                className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+                className="py-3 px-4 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-bold text-xs rounded-xl transition"
               >
                 Annuler
               </button>
               <button
+                type="button"
                 onClick={handleLogout}
-                className="py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition"
+                className="py-3 px-4 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition"
               >
                 Se déconnecter
               </button>
@@ -526,6 +563,7 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
     </div>
   );
 }
