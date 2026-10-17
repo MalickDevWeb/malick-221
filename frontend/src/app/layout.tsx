@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Header } from '../components/layout/Header';
-import { BottomNavigation } from '../components/layout/BottomNavigation';
-import { MockupNavigator } from '../components/layout/MockupNavigator';
+import { AppShell } from '../components/layout/AppShell';
 
 export const metadata: Metadata = {
   title: 'Malick Buss — Marketplace Multi-Boutiques Sénégal',
@@ -16,15 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className="min-h-screen antialiased bg-slate-100 text-slate-900 pb-20">
-        <MockupNavigator />
-        <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-xl">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <BottomNavigation />
-        </div>
+      <body>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
 }
-

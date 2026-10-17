@@ -41,3 +41,4 @@ export default function VendorProductConfirmationScreen20() {
     </div>
   );
 }
+

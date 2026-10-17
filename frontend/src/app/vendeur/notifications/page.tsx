@@ -164,3 +164,4 @@ export default function VendorNotificationsScreen18() {
     </div>
   );
 }
+

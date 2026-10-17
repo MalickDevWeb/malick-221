@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Smartphone, ChevronUp, ChevronDown, CheckCircle2, Store, ShoppingBag } from 'lucide-react';
+import { Smartphone, ChevronUp, ChevronDown, CheckCircle2, Store, ShoppingBag, Sparkles, ChevronRight } from 'lucide-react';
 
 interface ScreenItem {
   num: number;
@@ -98,6 +98,22 @@ export function MockupNavigator() {
               <span>20 Écrans Vendeur</span>
             </button>
           </div>
+
+          {/* Bouton Vue Panoramique Maquette Figma */}
+          <Link
+            href="/vendeur/galerie"
+            onClick={() => setIsOpen(false)}
+            className="mb-2 p-2 rounded-xl bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-amber-500/20 border border-amber-400/40 flex items-center justify-between text-amber-300 hover:text-white transition group"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+              <div className="text-left">
+                <div className="text-[11px] font-black tracking-wide">Vue Panoramique Maquette</div>
+                <div className="text-[9px] text-slate-400">Voir les 20 smartphones côte-à-côte</div>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
 
           <div className="px-2 py-1 border-b border-slate-800/80 mb-1 flex items-center justify-between">
             <span className="text-[10px] font-bold text-slate-300">

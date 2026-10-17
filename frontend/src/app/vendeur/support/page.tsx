@@ -199,3 +199,4 @@ export default function VendorSupportScreen16() {
     </div>
   );
 }
+

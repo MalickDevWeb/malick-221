@@ -7,8 +7,8 @@ import { Home, Store, LayoutGrid, ShoppingBag, User } from 'lucide-react';
 export function BottomNavigation() {
   const pathname = usePathname();
 
-  // Ne pas afficher la barre de navigation sur l'écran 1 (démarrage/splash)
-  if (pathname === '/splash') {
+  // Ne pas afficher la barre client sur les routes vendeur, splash ou galerie
+  if (pathname === '/splash' || pathname.startsWith('/vendeur')) {
     return null;
   }
 
