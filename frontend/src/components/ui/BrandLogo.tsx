@@ -35,3 +35,4 @@ export function BrandLogo({ variant = 'dark', size = 'md' }: { variant?: 'light'
     </div>
   );
 }
+

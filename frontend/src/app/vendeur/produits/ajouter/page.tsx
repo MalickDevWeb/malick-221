@@ -23,8 +23,8 @@ export default function AddProductPage() {
     e.preventDefault();
     setPublished(true);
     setTimeout(() => {
-      router.push('/vendeur/dashboard');
-    }, 1200);
+      router.push('/vendeur/confirmation');
+    }, 600);
   };
 
   return (
@@ -132,3 +132,4 @@ export default function AddProductPage() {
     </div>
   );
 }
+
