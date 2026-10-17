@@ -1,0 +1,32 @@
+{
+  "name": "malick-buss",
+  "version": "1.0.0",
+  "description": "Marketplace multi-boutiques Malick Buss - Sénégal",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend",
+    "back-office"
+  ],
+  "scripts": {
+    "dev:backend": "npm run start:dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:admin": "npm run dev --workspace=back-office",
+    "build:shared": "npm run build --workspace=shared",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:admin": "npm run build --workspace=back-office",
+    "lint": "npm run lint --workspaces"
+  },
+  "keywords": [
+    "marketplace",
+    "senegal",
+    "ecommerce",
+    "wave",
+    "orange-money",
+    "multi-vendor"
+  ],
+  "author": "Malick Buss",
+  "license": "UNLICENSED"
+}
