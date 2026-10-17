@@ -112,7 +112,7 @@ export function Header() {
           <div className="hidden md:flex items-center justify-between py-3.5 gap-6">
             {/* Logo MB Malick Buss */}
             <Link href="/" className="flex-shrink-0">
-              <BrandLogo size="md" variant="dark" />
+              <BrandLogo size="md" variant="dark" layout="horizontal" />
             </Link>
 
             {/* Barre de Recherche Large avec Sélecteur Catégorie */}

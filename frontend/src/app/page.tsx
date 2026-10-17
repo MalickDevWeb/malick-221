@@ -201,8 +201,8 @@ export default function HomePage() {
                   alt={currentSlide.title}
                   className="w-full h-full object-cover object-right"
                 />
-                {/* Fondu bleu nuit sur la gauche pour lisibilité du texte */}
-                <div className="absolute inset-y-0 left-0 w-full sm:w-2/3 lg:w-1/2 bg-gradient-to-r from-[#071630] via-[#071630]/90 to-transparent" />
+                {/* Fondu subtil vers le bleu nuit pour préserver les motifs et pastilles de l'image */}
+                <div className="absolute inset-y-0 left-0 w-full sm:w-3/5 lg:w-[45%] bg-gradient-to-r from-[#071630]/75 via-[#071630]/30 to-transparent" />
               </motion.div>
             </AnimatePresence>
 
