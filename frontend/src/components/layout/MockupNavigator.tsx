@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Smartphone, ChevronUp, ChevronDown, CheckCircle2, Store, ShoppingBag, Sparkles, ChevronRight } from 'lucide-react';
+import { Smartphone, ChevronUp, ChevronDown, CheckCircle2, Store, ShoppingBag, Sparkles, ChevronRight, X } from 'lucide-react';
 
 interface ScreenItem {
   num: number;
@@ -61,18 +61,18 @@ export function MockupNavigator() {
   const currentList = activeTab === 'CLIENT' ? clientScreens : vendorScreens;
 
   return (
-    <div className="fixed top-2 right-2 z-50 font-sans">
+    <div className="fixed bottom-20 md:bottom-5 right-3.5 md:right-5 z-40 font-sans">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-slate-900/95 hover:bg-slate-900 text-amber-400 border border-amber-400/30 text-[10px] font-bold py-1.5 px-3 rounded-full shadow-xl flex items-center gap-1.5 backdrop-blur-md transition active:scale-95"
+        className="bg-slate-900/95 hover:bg-slate-900 text-amber-400 border border-amber-400/40 text-[10px] font-bold py-1.5 px-3 rounded-full shadow-2xl flex items-center gap-1.5 backdrop-blur-md transition active:scale-95"
       >
         <Smartphone className="w-3.5 h-3.5 text-amber-400" />
         <span>Navigateur Maquettes</span>
-        {isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-slate-950/95 border border-slate-800 rounded-2xl shadow-2xl p-2.5 text-slate-200 backdrop-blur-md max-h-[82vh] overflow-y-auto scrollbar-thin">
+        <div className="absolute right-0 bottom-full mb-2 w-72 bg-slate-950/95 border border-slate-800 rounded-2xl shadow-2xl p-2.5 text-slate-200 backdrop-blur-md max-h-[72vh] overflow-y-auto scrollbar-thin animate-in slide-in-from-bottom-2 fade-in">
           {/* Onglets de sélection du jeu de maquettes */}
           <div className="grid grid-cols-2 gap-1 p-1 bg-slate-900 rounded-xl mb-2">
             <button
@@ -119,9 +119,18 @@ export function MockupNavigator() {
             <span className="text-[10px] font-bold text-slate-300">
               {activeTab === 'CLIENT' ? 'Marketplace Mobile' : 'Espace Boutiquier Malick Buss'}
             </span>
-            <span className="text-[9px] text-slate-500">
-              {currentList.length} écrans
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] text-slate-500">
+                {currentList.length} écrans
+              </span>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 transition"
+                title="Fermer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
           <div className="space-y-0.5">
