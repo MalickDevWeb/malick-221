@@ -165,9 +165,10 @@ export function Header() {
                 />
                 <button
                   type="submit"
-                  className="bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-black text-xs px-5 py-2.5 rounded-full transition shadow-xs flex-shrink-0 mr-1"
+                  className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 p-2.5 rounded-full transition shadow-xs flex-shrink-0 mr-1.5 flex items-center justify-center"
+                  aria-label="Rechercher"
                 >
-                  Rechercher
+                  <Search className="w-4 h-4 stroke-[2.5px]" />
                 </button>
               </form>
             </div>
@@ -190,17 +191,17 @@ export function Header() {
                 title="Notifications"
               >
                 <Bell className="w-5 h-5 stroke-[2px]" />
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-white shadow-xs" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-xs" />
               </Link>
 
               {/* Panier Desktop */}
               <Link
                 href="/panier"
-                className="flex items-center gap-2.5 bg-amber-50 hover:bg-amber-100/80 border border-amber-200/60 px-3.5 py-2 rounded-full transition group"
+                className="flex items-center gap-2.5 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-300/70 px-3.5 py-1.5 rounded-full transition group"
               >
                 <div className="relative text-amber-700">
-                  <ShoppingCart className="w-5 h-5 stroke-[2.2px]" />
-                  <span className="absolute -top-1.5 -right-2 bg-amber-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+                  <ShoppingCart className="w-4 h-4 stroke-[2.2px]" />
+                  <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white">
                     2
                   </span>
                 </div>
@@ -213,23 +214,26 @@ export function Header() {
               {/* Profil / Compte */}
               <Link
                 href="/profil"
-                className="flex items-center gap-2 p-1.5 pl-2.5 pr-3 bg-slate-100 hover:bg-slate-200 rounded-full transition"
+                className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 bg-slate-100 hover:bg-slate-200 rounded-full transition"
               >
                 <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold">
                   MD
                 </div>
                 <span className="text-xs font-bold text-slate-800 hidden xl:inline">
-                  Malick Diop
+                  Malick Diop ▾
                 </span>
               </Link>
             </div>
           </div>
 
           {/* ================= SOUS-BARRE CATÉGORIES DESKTOP ================= */}
-          <div className="hidden md:flex items-center justify-between border-t border-slate-100 py-2 text-xs font-semibold text-slate-700">
+          <div className="hidden md:flex items-center justify-between border-t border-slate-100 py-2.5 text-xs font-semibold text-slate-700">
             <div className="flex items-center gap-6">
-              <Link href="/categories" className="flex items-center gap-1.5 text-emerald-600 font-bold hover:text-emerald-700">
-                <Menu className="w-4 h-4" />
+              <Link
+                href="/categories"
+                className="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-200/80 text-slate-900 font-bold px-3.5 py-1.5 rounded-xl transition"
+              >
+                <Menu className="w-4 h-4 stroke-[2.2px]" />
                 <span>Toutes les catégories</span>
               </Link>
               <Link href="/categories?category=mode" className="hover:text-amber-600 transition">Mode & Friperie</Link>
@@ -237,13 +241,15 @@ export function Header() {
               <Link href="/categories?category=beaute" className="hover:text-amber-600 transition">Beauté & Cosmétiques</Link>
               <Link href="/categories?category=maison" className="hover:text-amber-600 transition">Maison & Décoration</Link>
               <Link href="/categories?category=sport" className="hover:text-amber-600 transition">Sport & Fitness</Link>
+              <Link href="/categories?category=enfants" className="hover:text-amber-600 transition">Enfants & Bébés</Link>
             </div>
-            <div className="flex items-center gap-4 text-[11px]">
-              <Link href="/boutiques" className="text-amber-600 font-bold hover:underline">
-                Top Vendeurs de la semaine ★
-              </Link>
-              <Link href="/vendeur/dashboard" className="bg-slate-900 text-amber-400 px-3 py-1 rounded-full font-bold hover:bg-slate-800 transition">
-                Accès Boutiquier →
+            <div className="flex items-center gap-4 text-xs">
+              <Link
+                href="/vendeur/dashboard"
+                className="bg-slate-950 text-amber-400 px-4 py-1.5 rounded-full font-bold hover:bg-slate-900 transition flex items-center gap-1 shadow-xs"
+              >
+                <span>Accès Boutique</span>
+                <span>→</span>
               </Link>
             </div>
           </div>
