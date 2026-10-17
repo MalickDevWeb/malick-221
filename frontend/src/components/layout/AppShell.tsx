@@ -5,6 +5,7 @@ import { Header } from './Header';
 import { BottomNavigation } from './BottomNavigation';
 import { DesktopFooter } from './DesktopFooter';
 import { MockupNavigator } from './MockupNavigator';
+import { SmoothScroll } from '../motion/SmoothScroll';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -14,6 +15,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isGallery) {
     return (
       <div className="min-h-screen bg-[#0e131f] text-slate-100">
+        <SmoothScroll />
         <MockupNavigator />
         {children}
       </div>
@@ -22,6 +24,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen antialiased bg-[#fafafa] text-slate-900 flex flex-col justify-between selection:bg-amber-400 selection:text-slate-950">
+      <SmoothScroll />
       {/* Widget Flottant d'accès aux Maquettes */}
       <MockupNavigator />
 
