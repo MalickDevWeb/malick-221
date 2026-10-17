@@ -120,7 +120,12 @@ export default function ShopsListPage() {
             <ArrowLeft className="w-6 h-6 stroke-[2.2px]" />
           </Link>
           <h1 className="font-black text-lg text-slate-900 tracking-tight">Nos boutiques</h1>
-          <button className="text-slate-900 p-1 hover:bg-slate-100 rounded-full transition">
+          <button
+            type="button"
+            aria-label="Rechercher une boutique"
+            onClick={() => searchInputRef.current?.focus()}
+            className="text-slate-900 p-1 hover:bg-slate-100 rounded-full transition"
+          >
             <Search className="w-5 h-5 stroke-[2.2px]" />
           </button>
         </div>
@@ -137,7 +142,7 @@ export default function ShopsListPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-500 bg-slate-200/60 px-3 py-1.5 rounded-full">
-              6 boutiques partenaires
+              {filteredBoutiques.length} boutique{filteredBoutiques.length === 1 ? '' : 's'} partenaire{filteredBoutiques.length === 1 ? '' : 's'}
             </span>
           </div>
         </div>
@@ -148,7 +153,11 @@ export default function ShopsListPage() {
           <div className="relative flex-1 max-w-md">
             <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
             <input
+              ref={searchInputRef}
               type="text"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              aria-label="Rechercher une boutique ou une marque"
               placeholder="Rechercher une boutique, une marque..."
               className="w-full bg-[#f4f5f7] hover:bg-[#ecedf0] focus:bg-white text-xs pl-11 pr-4 py-2.5 rounded-full border border-transparent focus:border-amber-400 focus:outline-none transition-all placeholder:text-slate-400 font-medium"
             />
@@ -156,13 +165,21 @@ export default function ShopsListPage() {
 
           {/* Filtres Pilules Horizontaux */}
           <div className="flex gap-2 overflow-x-auto scrollbar-none py-1">
-            <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-1.5 rounded-full flex-shrink-0 transition shadow-xs">
+            <button
+              type="button"
+              aria-pressed={selectedCategory === 'Toutes'}
+              onClick={() => setSelectedCategory('Toutes')}
+              className={`${selectedCategory === 'Toutes' ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs' : 'bg-[#f0f4f8] hover:bg-slate-200 text-slate-700 font-medium'} text-xs px-4 py-1.5 rounded-full flex-shrink-0 transition`}
+            >
               Toutes
             </button>
-            {['Mode', 'Électronique', 'Beauté', 'Maison', 'Sport'].map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat}
-                className="bg-[#f0f4f8] hover:bg-slate-200 text-slate-700 font-medium text-xs px-4 py-1.5 rounded-full flex-shrink-0 transition"
+                type="button"
+                aria-pressed={selectedCategory === cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`${selectedCategory === cat ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs' : 'bg-[#f0f4f8] hover:bg-slate-200 text-slate-700 font-medium'} text-xs px-4 py-1.5 rounded-full flex-shrink-0 transition`}
               >
                 {cat}
               </button>
@@ -172,7 +189,7 @@ export default function ShopsListPage() {
 
         {/* Grille des 6 Boutiques (1 col sur mobile, 2 ou 3 cols sur desktop) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pt-2">
-          {boutiques.map((shop) => (
+          {filteredBoutiques.map((shop) => (
             <div
               key={shop.id}
               className="bg-white rounded-2xl md:rounded-3xl border border-slate-100/90 p-4 shadow-2xs hover:shadow-lg hover:border-amber-200 transition-all flex items-center justify-between gap-3.5 group"
@@ -276,6 +293,11 @@ export default function ShopsListPage() {
               </Link>
             </div>
           ))}
+          {filteredBoutiques.length === 0 && (
+            <p className="col-span-full py-10 text-center text-sm text-slate-500" role="status">
+              Aucune boutique ne correspond à votre recherche.
+            </p>
+          )}
         </div>
 
         {/* Bouton Apprenez plus de boutiques */}

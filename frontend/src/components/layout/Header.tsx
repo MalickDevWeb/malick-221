@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Menu,
   ShoppingCart,
@@ -21,8 +21,33 @@ import { BrandLogo } from '../ui/BrandLogo';
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchCategory, setSearchCategory] = useState('Toutes les catégories');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+
+  const searchCategories = [
+    { label: 'Toutes les catégories', slug: '' },
+    { label: 'Mode & Friperie', slug: 'mode' },
+    { label: 'Électronique & High-Tech', slug: 'electronique' },
+    { label: 'Beauté & Cosmétiques', slug: 'beaute' },
+    { label: 'Maison & Décoration', slug: 'maison' },
+    { label: 'Sport & Fitness', slug: 'sport' },
+    { label: 'Enfants & Bébés', slug: 'enfants' },
+  ];
+
+  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    const category = searchCategories.find((item) => item.label === searchCategory);
+
+    if (category?.slug) params.set('category', category.slug);
+    if (searchTerm.trim()) params.set('q', searchTerm.trim());
+
+    router.push(`/categories${params.size ? `?${params.toString()}` : ''}`);
+    setCategoryMenuOpen(false);
+  };
 
   // Pages avec header personnalisé ou sans header global (ex: splash, back-office)
   const customHeaderRoutes = [
@@ -92,26 +117,59 @@ export function Header() {
 
             {/* Barre de Recherche Large avec Sélecteur Catégorie */}
             <div className="flex-1 max-w-2xl">
-              <div className="flex items-center bg-[#f4f5f7] border border-slate-200/80 rounded-full overflow-hidden focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all">
+              <form
+                onSubmit={handleSearch}
+                className="relative flex items-center bg-[#f4f5f7] border border-slate-200/80 rounded-full focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all"
+              >
                 {/* Sélecteur de catégorie */}
-                <div className="hidden lg:flex items-center gap-1 px-3.5 border-r border-slate-200 text-slate-600 text-xs font-semibold whitespace-nowrap cursor-pointer hover:bg-slate-200/50 py-2">
-                  <span>{searchCategory}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                <div className="relative hidden lg:flex items-center border-r border-slate-200">
+                  <button
+                    type="button"
+                    aria-expanded={categoryMenuOpen}
+                    aria-haspopup="listbox"
+                    onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
+                    className="flex items-center gap-1 px-3.5 py-2 text-slate-600 text-xs font-semibold whitespace-nowrap hover:bg-slate-200/50"
+                  >
+                    <span>{searchCategory}</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                  {categoryMenuOpen && (
+                    <div role="listbox" aria-label="Choisir une catégorie" className="absolute left-0 top-full z-50 mt-2 min-w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+                      {searchCategories.map((category) => (
+                        <button
+                          key={category.slug || 'all'}
+                          type="button"
+                          role="option"
+                          aria-selected={searchCategory === category.label}
+                          onClick={() => {
+                            setSearchCategory(category.label);
+                            setCategoryMenuOpen(false);
+                          }}
+                          className="block w-full px-4 py-2 text-left text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-700"
+                        >
+                          {category.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <Search className="w-4 h-4 ml-3 text-slate-400 flex-shrink-0" />
                 <input
                   type="text"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="Rechercher un produit, une marque, une boutique à Dakar..."
+                  aria-label="Rechercher un produit, une marque ou une boutique"
                   className="w-full bg-transparent text-xs px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
                 />
                 <button
-                  type="button"
+                  type="submit"
                   className="bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-black text-xs px-5 py-2.5 rounded-full transition shadow-xs flex-shrink-0 mr-1"
                 >
                   Rechercher
                 </button>
-              </div>
+              </form>
             </div>
 
             {/* Raccourcis Droite Desktop */}
@@ -174,11 +232,11 @@ export function Header() {
                 <Menu className="w-4 h-4" />
                 <span>Toutes les catégories</span>
               </Link>
-              <Link href="/categories" className="hover:text-amber-600 transition">Mode & Friperie</Link>
-              <Link href="/categories" className="hover:text-amber-600 transition">Électronique & High-Tech</Link>
-              <Link href="/categories" className="hover:text-amber-600 transition">Beauté & Cosmétiques</Link>
-              <Link href="/categories" className="hover:text-amber-600 transition">Maison & Décoration</Link>
-              <Link href="/categories" className="hover:text-amber-600 transition">Sport & Fitness</Link>
+              <Link href="/categories?category=mode" className="hover:text-amber-600 transition">Mode & Friperie</Link>
+              <Link href="/categories?category=electronique" className="hover:text-amber-600 transition">Électronique & High-Tech</Link>
+              <Link href="/categories?category=beaute" className="hover:text-amber-600 transition">Beauté & Cosmétiques</Link>
+              <Link href="/categories?category=maison" className="hover:text-amber-600 transition">Maison & Décoration</Link>
+              <Link href="/categories?category=sport" className="hover:text-amber-600 transition">Sport & Fitness</Link>
             </div>
             <div className="flex items-center gap-4 text-[11px]">
               <Link href="/boutiques" className="text-amber-600 font-bold hover:underline">
@@ -231,14 +289,17 @@ export function Header() {
               </div>
 
               {/* Barre de Recherche Pilule Mobile */}
-              <div className="relative">
+              <form onSubmit={handleSearch} className="relative">
                 <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 stroke-[2px]" />
                 <input
-                  type="text"
+                  type="search"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="Rechercher un produit, une boutique..."
+                  aria-label="Rechercher un produit, une marque ou une boutique"
                   className="w-full bg-[#f4f5f7] hover:bg-[#ecedf0] focus:bg-white text-xs pl-11 pr-4 py-2.5 rounded-full border border-transparent focus:border-amber-400 focus:outline-none transition-all placeholder:text-slate-400 font-medium"
                 />
-              </div>
+              </form>
             </div>
           )}
         </div>
