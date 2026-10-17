@@ -1,4 +1,7 @@
+ 'use client';
+
 import Link from 'next/link';
+import { useRef, useState } from 'react';
 import {
   ArrowLeft,
   Search,
@@ -15,6 +18,10 @@ import {
 } from 'lucide-react';
 
 export default function ShopsListPage() {
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Toutes');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const boutiques = [
     {
       id: '1',
@@ -89,6 +96,19 @@ export default function ShopsListPage() {
       logoText: 'Kids World',
     },
   ];
+
+  const categories = ['Mode', 'Électronique', 'Beauté', 'Maison', 'Sport', 'Enfants'];
+  const normalizeText = (value: string) =>
+    value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr');
+  const normalizedSearch = normalizeText(search.trim());
+  const filteredBoutiques = boutiques.filter((shop) => {
+    const matchesSearch = !normalizedSearch ||
+      normalizeText([shop.name, shop.subtitle, ...shop.tags].join(' ')).includes(normalizedSearch);
+    const matchesCategory = selectedCategory === 'Toutes' ||
+      shop.tags.some((tag) => normalizeText(tag) === normalizeText(selectedCategory));
+
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="w-full bg-[#fafafa] min-h-screen py-3 md:py-8">
