@@ -1,168 +1,170 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { Store, Percent, AlertTriangle, Users, ArrowUpRight, CheckCircle2, ShieldCheck } from 'lucide-react';
+import {
+  Crown,
+  LayoutDashboard,
+  Store,
+  Users,
+  Package,
+  ShoppingBag,
+  Percent,
+  UserCheck,
+  Settings,
+  TrendingUp,
+  ArrowUpRight,
+} from 'lucide-react';
+import { formatFCFA } from '../../../frontend/src/services/api';
 
-export default function AdminDashboardPage() {
+export default function AdminScreen13Page() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  const menuItems = [
+    { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+    { id: 'shops', label: 'Boutiques', icon: Store },
+    { id: 'vendors', label: 'Vendeurs', icon: Users },
+    { id: 'products', label: 'Produits', icon: Package },
+    { id: 'orders', label: 'Commandes', icon: ShoppingBag },
+    { id: 'commissions', label: 'Commissions', icon: Percent },
+    { id: 'users', label: 'Utilisateurs', icon: UserCheck },
+    { id: 'settings', label: 'Paramètres', icon: Settings },
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
-      {/* Header Back-Office */}
-      <header className="border-b border-slate-800 bg-slate-900 px-8 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-md shadow-emerald-950">
-            MB
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-white tracking-tight">Malick Buss — Super Administration</h1>
-            <p className="text-xs text-slate-400">Marketplace Multi-Boutiques • Région Sénégal</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-xs px-3 py-1 rounded-full font-medium">
-            PostgreSQL 16 • En ligne
-          </span>
-          <span className="text-xs text-slate-400">Devise : <strong>FCFA (XOF)</strong></span>
-        </div>
-      </header>
-
-      <main className="flex-1 p-8 max-w-7xl mx-auto w-full space-y-8">
-        {/* Métriques Clés */}
-        <div>
-          <h2 className="text-lg font-bold text-white mb-4">Indicateurs de Performance Plateforme</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-semibold uppercase">Boutiques Actives</span>
-                <Store className="w-4 h-4 text-emerald-400" />
-              </div>
-              <p className="text-3xl font-black text-white">2</p>
-              <span className="text-xs text-emerald-400 flex items-center gap-1 font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5" /> 100% conformes KYC
-              </span>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row">
+      {/* Menu Latéral Gauche Écran 13 */}
+      <aside className="w-full md:w-64 bg-slate-900 border-r border-slate-800 p-4 flex flex-col justify-between">
+        <div className="space-y-6">
+          {/* Header avec Couronne Dorée */}
+          <div className="flex items-center gap-2.5 px-2 py-1">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+              <Crown className="w-5 h-5 fill-amber-400" />
             </div>
-
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-semibold uppercase">Commissions Exigibles</span>
-                <Percent className="w-4 h-4 text-emerald-400" />
-              </div>
-              <p className="text-3xl font-black text-emerald-400">42 500 FCFA</p>
-              <span className="text-xs text-slate-400 font-medium">
-                Taux moyen : 10.0%
-              </span>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-semibold uppercase">Dossiers KYC en Attente</span>
-                <Users className="w-4 h-4 text-amber-400" />
-              </div>
-              <p className="text-3xl font-black text-amber-400">1</p>
-              <span className="text-xs text-amber-400/90 font-medium">
-                Vérification d'identité requise
-              </span>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-semibold uppercase">Litiges / Réclamations</span>
-                <AlertTriangle className="w-4 h-4 text-rose-400" />
-              </div>
-              <p className="text-3xl font-black text-rose-400">0</p>
-              <span className="text-xs text-slate-400 font-medium">
-                Aucun litige ouvert
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Section Boutiques & Commission */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Liste des Boutiques */}
-          <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-white">Boutiques Partenaires Récentes</h3>
-                <p className="text-xs text-slate-400">Suivi des agréments et volumes de vente</p>
-              </div>
-              <span className="text-xs text-emerald-400 font-semibold bg-emerald-950/60 border border-emerald-800/80 px-2.5 py-1 rounded-lg">
-                2 Partenaires agréés
-              </span>
-            </div>
-
-            <div className="divide-y divide-slate-800">
-              <div className="py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-white">
-                    KF
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
-                      Keur Friperie Dakar
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    </h4>
-                    <p className="text-xs text-slate-400">Sandaga / Plateau • Wave: +221 77 123 45 67</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs font-bold text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded-full border border-emerald-900">
-                    Active • 10% com.
-                  </span>
-                </div>
-              </div>
-
-              <div className="py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-white">
-                    DS
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
-                      Dakar Streetwear
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    </h4>
-                    <p className="text-xs text-slate-400">Almadies / Ngor • Orange Money: +221 77 234 56 78</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs font-bold text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded-full border border-emerald-900">
-                    Active • 10% com.
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Grille des Commissions */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
             <div>
-              <h3 className="text-base font-bold text-white">Grille Tarifaire Plateforme</h3>
-              <p className="text-xs text-slate-400">Taux de commissionnement par univers</p>
+              <h1 className="font-extrabold text-sm text-white leading-tight">
+                Espace administrateur
+              </h1>
+              <span className="text-[10px] text-slate-400 block">Super Admin Malick Buss</span>
             </div>
+          </div>
 
-            <div className="space-y-3">
-              <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/60 flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-white">Friperie & Vêtements</h4>
-                  <p className="text-[11px] text-slate-400">Hors frais de livraison</p>
-                </div>
-                <span className="text-sm font-black text-emerald-400">10.0%</span>
-              </div>
+          {/* Liste des Liens de Navigation */}
+          <nav className="space-y-1">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${
+                    isActive
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 stroke-[2px]" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
-              <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/60 flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-white">Streetwear & Marques</h4>
-                  <p className="text-[11px] text-slate-400">Sur article après remise</p>
-                </div>
-                <span className="text-sm font-black text-emerald-400">10.0%</span>
-              </div>
+        <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-500 px-2">
+          Marché : Sénégal • FCFA
+        </div>
+      </aside>
 
-              <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/60 flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-white">Électronique & Tech</h4>
-                  <p className="text-[11px] text-slate-400">Plafond max configurable</p>
-                </div>
-                <span className="text-sm font-black text-emerald-400">8.0%</span>
-              </div>
+      {/* Contenu Principal Écran 13 */}
+      <main className="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-white">Tableau de bord</h2>
+          <span className="bg-emerald-950/80 border border-emerald-800 text-emerald-400 text-xs px-3 py-1 rounded-full font-medium">
+            Temps réel • En direct
+          </span>
+        </div>
+
+        {/* 4 Cartes de KPI Écran 13 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1.5 shadow-sm">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              Total des ventes
+            </span>
+            <div className="text-xl font-black text-emerald-400">
+              {formatFCFA(2450000)}
             </div>
+            <span className="text-[10px] text-emerald-400 flex items-center gap-0.5 font-bold">
+              <TrendingUp className="w-3 h-3" /> +15%
+            </span>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1.5 shadow-sm">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              Nombre de boutiques
+            </span>
+            <div className="text-xl font-black text-white">32</div>
+            <span className="text-[10px] text-emerald-400 flex items-center gap-0.5 font-bold">
+              <TrendingUp className="w-3 h-3" /> +3
+            </span>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1.5 shadow-sm">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              Commandes aujourd'hui
+            </span>
+            <div className="text-xl font-black text-white">156</div>
+            <span className="text-[10px] text-emerald-400 flex items-center gap-0.5 font-bold">
+              <TrendingUp className="w-3 h-3" /> +18%
+            </span>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1.5 shadow-sm">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              Commissions du jour
+            </span>
+            <div className="text-xl font-black text-amber-400">
+              {formatFCFA(245000)}
+            </div>
+            <span className="text-[10px] text-emerald-400 flex items-center gap-0.5 font-bold">
+              <TrendingUp className="w-3 h-3" /> +10%
+            </span>
+          </div>
+        </div>
+
+        {/* Graphique / Aperçu des Transactions */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-sm text-white">Activité récente de la marketplace</h3>
+              <p className="text-xs text-slate-400">Dernières commandes enregistrées et réconciliations</p>
+            </div>
+            <button className="text-xs text-emerald-400 font-semibold hover:underline">
+              Voir tout l'historique
+            </button>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            {[
+              { id: 'MB-00125', shop: 'Style & Mode', amount: 12000, com: 1200, time: 'il y a 5 min' },
+              { id: 'MB-00124', shop: 'TechZone', amount: 35000, com: 2800, time: 'il y a 8 min' },
+              { id: 'MB-00123', shop: 'Beauty World', amount: 8500, com: 850, time: 'il y a 25 min' },
+            ].map((tx) => (
+              <div
+                key={tx.id}
+                className="bg-slate-800/60 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between"
+              >
+                <div>
+                  <h4 className="font-bold text-xs text-white">Commande #{tx.id}</h4>
+                  <span className="text-[11px] text-slate-400">{tx.shop} • {tx.time}</span>
+                </div>
+                <div className="text-right">
+                  <span className="font-extrabold text-xs text-white block">{formatFCFA(tx.amount)}</span>
+                  <span className="text-[10px] text-emerald-400 font-semibold">Com: {formatFCFA(tx.com)}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </main>

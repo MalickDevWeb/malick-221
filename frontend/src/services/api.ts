@@ -72,3 +72,4 @@ export function formatFCFA(amount: string | number | null): string {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
   return new Intl.NumberFormat('fr-FR').format(num) + ' FCFA';
 }
+
