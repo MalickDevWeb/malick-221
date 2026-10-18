@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -23,12 +23,38 @@ import {
   Crown,
 } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
+import { CartDrawer } from '../cart/CartDrawer';
+import { NotificationPopover } from '../notifications/NotificationPopover';
+import { formatFCFA } from '../../services/api';
+import { getCartItems } from '../../services/order-flow';
 
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const [cartTotal, setCartTotal] = useState(0);
+
+  useEffect(() => {
+    const updateCartSummary = () => {
+      const items = getCartItems();
+      const count = items.reduce((acc, item) => acc + item.quantity, 0);
+      const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+      setCartCount(count);
+      setCartTotal(total);
+    };
+
+    updateCartSummary();
+    window.addEventListener('storage', updateCartSummary);
+    window.addEventListener('cart-updated', updateCartSummary);
+    return () => {
+      window.removeEventListener('storage', updateCartSummary);
+      window.removeEventListener('cart-updated', updateCartSummary);
+    };
+  }, []);
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,7 +65,6 @@ export function Header() {
     }
   };
 
-  // Pages avec header personnalisé ou sans header global (ex: splash, back-office)
   // Pages avec header personnalisé ou sans header global (ex: splash, back-office)
   const customHeaderRoutes = [
     '/splash',
@@ -141,27 +166,43 @@ export function Header() {
                 <span>Espace Vendeur</span>
               </Link>
 
-              {/* Notifications */}
-              <Link
-                href="/notifications"
-                className="relative p-2 text-slate-700 hover:text-amber-600 hover:bg-slate-50 rounded-full transition"
-                title="Notifications"
-              >
-                <Bell className="w-5 h-5 stroke-[2px]" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-xs" />
-              </Link>
+              {/* Notifications Dropdown Popup */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setNotificationOpen(!notificationOpen)}
+                  className={`relative p-2 rounded-full transition cursor-pointer ${
+                    notificationOpen
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50'
+                  }`}
+                  title="Notifications"
+                  aria-label="Voir les notifications"
+                >
+                  <Bell className="w-5 h-5 stroke-[2px]" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-xs" />
+                </button>
 
-              {/* Panier Desktop - Ultra clair, lisible et harmonieux */}
-              <Link
-                href="/panier"
-                className="flex items-center gap-2.5 bg-slate-50 hover:bg-amber-50/60 border border-slate-200/90 hover:border-amber-400 pl-1.5 pr-3.5 py-1 rounded-full transition-all duration-200 shadow-xs group"
+                <NotificationPopover
+                  isOpen={notificationOpen}
+                  onClose={() => setNotificationOpen(false)}
+                />
+              </div>
+
+              {/* Panier Desktop - Ouvre le Tiroir Slide-over */}
+              <button
+                type="button"
+                onClick={() => setCartDrawerOpen(true)}
+                className="flex items-center gap-2.5 bg-slate-50 hover:bg-amber-50/60 border border-slate-200/90 hover:border-amber-400 pl-1.5 pr-3.5 py-1 rounded-full transition-all duration-200 shadow-xs group cursor-pointer"
                 aria-label="Mon panier d'achats"
               >
                 <div className="relative w-8 h-8 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
                   <ShoppingCart className="w-4 h-4 stroke-[2.2px]" />
-                  <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
-                    2
-                  </span>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+                      {cartCount}
+                    </span>
+                  )}
                 </div>
 
                 <div className="text-left leading-tight">
@@ -169,10 +210,10 @@ export function Header() {
                     Panier
                   </span>
                   <span className="text-xs font-black text-slate-900 whitespace-nowrap block">
-                    24 000 FCFA
+                    {formatFCFA(cartTotal)}
                   </span>
                 </div>
-              </Link>
+              </button>
 
               {/* Profil / Compte */}
               <Link
@@ -291,25 +332,36 @@ export function Header() {
                 </Link>
 
                 <div className="flex items-center gap-2">
-                  <Link
-                    href="/notifications"
-                    className="relative text-slate-900 p-1.5 hover:bg-slate-100 rounded-lg transition"
-                    aria-label="Notifications"
-                  >
-                    <Bell className="w-5 h-5 stroke-[2px]" />
-                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-white shadow-xs" />
-                  </Link>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setNotificationOpen(!notificationOpen)}
+                      className="relative text-slate-900 p-1.5 hover:bg-slate-100 rounded-lg transition cursor-pointer"
+                      aria-label="Notifications"
+                    >
+                      <Bell className="w-5 h-5 stroke-[2px]" />
+                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-white shadow-xs" />
+                    </button>
 
-                  <Link
-                    href="/panier"
-                    className="relative text-slate-900 p-1.5 hover:bg-slate-100 rounded-lg transition"
+                    <NotificationPopover
+                      isOpen={notificationOpen}
+                      onClose={() => setNotificationOpen(false)}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setCartDrawerOpen(true)}
+                    className="relative text-slate-900 p-1.5 hover:bg-slate-100 rounded-lg transition cursor-pointer"
                     aria-label="Panier"
                   >
                     <ShoppingCart className="w-5 h-5 stroke-[2px]" />
-                    <span className="absolute -top-1 -right-1 bg-amber-400 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
-                      2
-                    </span>
-                  </Link>
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-amber-400 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+                        {cartCount}
+                      </span>
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -367,13 +419,16 @@ export function Header() {
                 >
                   🔥 Bons Plans Dakar
                 </Link>
-                <Link
-                  href="/panier"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-slate-50"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setCartDrawerOpen(true);
+                  }}
+                  className="w-full text-left block px-3 py-2 rounded-xl hover:bg-slate-50 text-slate-800 font-semibold cursor-pointer"
                 >
-                  Mon Panier (2)
-                </Link>
+                  Mon Panier ({cartCount})
+                </button>
                 <Link
                   href="/profil"
                   onClick={() => setMobileMenuOpen(false)}
@@ -404,6 +459,9 @@ export function Header() {
           <div className="flex-1" onClick={() => setMobileMenuOpen(false)} />
         </div>
       )}
+
+      {/* TIROIR PANIER MODERNE (SLIDE-OVER POPUP) */}
+      <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
     </>
   );
 }
