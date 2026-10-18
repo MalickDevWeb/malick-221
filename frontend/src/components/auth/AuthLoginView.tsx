@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
   Store,
   User,
@@ -12,6 +12,7 @@ import {
   EyeOff,
   ShieldCheck,
   HelpCircle,
+  ArrowLeft,
   ArrowRight,
   Package,
   Sparkles,
@@ -85,6 +86,11 @@ export function AuthLoginView({
   const [successMessage, setSuccessMessage] = useState(false);
   const [passwordError, setPasswordError] = useState('');
 
+  // Multi-step signup state
+  const [signupStep, setSignupStep] = useState<1 | 2>(1);
+  const [stepDirection, setStepDirection] = useState<1 | -1>(1);
+  const [step1Error, setStep1Error] = useState('');
+
   // Additional vendor fields
   const [category, setCategory] = useState(VENDOR_CATEGORIES[0]);
   const [district, setDistrict] = useState(DAKAR_DISTRICTS[0]);
@@ -95,6 +101,51 @@ export function AuthLoginView({
 
   const isVendorSignup = mode === 'SIGNUP' && role === 'VENDEUR';
   const isPasswordsMatching = confirmPassword ? password === confirmPassword : true;
+
+  const stepVariants: Variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 30 : -30,
+      opacity: 0,
+      filter: 'blur(3px)',
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      filter: 'blur(0px)',
+      transition: {
+        type: 'spring',
+        stiffness: 340,
+        damping: 30,
+      },
+    },
+    exit: (direction: number) => ({
+      x: direction > 0 ? -30 : 30,
+      opacity: 0,
+      filter: 'blur(3px)',
+      transition: {
+        duration: 0.16,
+        ease: 'easeOut',
+      },
+    }),
+  };
+
+  const handleNextStep = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    if (!shopName.trim()) {
+      setStep1Error('Veuillez renseigner le nom de votre boutique pour continuer.');
+      return;
+    }
+    setStep1Error('');
+    setStepDirection(1);
+    setSignupStep(2);
+  };
+
+  const handlePrevStep = () => {
+    setStepDirection(-1);
+    setSignupStep(1);
+    setPasswordError('');
+    setStep1Error('');
+  };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,6 +164,11 @@ export function AuthLoginView({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isVendorSignup && signupStep === 1) {
+      handleNextStep();
+      return;
+    }
 
     if (mode === 'SIGNUP') {
       if (password !== confirmPassword) {
@@ -229,7 +285,7 @@ export function AuthLoginView({
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
           className={`w-full ${
-            isVendorSignup ? 'max-w-xl lg:max-w-2xl' : 'max-w-md'
+            isVendorSignup ? 'max-w-lg lg:max-w-xl' : 'max-w-md'
           } bg-[#071328]/95 backdrop-blur-2xl border border-slate-700/60 rounded-3xl p-5 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.65)] space-y-4`}
         >
           {/* Commutateurs Vendeur / Client & Mode Connexion / Inscription */}
@@ -239,6 +295,8 @@ export function AuthLoginView({
                 type="button"
                 onClick={() => {
                   setRole('VENDEUR');
+                  setSignupStep(1);
+                  setStep1Error('');
                   if (mode === 'LOGIN') setIdentifier('moussa@keurfriperie.sn');
                 }}
                 className={`px-3 py-1 rounded-full font-bold transition flex items-center gap-1.5 ${
@@ -254,6 +312,8 @@ export function AuthLoginView({
                 type="button"
                 onClick={() => {
                   setRole('CLIENT');
+                  setSignupStep(1);
+                  setStep1Error('');
                   if (mode === 'LOGIN') setIdentifier('malick.diop@gmail.com');
                 }}
                 className={`px-3 py-1 rounded-full font-bold transition flex items-center gap-1.5 ${
@@ -289,10 +349,17 @@ export function AuthLoginView({
                   </>
                 )
               ) : role === 'VENDEUR' ? (
-                <>
-                  Ouvrez votre boutique <br />
-                  en <span className="text-amber-400">2 minutes.</span>
-                </>
+                signupStep === 1 ? (
+                  <>
+                    Étape 1 : Créez <br />
+                    votre <span className="text-amber-400">boutique.</span>
+                  </>
+                ) : (
+                  <>
+                    Étape 2 : Vos accès <br />
+                    <span className="text-amber-400">gérant officiel.</span>
+                  </>
+                )
               ) : (
                 <>
                   Créez votre compte <br />
@@ -306,314 +373,487 @@ export function AuthLoginView({
                   ? 'Connectez-vous pour gérer vos produits, vos commandes et vos revenus en toute simplicité.'
                   : 'Connectez-vous pour suivre vos commandes, vos favoris et vos livraisons express.'
                 : role === 'VENDEUR'
-                ? 'Rejoignez le premier marketplace sénégalais et commencez à vendre auprès de milliers de clients.'
+                ? signupStep === 1
+                  ? 'Renseignez l’identité et la catégorie de votre boutique en quelques clics.'
+                  : 'Définissez vos identifiants pour sécuriser vos accès et recevoir vos paiements Wave.'
                 : 'Accédez à des milliers de produits authentiques au Sénégal avec livraison express.'}
             </p>
           </div>
 
+          {/* ================= STEPPER 2027 EN MODE VENDEUR ================= */}
+          {isVendorSignup && (
+            <div className="bg-[#0b172c]/80 border border-slate-700/60 rounded-2xl p-2.5 flex items-center justify-between shadow-inner">
+              <div className="flex items-center gap-2">
+                {/* Capsule Étape 1 */}
+                <button
+                  type="button"
+                  onClick={handlePrevStep}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
+                    signupStep === 1
+                      ? 'bg-amber-400 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.4)] scale-[1.02]'
+                      : 'bg-[#071328] text-emerald-400 border border-emerald-500/30 hover:border-emerald-400'
+                  }`}
+                >
+                  <span className="w-4 h-4 rounded-full bg-slate-950/20 flex items-center justify-center text-[10px] font-black">
+                    {signupStep > 1 ? '✓' : '1'}
+                  </span>
+                  <span>1. La Boutique</span>
+                </button>
+
+                {/* Barre animée */}
+                <div className="w-8 sm:w-12 h-1 bg-slate-800 relative overflow-hidden rounded-full">
+                  <div
+                    className={`h-full bg-amber-400 transition-all duration-500 ${
+                      signupStep === 2 ? 'w-full' : 'w-1/2'
+                    }`}
+                  />
+                </div>
+
+                {/* Capsule Étape 2 */}
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+                    signupStep === 2
+                      ? 'bg-amber-400 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.4)] scale-[1.02]'
+                      : 'bg-[#071328] text-slate-400 border border-slate-700/60 hover:text-slate-200 cursor-pointer'
+                  }`}
+                >
+                  <span className="w-4 h-4 rounded-full bg-slate-950/20 flex items-center justify-center text-[10px] font-black">
+                    2
+                  </span>
+                  <span>2. Accès Gérant</span>
+                </button>
+              </div>
+
+              <span className="text-[11px] font-black text-amber-400 tracking-wide px-2.5 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/25">
+                Étape {signupStep}/2
+              </span>
+            </div>
+          )}
+
           {/* Formulaire Dynamique (Connexion ou Inscription) */}
           <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-            {/* ================= ENROLLEMENT VENDEUR COMPLET ================= */}
+            {/* ================= ENROLLEMENT VENDEUR EN 2 ÉTAPES ================= */}
             {isVendorSignup ? (
-              <div className="space-y-4">
-                {/* 1. SECTION LOGO ET IDENTITÉ VISUELLE */}
-                <div className="bg-[#0b172c]/70 border border-slate-700/60 rounded-2xl p-3.5 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                      <Camera className="w-3.5 h-3.5" />
-                      <span>Logo & Image de Marque</span>
-                    </label>
-                    <span className="text-[10px] text-slate-400">Recommandé • Max 5Mo</span>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    {/* Zone d'aperçu du Logo / Avatar */}
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#071328] border-2 border-dashed border-amber-400/50 hover:border-amber-400 flex items-center justify-center cursor-pointer overflow-hidden transition group shrink-0 shadow-inner"
-                      title="Cliquez pour importer un logo"
-                    >
-                      {logoPreview ? (
-                        <>
-                          <img
-                            src={logoPreview}
-                            alt="Logo boutique"
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setLogoPreview(null);
-                            }}
-                            className="absolute top-1 right-1 w-5 h-5 bg-red-600/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-xs"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </>
-                      ) : (
-                        <div className="text-center p-1">
-                          <span className="text-2xl sm:text-3xl block leading-none select-none">
-                            {selectedAvatarIcon}
-                          </span>
-                          <span className="text-[9px] text-amber-400/90 font-bold block mt-1">
-                            + Importer
-                          </span>
-                        </div>
-                      )}
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoChange}
-                        className="hidden"
-                      />
-                    </div>
-
-                    {/* Explications & Badges d'emblème rapide */}
-                    <div className="flex-1 min-w-0 space-y-1.5">
-                      <p className="text-xs text-slate-300 font-medium">
-                        Importez le logo officiel de votre boutique ou choisissez un emblème :
-                      </p>
-
-                      {/* Émoticônes prédéfinies si le commerçant n'a pas encore de logo PNG */}
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {PRESET_AVATARS.map((emoji) => (
-                          <button
-                            key={emoji}
-                            type="button"
-                            onClick={() => {
-                              setSelectedAvatarIcon(emoji);
-                              setLogoPreview(null);
-                            }}
-                            className={`w-7 h-7 rounded-lg text-sm flex items-center justify-center transition ${
-                              selectedAvatarIcon === emoji && !logoPreview
-                                ? 'bg-amber-400/30 border border-amber-400 scale-110 shadow-xs'
-                                : 'bg-[#071328] border border-slate-700/60 hover:border-slate-500'
-                            }`}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. INFORMATIONS SUR LA BOUTIQUE */}
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Nom de la boutique */}
-                    <div className="relative">
-                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
-                        Nom de la boutique *
-                      </label>
-                      <div className="relative">
-                        <Briefcase className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
-                        <input
-                          type="text"
-                          value={shopName}
-                          onChange={(e) => setShopName(e.target.value)}
-                          placeholder="Ex: Keur Friperie, Dakar Luxe"
-                          required
-                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-3 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Catégorie principale */}
-                    <div className="relative">
-                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
-                        Catégorie principale *
-                      </label>
-                      <div className="relative">
-                        <Tag className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px] pointer-events-none" />
-                        <select
-                          value={category}
-                          onChange={(e) => setCategory(e.target.value)}
-                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium appearance-none cursor-pointer"
-                        >
-                          {VENDOR_CATEGORIES.map((cat) => (
-                            <option key={cat} value={cat} className="bg-[#071328] text-white">
-                              {cat}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Localisation / Quartier à Dakar */}
-                    <div className="relative">
-                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
-                        Emplacement / Quartier *
-                      </label>
-                      <div className="relative">
-                        <MapPin className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px] pointer-events-none" />
-                        <select
-                          value={district}
-                          onChange={(e) => setDistrict(e.target.value)}
-                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium appearance-none cursor-pointer"
-                        >
-                          {DAKAR_DISTRICTS.map((dist) => (
-                            <option key={dist} value={dist} className="bg-[#071328] text-white">
-                              {dist}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Courte présentation / Slogan */}
-                    <div className="relative">
-                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
-                        Bio ou Slogan court
-                      </label>
-                      <div className="relative">
-                        <FileText className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
-                        <input
-                          type="text"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Ex: Mode chic & streetwear 100% garanti"
-                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-3 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. CONTACT ET SÉCURITÉ DU GÉRANT */}
-                <div className="border-t border-slate-800/80 pt-3 space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Nom complet du gérant */}
-                    <div className="relative">
-                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
-                        Nom & Prénom du gérant *
-                      </label>
-                      <div className="relative">
-                        <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
-                        <input
-                          type="text"
-                          value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
-                          placeholder="Modou Fall"
-                          required
-                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Téléphone WhatsApp */}
-                    <div className="relative">
-                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
-                        Numéro WhatsApp *
-                      </label>
-                      <div className="relative">
-                        <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
-                        <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="+221 77 000 00 00"
-                          required
-                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Mot de passe */}
-                    <div className="relative">
-                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
-                        Mot de passe *
-                      </label>
-                      <div className="relative">
-                        <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={password}
-                          onChange={(e) => {
-                            setPassword(e.target.value);
-                            if (passwordError) setPasswordError('');
-                          }}
-                          placeholder="Au moins 6 caractères"
-                          required
-                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-9 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition"
-                          aria-label={showPassword ? 'Masquer' : 'Afficher'}
-                        >
-                          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Confirmation du mot de passe */}
-                    <div className="relative">
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block">
-                          Confirmer le mot de passe *
+              <AnimatePresence mode="wait" custom={stepDirection}>
+                {signupStep === 1 ? (
+                  <motion.div
+                    key="vendor-step-1"
+                    custom={stepDirection}
+                    variants={stepVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className="space-y-4"
+                  >
+                    {/* 1. SECTION LOGO ET IDENTITÉ VISUELLE */}
+                    <div className="bg-[#0b172c]/70 border border-slate-700/60 rounded-2xl p-3.5 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                          <Camera className="w-3.5 h-3.5" />
+                          <span>Logo & Image de Marque</span>
                         </label>
-                        {confirmPassword && (
-                          <span
-                            className={`text-[10px] font-bold flex items-center gap-1 ${
-                              isPasswordsMatching ? 'text-emerald-400' : 'text-amber-400'
-                            }`}
-                          >
-                            {isPasswordsMatching ? (
-                              <>
-                                <Check className="w-3 h-3 stroke-[2.5px]" />
-                                <span>Identique</span>
-                              </>
-                            ) : (
-                              <>
-                                <AlertCircle className="w-3 h-3" />
-                                <span>Différent</span>
-                              </>
-                            )}
-                          </span>
-                        )}
+                        <span className="text-[10px] text-slate-400">Recommandé • Max 5Mo</span>
                       </div>
-                      <div className="relative">
-                        <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
-                        <input
-                          type={showConfirmPassword ? 'text' : 'password'}
-                          value={confirmPassword}
-                          onChange={(e) => {
-                            setConfirmPassword(e.target.value);
-                            if (passwordError) setPasswordError('');
-                          }}
-                          placeholder="Retapez le mot de passe"
-                          required
-                          className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-9 py-2.5 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
-                            confirmPassword && !isPasswordsMatching
-                              ? 'border-amber-400/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
-                              : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
-                          }`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition"
-                          aria-label={showConfirmPassword ? 'Masquer' : 'Afficher'}
+
+                      <div className="flex items-center gap-4">
+                        {/* Zone d'aperçu du Logo / Avatar */}
+                        <div
+                          onClick={() => fileInputRef.current?.click()}
+                          className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#071328] border-2 border-dashed border-amber-400/50 hover:border-amber-400 flex items-center justify-center cursor-pointer overflow-hidden transition group shrink-0 shadow-inner"
+                          title="Cliquez pour importer un logo"
                         >
-                          {showConfirmPassword ? (
-                            <EyeOff className="w-3.5 h-3.5" />
+                          {logoPreview ? (
+                            <>
+                              <img
+                                src={logoPreview}
+                                alt="Logo boutique"
+                                className="w-full h-full object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setLogoPreview(null);
+                                }}
+                                className="absolute top-1 right-1 w-5 h-5 bg-red-600/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-xs"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </>
                           ) : (
-                            <Eye className="w-3.5 h-3.5" />
+                            <div className="text-center p-1">
+                              <span className="text-2xl sm:text-3xl block leading-none select-none">
+                                {selectedAvatarIcon}
+                              </span>
+                              <span className="text-[9px] text-amber-400/90 font-bold block mt-1">
+                                + Importer
+                              </span>
+                            </div>
                           )}
-                        </button>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoChange}
+                            className="hidden"
+                          />
+                        </div>
+
+                        {/* Explications & Badges d'emblème rapide */}
+                        <div className="flex-1 min-w-0 space-y-1.5">
+                          <p className="text-xs text-slate-300 font-medium">
+                            Importez le logo officiel ou choisissez un emblème :
+                          </p>
+
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {PRESET_AVATARS.map((emoji) => (
+                              <button
+                                key={emoji}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedAvatarIcon(emoji);
+                                  setLogoPreview(null);
+                                }}
+                                className={`w-7 h-7 rounded-lg text-sm flex items-center justify-center transition ${
+                                  selectedAvatarIcon === emoji && !logoPreview
+                                    ? 'bg-amber-400/30 border border-amber-400 scale-110 shadow-xs'
+                                    : 'bg-[#071328] border border-slate-700/60 hover:border-slate-500'
+                                }`}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
+
+                    {/* 2. INFORMATIONS SUR LA BOUTIQUE */}
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Nom de la boutique */}
+                        <div className="relative">
+                          <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                            Nom de la boutique *
+                          </label>
+                          <div className="relative">
+                            <Briefcase className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                            <input
+                              type="text"
+                              value={shopName}
+                              onChange={(e) => {
+                                setShopName(e.target.value);
+                                if (step1Error) setStep1Error('');
+                              }}
+                              placeholder="Ex: Keur Friperie, Dakar Luxe"
+                              required
+                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-3 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Catégorie principale */}
+                        <div className="relative">
+                          <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                            Catégorie principale *
+                          </label>
+                          <div className="relative">
+                            <Tag className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px] pointer-events-none" />
+                            <select
+                              value={category}
+                              onChange={(e) => setCategory(e.target.value)}
+                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium appearance-none cursor-pointer"
+                            >
+                              {VENDOR_CATEGORIES.map((cat) => (
+                                <option key={cat} value={cat} className="bg-[#071328] text-white">
+                                  {cat}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Localisation / Quartier à Dakar */}
+                        <div className="relative">
+                          <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                            Emplacement / Quartier *
+                          </label>
+                          <div className="relative">
+                            <MapPin className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px] pointer-events-none" />
+                            <select
+                              value={district}
+                              onChange={(e) => setDistrict(e.target.value)}
+                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium appearance-none cursor-pointer"
+                            >
+                              {DAKAR_DISTRICTS.map((dist) => (
+                                <option key={dist} value={dist} className="bg-[#071328] text-white">
+                                  {dist}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Courte présentation / Slogan */}
+                        <div className="relative">
+                          <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                            Bio ou Slogan court
+                          </label>
+                          <div className="relative">
+                            <FileText className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                            <input
+                              type="text"
+                              value={description}
+                              onChange={(e) => setDescription(e.target.value)}
+                              placeholder="Ex: Mode chic 100% garantie"
+                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-3 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {step1Error && (
+                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold animate-pulse">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>{step1Error}</span>
+                      </div>
+                    )}
+
+                    {/* Bouton Suivant de l'Étape 1 */}
+                    <button
+                      type="button"
+                      onClick={handleNextStep}
+                      className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 active:scale-[0.99] text-slate-950 font-black text-sm py-3.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 transition duration-200 mt-2 cursor-pointer"
+                    >
+                      <span>Continuer vers les accès gérant</span>
+                      <ArrowRight className="w-4 h-4 stroke-[2.8px]" />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="vendor-step-2"
+                    custom={stepDirection}
+                    variants={stepVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className="space-y-4"
+                  >
+                    {/* Badge récapitulatif boutique */}
+                    <div className="bg-[#0b172c]/80 border border-slate-700/60 rounded-2xl p-3 flex items-center justify-between shadow-inner">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/30 text-amber-400 flex items-center justify-center text-base font-bold shrink-0 overflow-hidden">
+                          {logoPreview ? (
+                            <img src={logoPreview} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            selectedAvatarIcon
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-black text-white truncate">{shopName}</h4>
+                          <p className="text-[10px] text-slate-400 truncate">
+                            {category} • {district}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handlePrevStep}
+                        className="text-[10px] font-bold text-amber-400 hover:underline px-2 py-1 shrink-0 cursor-pointer"
+                      >
+                        Modifier
+                      </button>
+                    </div>
+
+                    {/* 3. CONTACT ET SÉCURITÉ DU GÉRANT */}
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Nom complet du gérant */}
+                        <div className="relative">
+                          <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                            Nom & Prénom du gérant *
+                          </label>
+                          <div className="relative">
+                            <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                            <input
+                              type="text"
+                              value={fullName}
+                              onChange={(e) => setFullName(e.target.value)}
+                              placeholder="Modou Fall"
+                              required
+                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Téléphone WhatsApp */}
+                        <div className="relative">
+                          <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                            Numéro WhatsApp *
+                          </label>
+                          <div className="relative">
+                            <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                            <input
+                              type="tel"
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value)}
+                              placeholder="+221 77 000 00 00"
+                              required
+                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Mot de passe */}
+                        <div className="relative">
+                          <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                            Mot de passe *
+                          </label>
+                          <div className="relative">
+                            <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                            <input
+                              type={showPassword ? 'text' : 'password'}
+                              value={password}
+                              onChange={(e) => {
+                                setPassword(e.target.value);
+                                if (passwordError) setPasswordError('');
+                              }}
+                              placeholder="Au moins 6 caractères"
+                              required
+                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-9 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition"
+                              aria-label={showPassword ? 'Masquer' : 'Afficher'}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="w-3.5 h-3.5" />
+                              ) : (
+                                <Eye className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Confirmation du mot de passe */}
+                        <div className="relative">
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block">
+                              Confirmer le mot de passe *
+                            </label>
+                            {confirmPassword && (
+                              <span
+                                className={`text-[10px] font-bold flex items-center gap-1 ${
+                                  isPasswordsMatching ? 'text-emerald-400' : 'text-amber-400'
+                                }`}
+                              >
+                                {isPasswordsMatching ? (
+                                  <>
+                                    <Check className="w-3 h-3 stroke-[2.5px]" />
+                                    <span>Identique</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <AlertCircle className="w-3 h-3" />
+                                    <span>Différent</span>
+                                  </>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                          <div className="relative">
+                            <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                            <input
+                              type={showConfirmPassword ? 'text' : 'password'}
+                              value={confirmPassword}
+                              onChange={(e) => {
+                                setConfirmPassword(e.target.value);
+                                if (passwordError) setPasswordError('');
+                              }}
+                              placeholder="Retapez le mot de passe"
+                              required
+                              className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-9 py-2.5 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                                confirmPassword && !isPasswordsMatching
+                                  ? 'border-amber-400/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                                  : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                              }`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition"
+                              aria-label={showConfirmPassword ? 'Masquer' : 'Afficher'}
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff className="w-3.5 h-3.5" />
+                              ) : (
+                                <Eye className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {passwordError && (
+                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold animate-pulse">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>{passwordError}</span>
+                      </div>
+                    )}
+
+                    <div className="text-[11px] text-slate-400 leading-tight pt-1">
+                      En créant votre boutique, vous acceptez les{' '}
+                      <Link href="/terms" className="text-amber-400 hover:underline">
+                        Conditions Vendeur
+                      </Link>{' '}
+                      de Malick Buss Sénégal.
+                    </div>
+
+                    {/* 2 Boutons Étape 2 : Précédent et Ouvrir */}
+                    <div className="flex items-center gap-3 pt-1">
+                      <button
+                        type="button"
+                        onClick={handlePrevStep}
+                        className="flex-1 border border-slate-700 hover:border-slate-500 bg-slate-900/60 hover:bg-slate-900 text-slate-300 font-bold text-xs py-3.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Précédent</span>
+                      </button>
+
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex-[2] bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 active:scale-[0.99] text-slate-950 font-black text-xs sm:text-sm py-3.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 transition duration-200 cursor-pointer"
+                      >
+                        {loading ? (
+                          <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                        ) : successMessage ? (
+                          <>
+                            <CheckCircle2 className="w-4 h-4 text-slate-950" />
+                            <span>Boutique créée !</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Ouvrir ma boutique</span>
+                            <ArrowRight className="w-4 h-4 stroke-[2.8px]" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             ) : mode === 'SIGNUP' ? (
               /* ================= INSCRIPTION CLIENT STANDARD ================= */
               <div className="space-y-3">
@@ -730,16 +970,16 @@ export function AuthLoginView({
               </div>
             )}
 
-            {/* Message d'erreur de mot de passe */}
-            {passwordError && (
+            {/* Message d'erreur de mot de passe (si client ou login) */}
+            {!isVendorSignup && passwordError && (
               <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold animate-pulse">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{passwordError}</span>
               </div>
             )}
 
-            {/* Options additionnelles */}
-            {mode === 'LOGIN' ? (
+            {/* Options additionnelles pour le mode LOGIN */}
+            {mode === 'LOGIN' && (
               <div className="flex items-center justify-between text-xs pt-0.5">
                 <label className="flex items-center gap-2 text-slate-300 cursor-pointer select-none">
                   <input
@@ -758,7 +998,10 @@ export function AuthLoginView({
                   Mot de passe oublié ?
                 </Link>
               </div>
-            ) : (
+            )}
+
+            {/* Conditions pour Client Signup */}
+            {!isVendorSignup && mode === 'SIGNUP' && (
               <div className="text-[11px] text-slate-400 leading-tight pt-1">
                 En créant un compte, vous acceptez les{' '}
                 <Link href="/terms" className="text-amber-400 hover:underline">
@@ -768,32 +1011,30 @@ export function AuthLoginView({
               </div>
             )}
 
-            {/* Bouton Primaire */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 active:scale-[0.99] text-slate-950 font-black text-sm py-3.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 transition duration-200 mt-2 cursor-pointer"
-            >
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-              ) : successMessage ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4 text-slate-950" />
-                  <span>Boutique créée avec succès !</span>
-                </>
-              ) : (
-                <>
-                  <ArrowRight className="w-4 h-4 stroke-[2.8px]" />
-                  <span>
-                    {mode === 'LOGIN'
-                      ? 'Se connecter'
-                      : role === 'VENDEUR'
-                      ? 'Ouvrir ma boutique officielle'
-                      : 'Créer mon compte'}
-                  </span>
-                </>
-              )}
-            </button>
+            {/* Bouton Primaire (pour Login et Inscription Client) */}
+            {!isVendorSignup && (
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 active:scale-[0.99] text-slate-950 font-black text-sm py-3.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 transition duration-200 mt-2 cursor-pointer"
+              >
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                ) : successMessage ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 text-slate-950" />
+                    <span>Compte créé avec succès !</span>
+                  </>
+                ) : (
+                  <>
+                    <ArrowRight className="w-4 h-4 stroke-[2.8px]" />
+                    <span>
+                      {mode === 'LOGIN' ? 'Se connecter' : 'Créer mon compte'}
+                    </span>
+                  </>
+                )}
+              </button>
+            )}
           </form>
 
           {/* Séparateur 'ou' */}
@@ -808,8 +1049,10 @@ export function AuthLoginView({
             type="button"
             onClick={() => {
               setMode(mode === 'LOGIN' ? 'SIGNUP' : 'LOGIN');
+              setSignupStep(1);
               setSuccessMessage(false);
               setPasswordError('');
+              setStep1Error('');
             }}
             className="w-full border border-slate-700 hover:border-slate-500 bg-slate-900/40 hover:bg-slate-900/70 text-white font-semibold text-xs py-3 rounded-xl transition flex items-center justify-center text-center shadow-xs cursor-pointer"
           >
