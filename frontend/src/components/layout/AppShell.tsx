@@ -18,7 +18,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isVendorRoute) {
     return (
       <div className="min-h-screen antialiased bg-[#f8fafc] text-slate-900 selection:bg-amber-400 selection:text-slate-950">
-        <SmoothScroll />
         <main className="w-full">
           {children}
         </main>

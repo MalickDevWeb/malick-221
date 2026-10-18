@@ -11,6 +11,11 @@ body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, button, a, input, select, textarea {
+  touch-action: manipulation;
 }
 
 /* Hide scrollbar for Chrome, Safari, Edge, Opera and Firefox globally */
