@@ -59,6 +59,22 @@ const DAKAR_DISTRICTS = [
 
 const PRESET_AVATARS = ['🛍️', '👑', '💎', '👗', '👟', '📱', '💄', '🇸🇳'];
 
+function FieldError({ error }: { error?: string }) {
+  if (!error) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -4, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+      transition={{ duration: 0.16 }}
+      className="flex items-center gap-1.5 mt-1.5 text-[11px] font-semibold text-rose-300 bg-rose-500/15 border border-rose-500/30 px-2.5 py-1.5 rounded-xl shadow-xs"
+    >
+      <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+      <span>{error}</span>
+    </motion.div>
+  );
+}
+
 export function AuthLoginView({
   initialRole = 'VENDEUR',
   initialMode = 'LOGIN',
@@ -77,19 +93,30 @@ export function AuthLoginView({
   const [fullName, setFullName] = useState('');
   const [shopName, setShopName] = useState('');
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('password123');
-  const [confirmPassword, setConfirmPassword] = useState('password123');
+  const [password, setPassword] = useState(initialMode === 'SIGNUP' ? '' : 'password123');
+  const [confirmPassword, setConfirmPassword] = useState(initialMode === 'SIGNUP' ? '' : 'password123');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
+
+  // Custom Form Validation State
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
 
   // Multi-step signup state
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [stepDirection, setStepDirection] = useState<1 | -1>(1);
-  const [step1Error, setStep1Error] = useState('');
 
   // Additional vendor fields
   const [category, setCategory] = useState(VENDOR_CATEGORIES[0]);
@@ -101,6 +128,79 @@ export function AuthLoginView({
 
   const isVendorSignup = mode === 'SIGNUP' && role === 'VENDEUR';
   const isPasswordsMatching = confirmPassword ? password === confirmPassword : true;
+
+  const validateStep1 = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!shopName.trim()) {
+      newErrors.shopName = 'Veuillez saisir le nom de votre boutique.';
+    } else if (shopName.trim().length < 2) {
+      newErrors.shopName = 'Le nom de la boutique doit comporter au moins 2 caractères.';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep2 = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!fullName.trim()) {
+      newErrors.fullName = 'Veuillez indiquer le nom & prénom du gérant.';
+    }
+    const cleanPhone = phone.replace(/[\s\-\+]/g, '');
+    if (!phone.trim()) {
+      newErrors.phone = 'Le numéro WhatsApp commercial est requis.';
+    } else if (cleanPhone.length < 7) {
+      newErrors.phone = 'Numéro de téléphone incomplet (min. 7 chiffres).';
+    }
+    if (!password) {
+      newErrors.password = 'Veuillez créer un mot de passe sécurisé.';
+    } else if (password.length < 6) {
+      newErrors.password = 'Le mot de passe doit comporter au moins 6 caractères.';
+    }
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Veuillez confirmer votre mot de passe.';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Les mots de passe ne correspondent pas.';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateClientSignup = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!fullName.trim()) {
+      newErrors.fullName = 'Veuillez indiquer votre nom complet.';
+    }
+    const cleanPhone = phone.replace(/[\s\-\+]/g, '');
+    if (!phone.trim()) {
+      newErrors.phone = 'Le numéro WhatsApp est requis.';
+    } else if (cleanPhone.length < 7) {
+      newErrors.phone = 'Numéro de téléphone incomplet (min. 7 chiffres).';
+    }
+    if (!password) {
+      newErrors.password = 'Veuillez créer un mot de passe.';
+    } else if (password.length < 6) {
+      newErrors.password = 'Le mot de passe doit comporter au moins 6 caractères.';
+    }
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Veuillez confirmer votre mot de passe.';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Les mots de passe ne sont pas identiques.';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateLogin = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!identifier.trim()) {
+      newErrors.identifier = 'Veuillez renseigner votre email ou téléphone.';
+    }
+    if (!password) {
+      newErrors.password = 'Veuillez saisir votre mot de passe.';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const stepVariants: Variants = {
     enter: (direction: number) => ({
@@ -131,11 +231,9 @@ export function AuthLoginView({
 
   const handleNextStep = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
-    if (!shopName.trim()) {
-      setStep1Error('Veuillez renseigner le nom de votre boutique pour continuer.');
+    if (!validateStep1()) {
       return;
     }
-    setStep1Error('');
     setStepDirection(1);
     setSignupStep(2);
   };
@@ -143,8 +241,7 @@ export function AuthLoginView({
   const handlePrevStep = () => {
     setStepDirection(-1);
     setSignupStep(1);
-    setPasswordError('');
-    setStep1Error('');
+    setErrors({});
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,23 +262,25 @@ export function AuthLoginView({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isVendorSignup && signupStep === 1) {
-      handleNextStep();
-      return;
-    }
-
-    if (mode === 'SIGNUP') {
-      if (password !== confirmPassword) {
-        setPasswordError('Les mots de passe ne correspondent pas.');
+    if (isVendorSignup) {
+      if (signupStep === 1) {
+        handleNextStep();
         return;
       }
-      if (password.length < 6) {
-        setPasswordError('Le mot de passe doit contenir au moins 6 caractères.');
+      if (!validateStep2()) {
+        return;
+      }
+    } else if (mode === 'SIGNUP') {
+      if (!validateClientSignup()) {
+        return;
+      }
+    } else {
+      if (!validateLogin()) {
         return;
       }
     }
 
-    setPasswordError('');
+    setErrors({});
     setLoading(true);
 
     setTimeout(() => {
@@ -296,7 +395,7 @@ export function AuthLoginView({
                 onClick={() => {
                   setRole('VENDEUR');
                   setSignupStep(1);
-                  setStep1Error('');
+                  setErrors({});
                   if (mode === 'LOGIN') setIdentifier('moussa@keurfriperie.sn');
                 }}
                 className={`px-3 py-1 rounded-full font-bold transition flex items-center gap-1.5 ${
@@ -313,7 +412,7 @@ export function AuthLoginView({
                 onClick={() => {
                   setRole('CLIENT');
                   setSignupStep(1);
-                  setStep1Error('');
+                  setErrors({});
                   if (mode === 'LOGIN') setIdentifier('malick.diop@gmail.com');
                 }}
                 className={`px-3 py-1 rounded-full font-bold transition flex items-center gap-1.5 ${
@@ -432,8 +531,8 @@ export function AuthLoginView({
             </div>
           )}
 
-          {/* Formulaire Dynamique (Connexion ou Inscription) */}
-          <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+          {/* Formulaire Dynamique (Connexion ou Inscription) avec Validation Personnalisée */}
+          <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-1">
             {/* ================= ENROLLEMENT VENDEUR EN 2 ÉTAPES ================= */}
             {isVendorSignup ? (
               <AnimatePresence mode="wait" custom={stepDirection}>
@@ -545,13 +644,17 @@ export function AuthLoginView({
                               value={shopName}
                               onChange={(e) => {
                                 setShopName(e.target.value);
-                                if (step1Error) setStep1Error('');
+                                clearError('shopName');
                               }}
                               placeholder="Ex: Keur Friperie, Dakar Luxe"
-                              required
-                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-3 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                              className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-3 py-2.5 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                                errors.shopName
+                                  ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                                  : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                              }`}
                             />
                           </div>
+                          <FieldError error={errors.shopName} />
                         </div>
 
                         {/* Catégorie principale */}
@@ -617,13 +720,6 @@ export function AuthLoginView({
                       </div>
                     </div>
 
-                    {step1Error && (
-                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold animate-pulse">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>{step1Error}</span>
-                      </div>
-                    )}
-
                     {/* Bouton Suivant de l'Étape 1 */}
                     <button
                       type="button"
@@ -684,12 +780,19 @@ export function AuthLoginView({
                             <input
                               type="text"
                               value={fullName}
-                              onChange={(e) => setFullName(e.target.value)}
+                              onChange={(e) => {
+                                setFullName(e.target.value);
+                                clearError('fullName');
+                              }}
                               placeholder="Modou Fall"
-                              required
-                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                              className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-4 py-2.5 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                                errors.fullName
+                                  ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                                  : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                              }`}
                             />
                           </div>
+                          <FieldError error={errors.fullName} />
                         </div>
 
                         {/* Téléphone WhatsApp */}
@@ -702,12 +805,19 @@ export function AuthLoginView({
                             <input
                               type="tel"
                               value={phone}
-                              onChange={(e) => setPhone(e.target.value)}
+                              onChange={(e) => {
+                                setPhone(e.target.value);
+                                clearError('phone');
+                              }}
                               placeholder="+221 77 000 00 00"
-                              required
-                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                              className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-4 py-2.5 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                                errors.phone
+                                  ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                                  : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                              }`}
                             />
                           </div>
+                          <FieldError error={errors.phone} />
                         </div>
                       </div>
 
@@ -724,11 +834,15 @@ export function AuthLoginView({
                               value={password}
                               onChange={(e) => {
                                 setPassword(e.target.value);
-                                if (passwordError) setPasswordError('');
+                                clearError('password');
+                                clearError('confirmPassword');
                               }}
                               placeholder="Au moins 6 caractères"
-                              required
-                              className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-9 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                              className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-9 py-2.5 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                                errors.password
+                                  ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                                  : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                              }`}
                             />
                             <button
                               type="button"
@@ -743,6 +857,7 @@ export function AuthLoginView({
                               )}
                             </button>
                           </div>
+                          <FieldError error={errors.password} />
                         </div>
 
                         {/* Confirmation du mot de passe */}
@@ -778,12 +893,13 @@ export function AuthLoginView({
                               value={confirmPassword}
                               onChange={(e) => {
                                 setConfirmPassword(e.target.value);
-                                if (passwordError) setPasswordError('');
+                                clearError('confirmPassword');
                               }}
                               placeholder="Retapez le mot de passe"
-                              required
                               className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-9 py-2.5 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
-                                confirmPassword && !isPasswordsMatching
+                                errors.confirmPassword
+                                  ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                                  : confirmPassword && !isPasswordsMatching
                                   ? 'border-amber-400/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
                                   : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
                               }`}
@@ -801,16 +917,10 @@ export function AuthLoginView({
                               )}
                             </button>
                           </div>
+                          <FieldError error={errors.confirmPassword} />
                         </div>
                       </div>
                     </div>
-
-                    {passwordError && (
-                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold animate-pulse">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>{passwordError}</span>
-                      </div>
-                    )}
 
                     <div className="text-[11px] text-slate-400 leading-tight pt-1">
                       En créant votre boutique, vous acceptez les{' '}
@@ -863,11 +973,18 @@ export function AuthLoginView({
                   <input
                     type="text"
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(e) => {
+                      setFullName(e.target.value);
+                      clearError('fullName');
+                    }}
                     placeholder="Nom & Prénom"
-                    required
-                    className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                    className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                      errors.fullName
+                        ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                        : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                    }`}
                   />
+                  <FieldError error={errors.fullName} />
                 </div>
 
                 {/* Téléphone WhatsApp */}
@@ -876,11 +993,18 @@ export function AuthLoginView({
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      clearError('phone');
+                    }}
                     placeholder="Numéro WhatsApp (+221 7X XXX XX XX)"
-                    required
-                    className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                    className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                      errors.phone
+                        ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                        : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                    }`}
                   />
+                  <FieldError error={errors.phone} />
                 </div>
 
                 {/* Mot de passe */}
@@ -891,11 +1015,15 @@ export function AuthLoginView({
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
-                      if (passwordError) setPasswordError('');
+                      clearError('password');
+                      clearError('confirmPassword');
                     }}
                     placeholder="Mot de passe (min 6 caractères)"
-                    required
-                    className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-10 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                    className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-10 py-3 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                      errors.password
+                        ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                        : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                    }`}
                   />
                   <button
                     type="button"
@@ -905,6 +1033,7 @@ export function AuthLoginView({
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
+                  <FieldError error={errors.password} />
                 </div>
 
                 {/* Confirmation Mot de passe */}
@@ -915,11 +1044,14 @@ export function AuthLoginView({
                     value={confirmPassword}
                     onChange={(e) => {
                       setConfirmPassword(e.target.value);
-                      if (passwordError) setPasswordError('');
+                      clearError('confirmPassword');
                     }}
                     placeholder="Confirmer le mot de passe"
-                    required
-                    className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-10 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                    className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-10 py-3 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                      errors.confirmPassword
+                        ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                        : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                    }`}
                   />
                   <button
                     type="button"
@@ -929,6 +1061,7 @@ export function AuthLoginView({
                   >
                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
+                  <FieldError error={errors.confirmPassword} />
                 </div>
               </div>
             ) : (
@@ -940,11 +1073,18 @@ export function AuthLoginView({
                   <input
                     type="text"
                     value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
+                    onChange={(e) => {
+                      setIdentifier(e.target.value);
+                      clearError('identifier');
+                    }}
                     placeholder="Adresse e-mail ou téléphone"
-                    required
-                    className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                    className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                      errors.identifier
+                        ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                        : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                    }`}
                   />
+                  <FieldError error={errors.identifier} />
                 </div>
 
                 {/* Mot de passe */}
@@ -953,10 +1093,16 @@ export function AuthLoginView({
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      clearError('password');
+                    }}
                     placeholder="Mot de passe"
-                    required
-                    className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-10 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                    className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-10 py-3 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                      errors.password
+                        ? 'border-rose-500/90 ring-2 ring-rose-500/30 bg-rose-950/20 shadow-[0_0_12px_rgba(244,63,94,0.25)]'
+                        : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                    }`}
                   />
                   <button
                     type="button"
@@ -966,15 +1112,8 @@ export function AuthLoginView({
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
+                  <FieldError error={errors.password} />
                 </div>
-              </div>
-            )}
-
-            {/* Message d'erreur de mot de passe (si client ou login) */}
-            {!isVendorSignup && passwordError && (
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold animate-pulse">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{passwordError}</span>
               </div>
             )}
 
@@ -1048,11 +1187,15 @@ export function AuthLoginView({
           <button
             type="button"
             onClick={() => {
-              setMode(mode === 'LOGIN' ? 'SIGNUP' : 'LOGIN');
+              const newMode = mode === 'LOGIN' ? 'SIGNUP' : 'LOGIN';
+              setMode(newMode);
               setSignupStep(1);
               setSuccessMessage(false);
-              setPasswordError('');
-              setStep1Error('');
+              setErrors({});
+              if (newMode === 'SIGNUP') {
+                setPassword('');
+                setConfirmPassword('');
+              }
             }}
             className="w-full border border-slate-700 hover:border-slate-500 bg-slate-900/40 hover:bg-slate-900/70 text-white font-semibold text-xs py-3 rounded-xl transition flex items-center justify-center text-center shadow-xs cursor-pointer"
           >
