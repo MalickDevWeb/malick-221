@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Share2, Heart, Star, MessageCircle, ShoppingBag, Minus, Plus } from 'lucide-react';
 import { formatFCFA } from '../../../../services/api';
+import { addCartItem } from '../../../../services/order-flow';
 
 export default function ProductDetailPage({
   params,
@@ -131,6 +132,14 @@ export default function ProductDetailPage({
         <div className="space-y-2.5 pt-2">
           <Link
             href="/panier"
+            onClick={() => addCartItem({
+              id: params.id,
+              title: product.title,
+              price: product.price,
+              quantity,
+              image: images[0],
+              shop: 'Style & Mode',
+            })}
             className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition active:scale-[0.98]"
           >
             <ShoppingBag className="w-4 h-4" />

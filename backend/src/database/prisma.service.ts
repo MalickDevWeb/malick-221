@@ -6,12 +6,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private readonly logger = new Logger(PrismaService.name);
 
   async onModuleInit() {
-    try {
-      await this.$connect();
-      this.logger.log('✅ Connexion réussie à PostgreSQL (malick_buss_db)');
-    } catch (error) {
-      this.logger.error(`⚠️ Impossible de se connecter à PostgreSQL : ${error.message}`);
-    }
+    await this.$connect();
+    this.logger.log('Connexion réussie à PostgreSQL');
   }
 
   async onModuleDestroy() {

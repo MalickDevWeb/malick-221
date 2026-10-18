@@ -1,22 +1,37 @@
 'use client';
 
 import Link from 'next/link';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, MessageCircle, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatFCFA } from '../../../services/api';
 import { ConfettiCelebration } from '../../../components/motion/ConfettiCelebration';
+import { getOrder, StoredOrder } from '../../../services/order-flow';
 
-export default function OrderConfirmationPage() {
-  const orderNumber = 'MB-2025-00123';
-  const orderItem = {
-    title: 'Veste en jean vintage',
-    price: 12000,
-    quantity: 1,
-    image: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=300&q=80',
-  };
+function OrderConfirmationContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [order, setOrder] = useState<StoredOrder | null>(null);
+  const orderNumber = searchParams.get('id') ?? '';
+
+  useEffect(() => {
+    const foundOrder = orderNumber ? getOrder(orderNumber) : undefined;
+    if (!foundOrder) {
+      router.replace('/commandes');
+      return;
+    }
+    setOrder(foundOrder);
+  }, [orderNumber, router]);
+
+  if (!order) return null;
+  const firstItem = order.items[0];
+  const orderSummary = order.items.map((item) =>
+    `- ${item.title} (x${item.quantity}): ${formatFCFA(item.price * item.quantity)}`
+  ).join('\n');
 
   const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(
-    `Je viens de passer commande sur Malick Buss ! Commande n° ${orderNumber} (${orderItem.title}).`
+    `Je viens de passer commande sur Malick Buss ! Commande n° ${order.id}.\n${orderSummary}\nTotal : ${formatFCFA(order.total)}`
   )}`;
 
   return (
@@ -55,7 +70,7 @@ export default function OrderConfirmationPage() {
           transition={{ duration: 0.4, delay: 0.3 }}
           className="inline-block bg-emerald-900/60 border border-emerald-700/50 px-4 py-1.5 rounded-full text-xs font-semibold text-emerald-200"
         >
-          N° de commande : <span className="font-bold text-white">{orderNumber}</span>
+          N° de commande : <span className="font-bold text-white">{order.id}</span>
         </motion.div>
 
         {/* Carte Détails Blanche Flottante */}
@@ -72,24 +87,24 @@ export default function OrderConfirmationPage() {
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
               <img
-                src={orderItem.image}
-                alt={orderItem.title}
+                src={firstItem.image}
+                alt={firstItem.title}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-xs font-semibold text-slate-900 truncate">
-                {orderItem.title}
+                {firstItem.title}{order.items.length > 1 ? ` et ${order.items.length - 1} autre${order.items.length > 2 ? 's' : ''} article${order.items.length > 2 ? 's' : ''}` : ''}
               </h3>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                {formatFCFA(orderItem.price)} × {orderItem.quantity}
+                {formatFCFA(firstItem.price)} × {firstItem.quantity}
               </p>
             </div>
           </div>
 
           <div className="border-t border-slate-100 pt-2.5 flex items-center justify-between text-xs font-extrabold">
             <span>Total</span>
-            <span className="text-emerald-600 text-sm">{formatFCFA(orderItem.price)}</span>
+            <span className="text-emerald-600 text-sm">{formatFCFA(order.total)}</span>
           </div>
         </motion.div>
 
@@ -102,7 +117,7 @@ export default function OrderConfirmationPage() {
         >
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
             <Link
-              href={`/suivre-commande?id=${orderNumber}`}
+              href={`/suivre-commande?id=${order.id}`}
               className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition"
             >
               <span>Suivre ma commande</span>
@@ -139,5 +154,13 @@ export default function OrderConfirmationPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense fallback={null}>
+      <OrderConfirmationContent />
+    </Suspense>
   );
 }

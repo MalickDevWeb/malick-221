@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   X,
 } from 'lucide-react';
+import { VendorBottomNavigation } from '../../../components/layout/VendorBottomNavigation';
 
 export default function VendorProfileScreen17() {
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -67,7 +68,7 @@ export default function VendorProfileScreen17() {
         <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex items-center gap-3.5">
           <div className="relative w-14 h-14 rounded-full overflow-hidden bg-slate-200 border-2 border-amber-400 flex-shrink-0">
             <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
+              src="/images/mockup/vendor_man_clean.jpg"
               alt="Malick Diop"
               className="w-full h-full object-cover"
             />
@@ -189,29 +190,8 @@ export default function VendorProfileScreen17() {
         </div>
       )}
 
-      {/* Barre de navigation Boutiquier - Onglet Profil Actif */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-100 py-2 px-3 flex justify-around items-center max-w-md mx-auto shadow-[0_-4px_20px_rgba(0,0,0,0.04)] text-[10px]">
-        <Link href="/vendeur/dashboard" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <Home className="w-5 h-5 stroke-[1.8px]" />
-          <span>Accueil</span>
-        </Link>
-        <Link href="/vendeur/produits" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <Package className="w-5 h-5 stroke-[1.8px]" />
-          <span>Produits</span>
-        </Link>
-        <Link href="/vendeur/commandes" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <ShoppingBag className="w-5 h-5 stroke-[1.8px]" />
-          <span>Commandes</span>
-        </Link>
-        <Link href="/vendeur/boutique" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <Store className="w-5 h-5 stroke-[1.8px]" />
-          <span>Boutique</span>
-        </Link>
-        <Link href="/vendeur/profil" className="flex flex-col items-center text-emerald-600 font-bold gap-1">
-          <User className="w-5 h-5 stroke-[2.2px]" />
-          <span>Profil</span>
-        </Link>
-      </nav>
+      {/* Barre de Navigation Vendeur Adaptée (Mobile & Desktop) */}
+      <VendorBottomNavigation activeTab="profil" />
     </div>
   );
 }

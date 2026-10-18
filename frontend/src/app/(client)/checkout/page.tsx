@@ -1,18 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, PlusCircle, Truck, CreditCard } from 'lucide-react';
 import { formatFCFA } from '../../../services/api';
+import { CartItem, createOrder, getCartItems } from '../../../services/order-flow';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const [deliveryOption, setDeliveryOption] = useState<'standard' | 'express'>('standard');
   const [paymentOption, setPaymentOption] = useState<'cod' | 'mobile_money'>('cod');
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    setCartItems(getCartItems());
+  }, []);
 
   const handleConfirm = () => {
-    router.push('/confirmation');
+    if (cartItems.length === 0) {
+      router.push('/panier');
+      return;
+    }
+
+    const order = createOrder(cartItems, deliveryOption, paymentOption);
+    router.push(`/confirmation?id=${encodeURIComponent(order.id)}`);
   };
 
   return (

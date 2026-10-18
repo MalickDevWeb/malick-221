@@ -1,6 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowLeft, SlidersHorizontal, Star, Heart } from 'lucide-react';
 import { formatFCFA } from '../../../../../services/api';
+import { addCartItem } from '../../../../../services/order-flow';
 
 export default function ShopProductsListingPage({
   params,
@@ -102,7 +105,17 @@ export default function ShopProductsListingPage({
                 </div>
               </Link>
 
-              <button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] py-1.5 px-2 rounded-xl transition shadow-sm active:scale-95">
+              <button
+                onClick={() => addCartItem({
+                  id: `${params.slug}-${item.id}`,
+                  title: item.title,
+                  price: item.price,
+                  quantity: 1,
+                  image: item.image,
+                  shop: shopName,
+                })}
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] py-1.5 px-2 rounded-xl transition shadow-sm active:scale-95"
+              >
                 Ajouter au panier
               </button>
             </div>

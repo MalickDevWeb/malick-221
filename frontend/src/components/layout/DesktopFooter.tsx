@@ -1,27 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   ShieldCheck,
   Truck,
   Headphones,
   CreditCard,
-  Phone,
   Mail,
   MapPin,
-  Store,
-  ArrowRight,
-  Sparkles,
-  CheckCircle2,
-  Send,
-  MessageCircle,
-  Instagram,
-  Facebook,
-  ExternalLink,
+  Phone,
   ChevronRight,
-  Heart,
-  Globe,
+  ArrowRight,
+  ExternalLink,
+  ShoppingBag,
+  Store,
+  Facebook,
+  Instagram,
+  Youtube,
+  Compass,
 } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
 
@@ -39,26 +36,29 @@ export function DesktopFooter() {
   };
 
   return (
-    <footer className="hidden md:block bg-gradient-to-b from-[#0b101d] via-[#070b14] to-[#03050a] text-slate-300 border-t border-slate-800/80 mt-16 font-sans relative overflow-hidden">
+    <footer className="hidden md:block relative text-white font-sans mt-16 overflow-hidden select-none bg-[#030a16]">
       
-      {/* Filet lumineux dégradé or & émeraude en haut du footer */}
-      <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-amber-400/60 to-emerald-400/60" />
+      {/* IMAGE D'ARRIÈRE-PLAN PANORAMIQUE OFFICIELLE FOURNIE PAR L'UTILISATEUR */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-bottom bg-no-repeat opacity-90 pointer-events-none"
+        style={{ backgroundImage: "url('/images/footer/footer_clean_bg.png')" }}
+      />
+      {/* Voile sombre transparent pour garantir un contraste optimal tout en laissant briller le skyline et le drapeau */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#040d1e]/90 via-[#040d1e]/75 to-[#020712]/95 pointer-events-none" />
 
-      {/* Orbes de lumière tamisée en arrière-plan */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-
-      {/* ================= 1. BANDEAU DES 4 PILIERS DE CONFIANCE (CARTES EN VERRE) ================= */}
-      <div className="border-b border-slate-800/80 bg-slate-900/40 py-8 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-4 gap-6">
+      {/* Contenu principal calé sur la grille standard max-w-7xl */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 space-y-6">
+        
+        {/* ================= 1. LES 4 PILIERS DE RÉASSURANCE GLASSMORPHIC ================= */}
+        <div className="grid grid-cols-4 gap-4 sm:gap-5">
           
-          {/* Pilier 1 */}
-          <div className="group p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-amber-400/30 transition-all flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-400/30 text-amber-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-lg shadow-amber-500/10">
+          {/* Pilier 1 : Produits Authentiques */}
+          <div className="bg-[#071328]/85 backdrop-blur-md border border-slate-700/60 rounded-2xl p-4 flex items-center gap-3.5 hover:border-amber-400/40 transition">
+            <div className="w-12 h-12 rounded-xl bg-slate-900 border border-amber-400/80 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-md">
               <ShieldCheck className="w-6 h-6 stroke-[2.2px]" />
             </div>
             <div>
-              <h4 className="font-extrabold text-xs text-white group-hover:text-amber-400 transition-colors">
+              <h4 className="font-extrabold text-xs text-white">
                 Produits Authentiques
               </h4>
               <p className="text-[11px] text-slate-400 mt-0.5">
@@ -67,13 +67,13 @@ export function DesktopFooter() {
             </div>
           </div>
 
-          {/* Pilier 2 */}
-          <div className="group p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-emerald-400/30 transition-all flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-400/30 text-emerald-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-lg shadow-emerald-500/10">
+          {/* Pilier 2 : Livraison Express */}
+          <div className="bg-[#071328]/85 backdrop-blur-md border border-slate-700/60 rounded-2xl p-4 flex items-center gap-3.5 hover:border-amber-400/40 transition">
+            <div className="w-12 h-12 rounded-xl bg-slate-900 border border-amber-400/80 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-md">
               <Truck className="w-6 h-6 stroke-[2.2px]" />
             </div>
             <div>
-              <h4 className="font-extrabold text-xs text-white group-hover:text-emerald-400 transition-colors">
+              <h4 className="font-extrabold text-xs text-white">
                 Livraison Express 2h à 24h
               </h4>
               <p className="text-[11px] text-slate-400 mt-0.5">
@@ -82,13 +82,13 @@ export function DesktopFooter() {
             </div>
           </div>
 
-          {/* Pilier 3 */}
-          <div className="group p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-sky-400/30 transition-all flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500/20 to-sky-600/10 border border-sky-400/30 text-sky-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-lg shadow-sky-500/10">
+          {/* Pilier 3 : Service Client 7j/7 */}
+          <div className="bg-[#071328]/85 backdrop-blur-md border border-slate-700/60 rounded-2xl p-4 flex items-center gap-3.5 hover:border-amber-400/40 transition">
+            <div className="w-12 h-12 rounded-xl bg-slate-900 border border-amber-400/80 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-md">
               <Headphones className="w-6 h-6 stroke-[2.2px]" />
             </div>
             <div>
-              <h4 className="font-extrabold text-xs text-white group-hover:text-sky-400 transition-colors">
+              <h4 className="font-extrabold text-xs text-white">
                 Service Client 7j/7
               </h4>
               <p className="text-[11px] text-slate-400 mt-0.5">
@@ -97,13 +97,13 @@ export function DesktopFooter() {
             </div>
           </div>
 
-          {/* Pilier 4 */}
-          <div className="group p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-purple-400/30 transition-all flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 border border-purple-400/30 text-purple-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-lg shadow-purple-500/10">
+          {/* Pilier 4 : Paiements Sécurisés */}
+          <div className="bg-[#071328]/85 backdrop-blur-md border border-slate-700/60 rounded-2xl p-4 flex items-center gap-3.5 hover:border-amber-400/40 transition">
+            <div className="w-12 h-12 rounded-xl bg-slate-900 border border-amber-400/80 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-md">
               <CreditCard className="w-6 h-6 stroke-[2.2px]" />
             </div>
             <div>
-              <h4 className="font-extrabold text-xs text-white group-hover:text-purple-400 transition-colors">
+              <h4 className="font-extrabold text-xs text-white">
                 Paiements Sécurisés
               </h4>
               <p className="text-[11px] text-slate-400 mt-0.5">
@@ -113,284 +113,332 @@ export function DesktopFooter() {
           </div>
 
         </div>
-      </div>
 
-      {/* ================= 2. BANDEAU CLUB PRIVILÈGE & NEWSLETTER WHATSAPP ================= */}
-      <div className="border-b border-slate-800/80 bg-gradient-to-r from-amber-500/10 via-slate-900/60 to-emerald-500/10 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-6">
+        {/* ================= 2. BANDEAU CLUB PRIVILÈGE & NEWSLETTER WHATSAPP ================= */}
+        <div className="relative w-full rounded-3xl border border-amber-400/70 bg-[#071328]/90 backdrop-blur-xl p-4 sm:p-5 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-[0_0_35px_rgba(245,158,11,0.15)] overflow-hidden">
+          
+          {/* Gauche : Icône Enveloppe + Textes */}
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/30 text-amber-400 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
+            <div className="w-13 h-13 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
+              <Mail className="w-6 h-6 stroke-[2.5px]" />
             </div>
-            <div>
-              <h3 className="text-sm font-black text-white tracking-tight">
-                Rejoignez le Club Privilège Malick Buss
+            <div className="space-y-0.5">
+              <h3 className="text-sm sm:text-base font-black text-white tracking-tight">
+                Rejoignez le <span className="text-amber-400">Club Privilège Malick Buss</span>
               </h3>
-              <p className="text-xs text-slate-400">
-                Recevez nos ventes privées, codes promos et arrivages de Dakar en avant-première.
+              <p className="text-xs text-slate-300">
+                Recevez nos ventes privées, codes promos et avantages exclusifs de Dakar en avant-première.
               </p>
             </div>
           </div>
 
-          {/* Formulaire d'inscription rapide */}
-          <form onSubmit={handleSubscribe} className="flex items-center gap-2 w-full max-w-md">
-            <div className="relative flex-1">
+          {/* Milieu : Devise manuscrite dorée avec drapeau */}
+          <div className="hidden xl:flex items-center gap-2 flex-shrink-0">
+            <span className="font-serif italic font-extrabold text-amber-300 text-base drop-shadow-[0_2px_8px_rgba(251,191,36,0.3)]">
+              Le Sénégal achète autrement !
+            </span>
+            <span className="text-lg">🇸🇳</span>
+          </div>
+
+          {/* Droite : Formulaire d'inscription rapide */}
+          <form onSubmit={handleSubscribe} className="flex items-center gap-2 w-full lg:w-auto flex-shrink-0">
+            <div className="relative w-full sm:w-80">
+              <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
-                type="email"
+                type="text"
                 required
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder="Votre adresse email ou numéro WhatsApp..."
-                className="w-full bg-slate-950/80 text-xs text-white pl-4 pr-3 py-2.5 rounded-full border border-slate-700 focus:border-amber-400 focus:outline-none transition placeholder:text-slate-500 font-medium"
+                className="w-full bg-[#0a1832] text-xs text-white pl-10 pr-4 py-3 rounded-full border border-slate-700/80 focus:border-amber-400 focus:outline-none placeholder:text-slate-400 font-medium transition"
               />
             </div>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs transition shadow-md flex items-center gap-1.5 flex-shrink-0"
+              className="bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs px-6 py-3 rounded-full transition shadow-md flex items-center gap-1.5 flex-shrink-0"
             >
               <span>{newsletterSubscribed ? '✓ Inscrit !' : "S'inscrire"}</span>
               {!newsletterSubscribed && <ArrowRight className="w-3.5 h-3.5 stroke-[2.5px]" />}
             </button>
           </form>
+
         </div>
-      </div>
 
-      {/* ================= 3. LIENS PRINCIPAUX DU FOOTER ================= */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
-        
-        {/* Colonne 1 : À Propos & Identité Teranga */}
-        <div className="space-y-4">
-          <Link href="/" className="inline-block">
-            <BrandLogo size="md" variant="light" />
-          </Link>
-          <p className="text-xs text-slate-400 leading-relaxed font-normal">
-            Malick Buss est la plateforme e-commerce multi-boutiques de référence au Sénégal.
-            Nous connectons les commerçants talentueux de Dakar avec des acheteurs exigeants dans tout le pays.
-          </p>
+        {/* ================= 3. LES 4 COLONNES PRINCIPALES DU FOOTER ================= */}
+        <div className="py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 border-b border-slate-800/80">
+          
+          {/* Colonne 1 : Logo MB & Coordonnées à Dakar */}
+          <div className="space-y-4">
+            <Link href="/" className="inline-block hover:opacity-90 transition">
+              <BrandLogo size="md" variant="light" layout="horizontal" />
+            </Link>
 
-          <div className="pt-2 text-xs space-y-2 text-slate-400">
-            <p className="flex items-center gap-2.5 hover:text-white transition">
-              <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0" />
-              <span>Avenue Léopold Sédar Senghor, Dakar Plateau</span>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Malick Buss est la plateforme e-commerce multi-boutiques de référence au Sénégal. Nous connectons les commerçants talentueux de Dakar avec des acheteurs exigeants dans tout le pays.
             </p>
-            <a
-              href="https://wa.me/221771234567"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2.5 hover:text-emerald-400 transition"
-            >
-              <Phone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-              <span>+221 77 123 45 67 (WhatsApp & Appel)</span>
-            </a>
-            <a
-              href="mailto:contact@malickbuss.sn"
-              className="flex items-center gap-2.5 hover:text-sky-400 transition"
-            >
-              <Mail className="w-4 h-4 text-sky-400 flex-shrink-0" />
-              <span>contact@malickbuss.sn</span>
-            </a>
-          </div>
 
-          {/* Réseaux sociaux */}
-          <div className="pt-2 flex items-center gap-2 text-slate-400">
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noreferrer"
-              className="w-8 h-8 rounded-xl bg-white/5 hover:bg-rose-500 hover:text-white transition flex items-center justify-center"
-              title="Instagram"
-            >
-              <Instagram className="w-4 h-4" />
-            </a>
-            <a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noreferrer"
-              className="w-8 h-8 rounded-xl bg-white/5 hover:bg-blue-600 hover:text-white transition flex items-center justify-center"
-              title="Facebook"
-            >
-              <Facebook className="w-4 h-4" />
-            </a>
-            <a
-              href="https://wa.me/221771234567"
-              target="_blank"
-              rel="noreferrer"
-              className="w-8 h-8 rounded-xl bg-white/5 hover:bg-emerald-600 hover:text-white transition flex items-center justify-center"
-              title="WhatsApp"
-            >
-              <MessageCircle className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
-
-        {/* Colonne 2 : Univers Marchands & Acheter */}
-        <div className="space-y-3.5">
-          <h4 className="font-black text-xs text-white uppercase tracking-wider flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400" />
-            <span>Acheter sur Malick Buss</span>
-          </h4>
-          <ul className="space-y-2.5 text-xs text-slate-400">
-            <li>
-              <Link href="/boutiques" className="hover:text-amber-400 transition flex items-center justify-between group">
-                <span>Toutes nos boutiques vérifiées</span>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
-              </Link>
-            </li>
-            <li>
-              <Link href="/categories" className="hover:text-amber-400 transition flex items-center justify-between group">
-                <span>Grands rayons & univers</span>
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full">6 rayons</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/categories" className="hover:text-amber-400 transition">
-                Mode, Friperie & Bazin Riche
-              </Link>
-            </li>
-            <li>
-              <Link href="/categories" className="hover:text-amber-400 transition">
-                Électronique, iPhones & High-Tech
-              </Link>
-            </li>
-            <li>
-              <Link href="/suivre-commande" className="hover:text-amber-400 transition flex items-center gap-1.5 text-amber-300 font-semibold">
-                <Truck className="w-3.5 h-3.5" />
-                <span>Suivre ma commande en direct</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/panier" className="hover:text-amber-400 transition">
-                Mon Panier d'achat
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* Colonne 3 : Espace Commerçants & Vendeurs */}
-        <div className="space-y-3.5">
-          <h4 className="font-black text-xs text-white uppercase tracking-wider flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span>Espace Boutiquiers</span>
-          </h4>
-          <ul className="space-y-2.5 text-xs text-slate-400">
-            <li>
-              <Link
-                href="/vendeur/accueil"
-                className="hover:text-amber-400 transition font-bold text-amber-300 flex items-center justify-between group"
-              >
-                <span>Ouvrir ma boutique en 2 min</span>
-                <span className="text-[10px] bg-amber-500/20 text-amber-300 font-black px-2 py-0.5 rounded-full">0 FCFA</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/vendeur/dashboard" className="hover:text-amber-400 transition">
-                Tableau de bord Vendeur
-              </Link>
-            </li>
-            <li>
-              <Link href="/vendeur/produits/ajouter" className="hover:text-amber-400 transition">
-                Ajouter de nouveaux articles
-              </Link>
-            </li>
-            <li>
-              <Link href="/vendeur/commissions" className="hover:text-amber-400 transition">
-                Commissions & Retraits Wave instantanés
-              </Link>
-            </li>
-            <li>
-              <Link href="/vendeur/galerie" className="hover:text-amber-400 transition flex items-center gap-1.5 text-sky-300">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Galerie des 19 Écrans Figma</span>
-              </Link>
-            </li>
-            <li>
+            <div className="pt-1 text-xs space-y-2 text-slate-300">
+              <p className="flex items-center gap-2.5">
+                <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <span>Avenue Léopold Sédar Senghor, Dakar Plateau</span>
+              </p>
               <a
-                href="http://localhost:3001"
+                href="https://wa.me/221771234567"
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-white transition flex items-center gap-1"
+                className="flex items-center gap-2.5 hover:text-emerald-400 transition"
               >
-                <span>Portail Administrateur</span>
-                <ExternalLink className="w-3 h-3 text-slate-500" />
+                <Phone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span>+221 77 123 45 67 (WhatsApp & Appel)</span>
               </a>
-            </li>
-          </ul>
-        </div>
-
-        {/* Colonne 4 : Paiement Agréé & Carte Marchand Prestige */}
-        <div className="space-y-4">
-          <h4 className="font-black text-xs text-white uppercase tracking-wider flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-sky-400" />
-            <span>Paiements Agréés au Sénégal</span>
-          </h4>
-
-          {/* Badges de paiement réalistes et élégants */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="p-2 rounded-xl bg-[#00a8e8]/15 border border-[#00a8e8]/40 text-center">
-              <span className="font-black text-[11px] text-[#38bdf8] block">WAVE</span>
-              <span className="text-[9px] text-slate-400">Frais 1%</span>
+              <a
+                href="mailto:contact@malickbuss.sn"
+                className="flex items-center gap-2.5 hover:text-sky-400 transition"
+              >
+                <Mail className="w-4 h-4 text-sky-400 flex-shrink-0" />
+                <span>contact@malickbuss.sn</span>
+              </a>
             </div>
-            <div className="p-2 rounded-xl bg-[#ff6600]/15 border border-[#ff6600]/40 text-center">
-              <span className="font-black text-[11px] text-[#fb923c] block">ORANGE</span>
-              <span className="text-[9px] text-slate-400">OM Money</span>
-            </div>
-            <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-400/40 text-center">
-              <span className="font-black text-[11px] text-emerald-400 block">CASH</span>
-              <span className="text-[9px] text-slate-400">À la livraison</span>
+
+            {/* 4 Boutons Sociaux Cerclés */}
+            <div className="pt-2 flex items-center gap-2.5 text-slate-300">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full border border-slate-700/80 bg-white/5 hover:border-amber-400 hover:text-amber-400 flex items-center justify-center transition"
+                title="Facebook"
+              >
+                <Facebook className="w-3.5 h-3.5" />
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full border border-slate-700/80 bg-white/5 hover:border-amber-400 hover:text-amber-400 flex items-center justify-center transition"
+                title="Instagram"
+              >
+                <Instagram className="w-3.5 h-3.5" />
+              </a>
+              <a
+                href="https://tiktok.com"
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full border border-slate-700/80 bg-white/5 hover:border-amber-400 hover:text-amber-400 flex items-center justify-center transition text-xs font-bold"
+                title="TikTok"
+              >
+                <span>♪</span>
+              </a>
+              <a
+                href="https://youtube.com"
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full border border-slate-700/80 bg-white/5 hover:border-amber-400 hover:text-amber-400 flex items-center justify-center transition"
+                title="YouTube"
+              >
+                <Youtube className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
 
-          {/* Carte Marchand Or Flottante */}
-          <div className="p-4 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-amber-950/40 border border-amber-400/30 text-xs space-y-2.5 shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none" />
-            
-            <div className="flex items-center gap-2 text-amber-400 font-extrabold text-xs">
-              <Store className="w-4 h-4" />
-              <span>Vous vendez des produits ?</span>
+          {/* Colonne 2 : ACHETER SUR MALICK BUSS */}
+          <div className="space-y-3.5">
+            <h4 className="font-black text-xs text-white uppercase tracking-wider flex items-center gap-2">
+              <ShoppingBag className="w-4 h-4 text-amber-400 stroke-[2.2px]" />
+              <span>ACHETER SUR MALICK BUSS</span>
+            </h4>
+
+            <ul className="space-y-2.5 text-xs text-slate-300">
+              <li>
+                <Link href="/boutiques" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Toutes nos boutiques vérifiées</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/categories" className="hover:text-amber-400 transition flex items-center justify-between group">
+                  <span className="flex items-center gap-1.5">
+                    <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                    <span>Grands rayons & univers</span>
+                  </span>
+                  <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full">
+                    6 rayons
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/categories?category=mode" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Mode, Friperie & Bazin Riche</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/categories?category=electronique" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Électronique, iPhones & High-Tech</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/suivre-commande" className="hover:text-amber-300 transition flex items-center gap-1.5 font-bold text-amber-400 group">
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Suivre ma commande en direct</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/panier" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Mon Panier d&apos;achat</span>
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Colonne 3 : ESPACE BOUTIQUIERS */}
+          <div className="space-y-3.5">
+            <h4 className="font-black text-xs text-white uppercase tracking-wider flex items-center gap-2">
+              <Store className="w-4 h-4 text-amber-400 stroke-[2.2px]" />
+              <span>ESPACE BOUTIQUIERS</span>
+            </h4>
+
+            <ul className="space-y-2.5 text-xs text-slate-300">
+              <li>
+                <Link
+                  href="/vendeur/accueil"
+                  className="hover:text-amber-300 transition font-bold text-amber-400 flex items-center justify-between group"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                    <span>Ouvrir ma boutique en 2 min</span>
+                  </span>
+                  <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full">
+                    0 FCFA
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/vendeur/dashboard" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Tableau de bord Vendeur</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/vendeur/produits/ajouter" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Ajouter de nouveaux articles</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/vendeur/retraits" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Commissions & Retraits Wave instantanés</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/vendeur/galerie" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Galerie des 19 Écrans Figma</span>
+                </Link>
+              </li>
+              <li>
+                <a
+                  href="http://localhost:3001"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-white transition flex items-center gap-1.5 group"
+                >
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Portail Administrateur</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400" />
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Colonne 4 : PAIEMENTS AGRÉÉS & ENCART VENDEUR */}
+          <div className="space-y-4">
+            <h4 className="font-black text-xs text-white uppercase tracking-wider flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-amber-400 stroke-[2.2px]" />
+              <span>PAIEMENTS AGRÉÉS AU SÉNÉGAL</span>
+            </h4>
+
+            {/* 3 Cartes de paiement Sénégal : Wave, Orange Money, Cash */}
+            <div className="grid grid-cols-3 gap-2">
+              {/* Wave */}
+              <div className="p-2.5 rounded-xl bg-[#0077b6] text-white border border-sky-400/30 text-center shadow-sm">
+                <span className="font-serif italic font-black text-xs block leading-tight tracking-wider">
+                  wwε
+                </span>
+                <span className="text-[9px] font-semibold text-sky-100 block mt-0.5">
+                  Frais 1%
+                </span>
+              </div>
+
+              {/* Orange Money */}
+              <div className="p-2.5 rounded-xl bg-[#18181b] text-white border border-orange-500/30 text-center shadow-sm">
+                <span className="font-black text-xs text-orange-500 block leading-tight">
+                  ↗K
+                </span>
+                <span className="text-[9px] font-semibold text-slate-300 block mt-0.5">
+                  OM Money
+                </span>
+              </div>
+
+              {/* Cash à la livraison */}
+              <div className="p-2.5 rounded-xl bg-[#064e3b] text-white border border-emerald-400/30 text-center shadow-sm">
+                <span className="font-black text-[10px] text-emerald-300 block leading-tight uppercase">
+                  CASH
+                </span>
+                <span className="text-[9px] font-semibold text-emerald-100 block mt-0.5">
+                  À la livraison
+                </span>
+              </div>
             </div>
 
-            <p className="text-[11px] text-slate-300 leading-relaxed">
-              Exposez vos articles auprès de milliers de clients à Dakar. Encaissez directement par Wave.
-            </p>
+            {/* Encart Vendeur Prestige Or */}
+            <div className="p-4 rounded-2xl bg-[#091834]/85 border-2 border-amber-400/80 text-xs space-y-2 shadow-lg">
+              <div className="flex items-center gap-2 text-white font-black text-xs">
+                <Truck className="w-4 h-4 text-amber-400 stroke-[2.5px]" />
+                <span>
+                  Vous <span className="text-amber-400">vendez des produits ?</span>
+                </span>
+              </div>
 
-            <Link
-              href="/vendeur/accueil"
-              className="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition shadow-md shadow-amber-500/20"
-            >
-              <span>Commencer à vendre</span>
-              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5px]" />
-            </Link>
+              <p className="text-[11px] text-slate-300 leading-snug">
+                Exposez vos articles auprès de milliers de clients à Dakar. Encaissez directement par Wave.
+              </p>
+
+              <Link
+                href="/vendeur/accueil"
+                className="w-full mt-1 py-2 px-4 rounded-full bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition shadow-md shadow-amber-500/20"
+              >
+                <span>Commencer à vendre</span>
+                <ArrowRight className="w-3.5 h-3.5 stroke-[2.5px]" />
+              </Link>
+            </div>
           </div>
+
         </div>
 
-      </div>
-
-      {/* ================= 4. BAS DE PAGE (COPYRIGHT & SÉCURITÉ DÉGAGÉ POUR LE BOUTON MAQUETTES) ================= */}
-      <div className="border-t border-slate-800/80 py-6 text-xs text-slate-500 bg-slate-950/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          
+        {/* ================= 4. BAS DE PAGE (COPYRIGHT & BOUTON MAQUETTES) ================= */}
+        <div className="pt-2 pb-2 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <div className="flex items-center gap-2">
-            <span>© 2026 Malick Buss. Tous droits réservés.</span>
-            <span className="hidden sm:inline text-slate-700">•</span>
-            <span className="text-slate-400 flex items-center gap-1">
-              Conçu avec fierté pour le Sénégal 🇸🇳
+            <span>© 2025 Malick Buss. Tous droits réservés.</span>
+            <span>|</span>
+            <span className="text-amber-300 flex items-center gap-1 font-medium">
+              Le Sénégal achète autrement ! 💛
             </span>
           </div>
 
-          {/* Espace réservé à droite avec padding-right pour ne pas heurter le widget flottant */}
-          <div className="flex items-center gap-5 text-slate-400 text-[11px] pr-0 lg:pr-48">
-            <Link href="/" className="hover:text-white hover:underline transition">
-              Conditions d'utilisation
-            </Link>
-            <Link href="/" className="hover:text-white hover:underline transition">
-              Politique de confidentialité
-            </Link>
-            <Link href="/vendeur/dashboard" className="text-amber-400 hover:text-amber-300 font-bold transition">
-              Espace Boutiquier
-            </Link>
-          </div>
-
+          <Link
+            href="/vendeur/galerie"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-400/60 bg-black/40 hover:bg-amber-400 hover:text-slate-950 text-amber-300 text-xs font-bold transition shadow-sm"
+          >
+            <Compass className="w-3.5 h-3.5 text-amber-400" />
+            <span>Navigateur Maquettes</span>
+            <span>→</span>
+          </Link>
         </div>
+
       </div>
 
     </footer>

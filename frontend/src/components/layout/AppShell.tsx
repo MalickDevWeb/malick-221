@@ -10,11 +10,16 @@ import { SmoothScroll } from '../motion/SmoothScroll';
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isGallery = pathname === '/vendeur/galerie';
+  const isAuthPage =
+    pathname === '/connexion' ||
+    pathname === '/login' ||
+    pathname === '/vendeur/connexion' ||
+    pathname === '/splash';
 
-  // Si on est sur la vue galerie panoramique, plein écran sombre
-  if (isGallery) {
+  // Si on est sur la vue galerie panoramique ou page auth, plein écran sombre immersif
+  if (isGallery || isAuthPage) {
     return (
-      <div className="min-h-screen bg-[#0e131f] text-slate-100">
+      <div className="min-h-screen bg-[#040d1e] text-white">
         <SmoothScroll />
         <MockupNavigator />
         {children}

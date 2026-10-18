@@ -166,6 +166,82 @@ Pour éviter la fraude et les désaccords vendeur-client :
 - **Canal de Support & Marketing :** Bouton "Discuter sur WhatsApp" pré-remplissant la référence du produit ou de la commande.
 - **Règle d'Or :** Une redirection vers WhatsApp n'est **JAMAIS** considérée comme une commande validée ni une vente conclue. Seul l'enregistrement dans la base de données Malick Buss et le webhook de confirmation de paiement (ou déclaration de livraison vérifiée) font foi.
 
+### Règle de Validation des Ventes par WhatsApp et Vérification Client
+
+En l'absence d'un paiement en ligne direct dans la première version, une demande d'achat depuis WhatsApp est considérée comme une **demande de commande ou une intention d'achat**, et non comme une vente validée.
+
+Le flux métier recommandé est le suivant :
+
+1. Le client clique sur "Acheter" ou "Payer".
+2. La plateforme crée une commande avec statut **EN_ATTENTE_VALIDATION**.
+3. Le vendeur, le super admin ou le service client reçoit la demande pour vérification.
+4. Le service client peut appeler le client pour confirmer :
+   - le paiement a bien été effectué ;
+   - le pack / produit a bien été commandé ;
+   - le client souhaite confirmer la commande.
+5. Si la vente est confirmée, la commande passe en statut **CONFIRMEE**.
+6. Une fois confirmée, la commission est calculée et la commande peut être traitée.
+7. Si la vente n'est pas confirmée, la commande reste **EN_ATTENTE**, **REFUSEE** ou **ANNULEE** selon la règle métier définie.
+8. Aucun remboursement, livraison, activation ou calcul de commission ne doit être effectué tant que la commande n'est pas validée.
+
+#### Règle de gestion
+- Un clic WhatsApp ne constitue pas une preuve de paiement.
+- Un clic WhatsApp ne constitue pas une preuve de vente.
+- La vente est validée uniquement après vérification humaine ou validation du vendeur/admin.
+- La commission n'est calculée que sur les ventes confirmées.
+- Si le stock ou l'abonnement est épuisé, la redirection vers WhatsApp est bloquée et la demande est refusée.
+
+---
+
+## 🏁 4.6 Règles de Lancement en Production & Validation Métier
+
+Avant toute mise en ligne, la plateforme doit respecter les règles suivantes pour éviter les erreurs financières, les litiges et les paiements non justifiés :
+
+### Règles obligatoires
+
+1. **Une commande n’est valide qu’après confirmation de la vente**
+   - Une demande WhatsApp, un message, un clic ou un screenshot ne constitue pas une preuve de vente.
+   - La commande doit être créée dans la base Malick Buss et être confirmée par le vendeur, le service client ou l’admin selon le canal.
+   - Aucune livraison, commission, paiement ou activation ne doit se faire avant validation.
+
+2. **Aucun paiement ne doit être déclenché sans vérification métier**
+   - Le paiement en ligne validé par webhook est la preuve technique.
+   - Le paiement à la livraison reste soumis à confirmation de prise de commande et de livraison.
+   - L’API ne doit pas accepter des statuts de paiement fournis par le frontend comme preuve de réussite.
+
+3. **La commission est calculée uniquement sur une vente confirmée**
+   - Commission estimée tant qu’il n’y a pas validation, puis commission acquise à la clôture de la commande.
+   - Aucun retraits vendeur ne doit être autorisé tant que le solde n’est pas disponible et vérifié.
+   - Les montants de commission seront toujours enregistrés dans un historique immuable, avec statut `ESTIMATED`, `PROVISIONAL`, `EARNED`, `PAID_OUT` au besoin.
+
+4. **Le vendeur ne peut pas sortir des fonds tant que le capital n’est pas net**
+   - Le solde disponible est calculé selon les gains validés, moins les demandes de retrait en attente.
+   - La demande de retrait ne doit pas être autorisée si le montant est insuffisant ou si la vente est litigieuse.
+
+5. **Le cycle de commande est contrôlé au serveur**
+   - Les transitions de statut sont impérativement validées côté backend.
+   - Le vendeur ne peut pas passer une commande d’un état non autorisé à un autre.
+   - Les refus et annulations doivent inclure une raison et un historique d’audit.
+
+6. **Audit et traçabilité obligatoires**
+   - Chaque changement de statut, retrait, paiement, tentative de transaction et litige doit être enregistré.
+   - Les demandes de paiement doivent pouvoir être retracées depuis le compte vendeur jusqu’au flux de paiement externe.
+
+### Checklist de validation avant lancement
+
+- [ ] Base de données PostgreSQL configurée et migrée
+- [ ] Secrets JWT et fournisseur de paiement présents
+- [ ] Règle “WhatsApp ≠ vente validée” documentée et appliquée
+- [ ] Statuts de commande et donc commissions verrouillés côté backend
+- [ ] Vérification de l’état vendeur pour les retraits activée
+- [ ] Audit logs de paiement et de retrait activés
+- [ ] Webhook de paiement vérifié et validé en environnement test
+- [ ] Passage en production uniquement avec données réelles validées
+
+### Point de vigilance majeur
+
+Le plus grand risque métier de la plateforme n’est pas le code technique, c’est la logique de confiance : un client ou un vendeur peut envoyer un message WhatsApp, mais cela ne suffit pas à prouver qu’une vente existe. La plateforme doit donc rester stricte : aucune logique de commission, retrait, paiement ou livraison ne peut reposer sur la conversation seule.
+
 ---
 
 ## 🚀 5. Stack Technologique Recommandé

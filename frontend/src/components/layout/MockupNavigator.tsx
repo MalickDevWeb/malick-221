@@ -34,6 +34,7 @@ export function MockupNavigator() {
     { num: 14, name: 'Ajouter un produit', path: '/vendeur/produits/ajouter' },
     { num: 15, name: 'Espace administrateur', path: 'http://localhost:3001', external: true },
     { num: 16, name: 'Profil client', path: '/profil' },
+    { num: 17, name: 'Connexion (Client / Vendeur)', path: '/connexion' },
   ];
 
   const vendorScreens: ScreenItem[] = [
@@ -61,18 +62,19 @@ export function MockupNavigator() {
   const currentList = activeTab === 'CLIENT' ? clientScreens : vendorScreens;
 
   return (
-    <div className="fixed bottom-20 md:bottom-5 right-3.5 md:right-5 z-40 font-sans">
+    <div className="fixed top-24 right-2 md:top-auto md:bottom-6 md:right-auto md:left-6 z-40 font-sans">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-slate-900/95 hover:bg-slate-900 text-amber-400 border border-amber-400/40 text-[10px] font-bold py-1.5 px-3 rounded-full shadow-2xl flex items-center gap-1.5 backdrop-blur-md transition active:scale-95"
+        className="bg-slate-900/95 hover:bg-slate-900 text-amber-400 border border-amber-400/40 text-[10px] font-bold py-1.5 px-2.5 md:px-3 rounded-full shadow-2xl flex items-center gap-1.5 backdrop-blur-md transition active:scale-95"
       >
         <Smartphone className="w-3.5 h-3.5 text-amber-400" />
-        <span>Navigateur Maquettes</span>
+        <span className="hidden sm:inline">Navigateur Maquettes</span>
+        <span className="sm:hidden">Maquettes</span>
         {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 bottom-full mb-2 w-72 bg-slate-950/95 border border-slate-800 rounded-2xl shadow-2xl p-2.5 text-slate-200 backdrop-blur-md max-h-[72vh] overflow-y-auto scrollbar-thin animate-in slide-in-from-bottom-2 fade-in">
+        <div className="absolute right-0 top-full mt-2 md:top-auto md:bottom-full md:mb-2 md:left-0 md:right-auto w-72 bg-slate-950/95 border border-slate-800 rounded-2xl shadow-2xl p-2.5 text-slate-200 backdrop-blur-md max-h-[72vh] overflow-y-auto scrollbar-thin animate-in slide-in-from-bottom-2 fade-in">
           {/* Onglets de sélection du jeu de maquettes */}
           <div className="grid grid-cols-2 gap-1 p-1 bg-slate-900 rounded-xl mb-2">
             <button

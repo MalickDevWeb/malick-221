@@ -36,6 +36,7 @@ enum OrderStatus {
   CANCELLED
   DISPUTED
   REFUNDED
+  REJECTED
 }
 
 enum PaymentMethod {
@@ -62,6 +63,22 @@ enum CommissionStatus {
   DISPUTED_HOLD
 }
 
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  PROCESSING
+  PAID
+  REJECTED
+  CANCELLED
+}
+
+enum StockMovementType {
+  RESERVED
+  RELEASED
+  FULFILLED
+  ADJUSTED
+}
+
 enum ProductCondition {
   NEUF
   TRES_BON_ETAT
@@ -81,6 +98,10 @@ model User {
 
   shops        Shop[]
   orders       Order[]
+  orderStatusHistory OrderStatusHistory[]
+  stockMovements StockMovement[]
+  withdrawalRequests WithdrawalRequest[]
+  withdrawalAuditLogs WithdrawalAuditLog[]
 
   @@map("users")
 }
@@ -102,6 +123,7 @@ model Shop {
   owner               User        @relation(fields: [ownerId], references: [id])
   products            Product[]
   subOrders           SubOrder[]
+  withdrawalRequests  WithdrawalRequest[]
 
   @@map("shops")
 }
@@ -117,29 +139,42 @@ model Product {
   condition     ProductCondition @default(NEUF)
   isPublished   Boolean          @default(true)
   stockQuantity Int              @default(0)
+  reservedQuantity Int           @default(0)
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
   shop          Shop             @relation(fields: [shopId], references: [id])
   orderItems    OrderItem[]
+  stockMovements StockMovement[]
 
+  @@index([shopId, isPublished, createdAt])
   @@map("products")
 }
 
 model Order {
   id               String        @id @default(uuid())
   clientId         String
+  idempotencyKey   String?
+  requestFingerprint String?
   orderNumber      String        @unique
   grandTotal       Decimal       @db.Decimal(12, 2)
   paymentMethod    PaymentMethod
   paymentStatus    PaymentStatus @default(PENDING)
+  status           OrderStatus   @default(PENDING_PAYMENT)
   paymentReference String?
+  shippingAddressSnapshot Json
+  stockReservationExpiresAt DateTime?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
   client           User          @relation(fields: [clientId], references: [id])
   subOrders        SubOrder[]
+  stockMovements   StockMovement[]
 
+  @@unique([clientId, idempotencyKey])
+  @@index([clientId, createdAt])
+  @@index([status, createdAt])
+  @@index([status, stockReservationExpiresAt])
   @@map("orders")
 }
 
@@ -155,6 +190,7 @@ model SubOrder {
   commissionAmount       Decimal          @db.Decimal(12, 2)
   vendorNetEarning       Decimal          @db.Decimal(12, 2)
   status                 OrderStatus      @default(PENDING_PAYMENT)
+  rejectionReason        String?
   createdAt              DateTime         @default(now())
   updatedAt              DateTime         @updatedAt
 
@@ -162,7 +198,9 @@ model SubOrder {
   shop                   Shop             @relation(fields: [shopId], references: [id])
   items                  OrderItem[]
   commissions            CommissionLedger[]
+  statusHistory          OrderStatusHistory[]
 
+  @@index([shopId, status, createdAt])
   @@map("sub_orders")
 }
 
@@ -193,6 +231,105 @@ model CommissionLedger {
 
   subOrder         SubOrder         @relation(fields: [subOrderId], references: [id])
 
+  @@index([status, createdAt])
   @@map("commission_ledger")
+}
+
+model OrderStatusHistory {
+  id         String      @id @default(uuid())
+  subOrderId String
+  actorId    String
+  fromStatus OrderStatus
+  toStatus   OrderStatus
+  reason     String?
+  createdAt  DateTime    @default(now())
+
+  subOrder   SubOrder    @relation(fields: [subOrderId], references: [id])
+  actor      User        @relation(fields: [actorId], references: [id])
+
+  @@index([subOrderId, createdAt])
+  @@map("order_status_history")
+}
+
+model StockMovement {
+  id                    String            @id @default(uuid())
+  productId             String
+  orderId               String?
+  actorId               String?
+  type                  StockMovementType
+  quantity              Int
+  stockQuantityBefore   Int
+  reservedQuantityBefore Int
+  reason                String
+  createdAt             DateTime           @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+  order   Order?  @relation(fields: [orderId], references: [id])
+  actor   User?   @relation(fields: [actorId], references: [id])
+
+  @@index([productId, createdAt])
+  @@index([orderId, createdAt])
+  @@map("stock_movements")
+}
+
+model WithdrawalRequest {
+  id                 String          @id @default(uuid())
+  shopId             String
+  vendorId           String
+  amount             Decimal         @db.Decimal(12, 2)
+  fee                Decimal         @default(0) @db.Decimal(12, 2)
+  paymentMethod      String
+  status             WithdrawalStatus @default(PENDING)
+  providerReference  String?
+  providerStatus     String?
+  notes              String?
+  paidAt             DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  shop               Shop            @relation(fields: [shopId], references: [id])
+  vendor             User            @relation(fields: [vendorId], references: [id])
+  auditLogs          WithdrawalAuditLog[]
+
+  @@index([vendorId, status, createdAt])
+  @@index([shopId, status, createdAt])
+  @@map("withdrawal_requests")
+}
+
+model WithdrawalAuditLog {
+  id                  String            @id @default(uuid())
+  withdrawalRequestId String
+  actorId             String?
+  action              String
+  statusFrom          WithdrawalStatus?
+  statusTo            WithdrawalStatus
+  reason              String?
+  metadata            Json?
+  createdAt           DateTime          @default(now())
+
+  withdrawalRequest   WithdrawalRequest @relation(fields: [withdrawalRequestId], references: [id])
+  actor               User?             @relation(fields: [actorId], references: [id])
+
+  @@index([withdrawalRequestId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("withdrawal_audit_logs")
+}
+
+model OutboxEvent {
+  id            String    @id @default(uuid())
+  aggregateType String
+  aggregateId   String
+  eventType     String
+  version       Int       @default(1)
+  payload       Json
+  occurredAt    DateTime  @default(now())
+  availableAt   DateTime  @default(now())
+  publishedAt   DateTime?
+  attempts      Int       @default(0)
+  lastError     String?
+
+  @@index([publishedAt, availableAt, occurredAt])
+  @@index([aggregateType, aggregateId, occurredAt])
+  @@map("outbox_events")
 }
 

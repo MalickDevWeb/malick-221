@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -12,53 +12,37 @@ import {
   User,
 } from 'lucide-react';
 import { formatFCFA } from '../../../services/api';
+import { getOrders, OrderStatus, StoredOrder } from '../../../services/order-flow';
+import { VendorBottomNavigation } from '../../../components/layout/VendorBottomNavigation';
+
+const STATUS_LABELS: Record<OrderStatus, string> = {
+  CONFIRMED: 'En cours',
+  PREPARING: 'En cours',
+  SHIPPED: 'En cours',
+  DELIVERED: 'Livrées',
+  CANCELLED: 'Annulées',
+};
+
+const STATUS_CLASSES: Record<OrderStatus, string> = {
+  CONFIRMED: 'bg-amber-50 text-amber-700 border-amber-200',
+  PREPARING: 'bg-amber-50 text-amber-700 border-amber-200',
+  SHIPPED: 'bg-amber-50 text-amber-700 border-amber-200',
+  DELIVERED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  CANCELLED: 'bg-slate-50 text-slate-600 border-slate-200',
+};
 
 export default function VendorOrdersScreen8() {
   const [filter, setFilter] = useState('Toutes');
+  const [orders, setOrders] = useState<StoredOrder[]>([]);
 
-  const orders = [
-    {
-      id: 'MB-2025-00123',
-      amount: 12000,
-      date: '12 avr. 2025',
-      itemsCount: 2,
-      status: 'En cours',
-      statusClass: 'bg-amber-50 text-amber-700 border-amber-200',
-      image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=150&q=80',
-    },
-    {
-      id: 'MB-2025-00122',
-      amount: 18500,
-      date: '11 avr. 2025',
-      itemsCount: 1,
-      status: 'Livrée',
-      statusClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      image: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=150&q=80',
-    },
-    {
-      id: 'MB-2025-00121',
-      amount: 25000,
-      date: '10 avr. 2025',
-      itemsCount: 3,
-      status: 'En cours',
-      statusClass: 'bg-amber-50 text-amber-700 border-amber-200',
-      image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=150&q=80',
-    },
-    {
-      id: 'MB-2025-00120',
-      amount: 15000,
-      date: '9 avr. 2025',
-      itemsCount: 1,
-      status: 'Livrée',
-      statusClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=150&q=80',
-    },
-  ];
+  useEffect(() => {
+    setOrders(getOrders());
+  }, []);
 
   const filteredOrders =
     filter === 'Toutes'
       ? orders
-      : orders.filter((o) => o.status.toLowerCase() === filter.toLowerCase());
+      : orders.filter((order) => STATUS_LABELS[order.status] === filter);
 
   return (
     <div className="space-y-4 pb-20 bg-slate-50 min-h-screen">
@@ -97,24 +81,24 @@ export default function VendorOrdersScreen8() {
           >
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-                <img src={ord.image} alt={ord.id} className="w-full h-full object-cover" />
+                <img src={ord.items[0]?.image ?? ''} alt={ord.id} className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="font-bold text-xs text-slate-900">
                   #{ord.id}
                 </h3>
                 <span className="font-bold text-xs text-slate-900 block mt-0.5">
-                  {formatFCFA(ord.amount)}
+                  {formatFCFA(ord.total)}
                 </span>
                 <span className="text-[10px] text-slate-400 block mt-0.5">
-                  {ord.date} • {ord.itemsCount} article{ord.itemsCount > 1 ? 's' : ''}
+                  {new Date(ord.createdAt).toLocaleDateString('fr-FR')} • {ord.items.length} article{ord.items.length > 1 ? 's' : ''}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${ord.statusClass}`}>
-                {ord.status}
+              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[ord.status]}`}>
+                {STATUS_LABELS[ord.status]}
               </span>
               <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition" />
             </div>
@@ -122,29 +106,8 @@ export default function VendorOrdersScreen8() {
         ))}
       </div>
 
-      {/* Barre de Navigation Vendeur Fixe */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 py-2 px-3 flex justify-around items-center max-w-md mx-auto shadow-lg">
-        <Link href="/vendeur/dashboard" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <Home className="w-5 h-5" />
-          <span className="text-[10px]">Accueil</span>
-        </Link>
-        <Link href="/vendeur/produits" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <Package className="w-5 h-5" />
-          <span className="text-[10px]">Produits</span>
-        </Link>
-        <Link href="/vendeur/commandes" className="flex flex-col items-center text-emerald-600 font-bold gap-1">
-          <ShoppingBag className="w-5 h-5 stroke-[2.5px]" />
-          <span className="text-[10px]">Commandes</span>
-        </Link>
-        <Link href="/vendeur/boutique" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <Store className="w-5 h-5" />
-          <span className="text-[10px]">Boutique</span>
-        </Link>
-        <Link href="/vendeur/profil" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <User className="w-5 h-5" />
-          <span className="text-[10px]">Profil</span>
-        </Link>
-      </nav>
+      {/* Barre de Navigation Vendeur Adaptée (Mobile & Desktop) */}
+      <VendorBottomNavigation activeTab="commandes" />
     </div>
   );
 }

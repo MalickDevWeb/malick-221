@@ -1,9 +1,17 @@
 import { PrismaClient, UserRole, ShopStatus, ProductCondition } from '@prisma/client';
+import { randomBytes, scryptSync } from 'crypto';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Début du peuplement de la base de données Malick Buss...');
+
+  const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD;
+  if (!superAdminPassword || superAdminPassword.length < 12) {
+    throw new Error('SUPER_ADMIN_PASSWORD doit être défini et contenir au moins 12 caractères.');
+  }
+  const adminSalt = randomBytes(16);
+  const adminPasswordHash = `scrypt$${adminSalt.toString('hex')}$${scryptSync(superAdminPassword, adminSalt, 64).toString('hex')}`;
 
   // Nettoyage préalable
   await prisma.commissionLedger.deleteMany();
@@ -20,7 +28,7 @@ async function main() {
       phoneNumber: '+221770000001',
       fullName: 'Super Admin Malick Buss',
       email: 'admin@malickbuss.sn',
-      passwordHash: 'hash_securise_admin_2026',
+      passwordHash: adminPasswordHash,
       role: UserRole.SUPER_ADMIN,
     },
   });

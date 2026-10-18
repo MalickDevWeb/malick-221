@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   ChevronLeft,
@@ -20,6 +20,7 @@ import {
   Package,
 } from 'lucide-react';
 import { formatFCFA } from '../../../services/api';
+import { getOrder, StoredOrder } from '../../../services/order-flow';
 
 interface TimelineStep {
   id: number;
@@ -29,58 +30,55 @@ interface TimelineStep {
   current?: boolean;
 }
 
-export default function OrderTrackingPage() {
+function OrderTrackingContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('id') || 'MB-2025-00123';
+  const orderId = searchParams.get('id') || '';
+  const [order, setOrder] = useState<StoredOrder | null>(null);
 
-  // Liste des étapes exactement conforme à la maquette
+  useEffect(() => {
+    const foundOrder = orderId ? getOrder(orderId) : undefined;
+    if (!foundOrder) {
+      router.replace('/commandes');
+      return;
+    }
+    setOrder(foundOrder);
+  }, [orderId, router]);
+
+  if (!order) return null;
+
   const steps: TimelineStep[] = [
     {
       id: 1,
       title: 'Commande confirmée',
-      timestamp: '12 avr. 2025 • 14:35',
+      timestamp: new Date(order.createdAt).toLocaleString('fr-FR'),
       completed: true,
     },
     {
       id: 2,
-      title: 'En préparation',
-      timestamp: '12 avr. 2025 • 16:20',
-      completed: true,
+      title: order.status === 'CANCELLED' ? 'Commande annulée' : 'En préparation',
+      timestamp: order.status === 'CONFIRMED'
+        ? 'En attente du vendeur'
+        : order.status === 'PREPARING' ? 'En cours' : order.status === 'CANCELLED' ? 'Annulée' : 'Étape terminée',
+      completed: ['SHIPPED', 'DELIVERED'].includes(order.status),
+      current: order.status === 'CONFIRMED' || order.status === 'PREPARING',
     },
     {
       id: 3,
       title: 'Expédiée',
-      timestamp: '13 avr. 2025 • 09:10',
-      completed: true,
+      timestamp: order.status === 'SHIPPED' ? 'En cours' : order.status === 'DELIVERED' ? 'Étape terminée' : 'En attente',
+      completed: order.status === 'DELIVERED',
+      current: order.status === 'SHIPPED',
     },
     {
       id: 4,
-      title: 'En livraison',
-      timestamp: '13 avr. 2025 • 14:00',
-      completed: false,
-      current: true,
-    },
-    {
-      id: 5,
       title: 'Livrée',
-      timestamp: 'En attente',
-      completed: false,
+      timestamp: order.status === 'DELIVERED' ? 'Livrée' : 'En attente',
+      completed: order.status === 'DELIVERED',
     },
   ];
 
-  const orderItem = {
-    title: 'Veste en jean vintage',
-    price: 12000,
-    quantity: 1,
-    image: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=400&q=80',
-    shop: 'Style & Mode Dakar',
-    courier: {
-      name: 'Moussa Diop',
-      phone: '+221 77 123 45 67',
-      vehicle: 'Moto Express Dakar',
-    },
-    address: 'Avenue Léopold Sédar Senghor, Dakar Plateau',
-  };
+  const orderItem = order.items[0];
 
   return (
     <div className="w-full bg-[#f8fafc] min-h-screen pb-20">
@@ -127,12 +125,12 @@ export default function OrderTrackingPage() {
               Commande #{orderId}
             </h2>
             <p className="text-xs text-slate-400 font-medium mt-0.5">
-              Passée le 12 avr. 2025 • 14:32
+              Passée le {new Date(order.createdAt).toLocaleString('fr-FR')}
             </p>
             <div className="flex items-center gap-1.5 mt-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[11px] font-bold text-emerald-700">
-                Arrivée estimée : Aujourd'hui à 14h00
+                {order.deliveryOption === 'express' ? 'Livraison express' : 'Livraison standard'} • suivi en attente du vendeur
               </span>
             </div>
           </div>
@@ -232,7 +230,7 @@ export default function OrderTrackingPage() {
 
               <div className="flex-1 min-w-0">
                 <h3 className="font-extrabold text-xs md:text-sm text-slate-900 truncate">
-                  {orderItem.title}
+                  {orderItem.title}{order.items.length > 1 ? ` et ${order.items.length - 1} autre${order.items.length > 2 ? 's' : ''} article${order.items.length > 2 ? 's' : ''}` : ''}
                 </h3>
                 <div className="flex items-center gap-1.5 mt-1">
                   <span className="font-black text-xs md:text-sm text-slate-900">
@@ -254,11 +252,11 @@ export default function OrderTrackingPage() {
                 <div className="flex items-center gap-2 text-slate-500">
                   <Truck className="w-3.5 h-3.5 text-emerald-600" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Livreur assigné
+                    Livraison
                   </span>
                 </div>
-                <p className="text-xs font-black text-slate-900">{orderItem.courier.name}</p>
-                <p className="text-[11px] text-slate-500">{orderItem.courier.vehicle}</p>
+                <p className="text-xs font-black text-slate-900">En attente d’attribution</p>
+                <p className="text-[11px] text-slate-500">{order.deliveryOption === 'express' ? 'Express' : 'Standard'}</p>
               </div>
 
               <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
@@ -269,9 +267,11 @@ export default function OrderTrackingPage() {
                   </span>
                 </div>
                 <p className="text-xs font-black text-slate-900 truncate">
-                  {orderItem.address}
+                  Dakar, Médina / Sandaga
                 </p>
-                <p className="text-[11px] text-emerald-600 font-bold">Paiement Wave validé</p>
+                <p className="text-[11px] text-emerald-600 font-bold">
+                  {order.paymentOption === 'cod' ? 'Paiement à la livraison' : 'Paiement Mobile Money en attente'}
+                </p>
               </div>
             </div>
 
@@ -279,7 +279,7 @@ export default function OrderTrackingPage() {
             <div className="pt-1 flex gap-2">
               <a
                 href={`https://wa.me/221771234567?text=${encodeURIComponent(
-                  `Bonjour Moussa, je suis le client de la commande #${orderId} (${orderItem.title}). Pouvez-vous me confirmer votre heure d'arrivée ?`
+                  `Bonjour, je souhaite des nouvelles de ma commande #${orderId}.`
                 )}`}
                 target="_blank"
                 rel="noreferrer"
@@ -313,5 +313,13 @@ export default function OrderTrackingPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function OrderTrackingPage() {
+  return (
+    <Suspense fallback={null}>
+      <OrderTrackingContent />
+    </Suspense>
   );
 }

@@ -16,6 +16,11 @@ import {
   ShieldCheck,
   Heart,
   X,
+  Home,
+  Flame,
+  Sparkles,
+  Truck,
+  Crown,
 } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
 
@@ -23,30 +28,15 @@ export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchCategory, setSearchCategory] = useState('Toutes les catégories');
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
-
-  const searchCategories = [
-    { label: 'Toutes les catégories', slug: '' },
-    { label: 'Mode & Friperie', slug: 'mode' },
-    { label: 'Électronique & High-Tech', slug: 'electronique' },
-    { label: 'Beauté & Cosmétiques', slug: 'beaute' },
-    { label: 'Maison & Décoration', slug: 'maison' },
-    { label: 'Sport & Fitness', slug: 'sport' },
-    { label: 'Enfants & Bébés', slug: 'enfants' },
-  ];
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const params = new URLSearchParams();
-    const category = searchCategories.find((item) => item.label === searchCategory);
-
-    if (category?.slug) params.set('category', category.slug);
-    if (searchTerm.trim()) params.set('q', searchTerm.trim());
-
-    router.push(`/categories${params.size ? `?${params.toString()}` : ''}`);
-    setCategoryMenuOpen(false);
+    if (searchTerm.trim()) {
+      router.push(`/boutiques?q=${encodeURIComponent(searchTerm.trim())}`);
+    } else {
+      router.push('/boutiques');
+    }
   };
 
   // Pages avec header personnalisé ou sans header global (ex: splash, back-office)
@@ -67,46 +57,58 @@ export function Header() {
 
   return (
     <>
-      {/* 1. TOP ANNOUNCEMENT BAR DESKTOP (Masqué sur mobile) */}
-      <div className="hidden md:block bg-slate-900 text-slate-300 text-[11px] py-1.5 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-amber-400 font-semibold">
-              <span>🇸🇳</span>
-              <span>Première Marketplace Multi-Boutiques au Sénégal</span>
-            </span>
-            <span className="text-slate-600">•</span>
-            <span className="text-slate-400">
-              Livraison rapide à Dakar & dans toutes les régions
-            </span>
-          </div>
+      {/* HEADER PRINCIPAL AVEC BANDEAU SUPÉRIEUR ANCRÉ */}
+      <header className={`sticky top-0 z-40 bg-white border-b border-slate-100 shadow-xs ${pathname === '/' ? '' : 'hidden md:block'}`}>
+        {/* 1. TOP ANNOUNCEMENT BAR DESKTOP (Ultra-lisible, spacieux et prestige) */}
+        <div className="hidden md:block bg-gradient-to-r from-[#071328] via-[#0c1a35] to-[#071328] text-slate-100 text-xs py-2 border-b border-amber-400/20 shadow-xs antialiased">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-2 bg-amber-400/15 border border-amber-400/35 px-3 py-1 rounded-full text-amber-300 font-bold text-xs shadow-xs tracking-wide">
+                <span>🇸🇳</span>
+                <span>Première Marketplace Multi-Boutiques au Sénégal</span>
+              </span>
+              <span className="text-slate-600">|</span>
+              <span className="text-slate-200 flex items-center gap-2 font-medium">
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400">
+                  <Truck className="w-3 h-3 stroke-[2.5px]" />
+                </span>
+                <span>Livraison express à Dakar & dans toutes les régions</span>
+              </span>
+            </div>
 
-          <div className="flex items-center gap-5 text-slate-400">
-            <Link
-              href="/vendeur/accueil"
-              className="hover:text-amber-400 transition font-medium flex items-center gap-1"
-            >
-              <Store className="w-3.5 h-3.5 text-amber-400" />
-              <span>Ouvrir une boutique</span>
-            </Link>
-            <Link
-              href="/vendeur/dashboard"
-              className="hover:text-amber-400 transition font-medium text-amber-300"
-            >
-              Espace Vendeur
-            </Link>
-            <Link href="/support" className="hover:text-white transition flex items-center gap-1">
-              <HelpCircle className="w-3 h-3" />
-              <span>Aide</span>
-            </Link>
-            <span className="text-slate-600">|</span>
-            <span className="font-bold text-slate-200">FCFA (XOF)</span>
+            <div className="flex items-center gap-3 text-xs">
+              <Link
+                href="/vendeur/accueil"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-bold text-xs hover:brightness-110 shadow-xs hover:shadow-amber-500/20 transition-all active:scale-95"
+              >
+                <Store className="w-3.5 h-3.5 stroke-[2.2px] text-slate-950" />
+                <span>Ouvrir une boutique</span>
+              </Link>
+              <span className="text-slate-700">|</span>
+              <Link
+                href="/vendeur/dashboard"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-slate-200 hover:text-white hover:bg-white/5 font-semibold text-xs transition"
+              >
+                <User className="w-3.5 h-3.5 text-amber-400" />
+                <span>Espace Vendeur</span>
+              </Link>
+              <span className="text-slate-700">|</span>
+              <Link
+                href="/support"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-slate-300 hover:text-white hover:bg-white/5 font-medium text-xs transition"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-slate-300" />
+                <span>Aide</span>
+              </Link>
+              <span className="text-slate-700">|</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/15 border border-white/15 text-white font-bold text-xs cursor-pointer transition select-none">
+                <span>FCFA (XOF)</span>
+                <ChevronDown className="w-3 h-3 text-amber-400" />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 2. HEADER PRINCIPAL */}
-      <header className={`sticky top-0 z-40 bg-white border-b border-slate-100 shadow-xs ${pathname === '/' ? '' : 'hidden md:block'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* ================= VUE DESKTOP (md et +) ================= */}
           <div className="hidden md:flex items-center justify-between py-3.5 gap-6">
@@ -115,57 +117,24 @@ export function Header() {
               <BrandLogo size="md" variant="dark" layout="horizontal" />
             </Link>
 
-            {/* Barre de Recherche Large avec Sélecteur Catégorie */}
+            {/* Barre de Recherche Large */}
             <div className="flex-1 max-w-2xl">
               <form
                 onSubmit={handleSearch}
-                className="relative flex items-center bg-[#f4f5f7] border border-slate-200/80 rounded-full focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all"
+                className="relative flex items-center bg-[#f4f5f7] border border-slate-200/80 rounded-full focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all pl-3.5 pr-1.5 py-1"
               >
-                {/* Sélecteur de catégorie */}
-                <div className="relative hidden lg:flex items-center border-r border-slate-200">
-                  <button
-                    type="button"
-                    aria-expanded={categoryMenuOpen}
-                    aria-haspopup="listbox"
-                    onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
-                    className="flex items-center gap-1 px-3.5 py-2 text-slate-600 text-xs font-semibold whitespace-nowrap hover:bg-slate-200/50"
-                  >
-                    <span>{searchCategory}</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                  </button>
-                  {categoryMenuOpen && (
-                    <div role="listbox" aria-label="Choisir une catégorie" className="absolute left-0 top-full z-50 mt-2 min-w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
-                      {searchCategories.map((category) => (
-                        <button
-                          key={category.slug || 'all'}
-                          type="button"
-                          role="option"
-                          aria-selected={searchCategory === category.label}
-                          onClick={() => {
-                            setSearchCategory(category.label);
-                            setCategoryMenuOpen(false);
-                          }}
-                          className="block w-full px-4 py-2 text-left text-xs font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-700"
-                        >
-                          {category.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <Search className="w-4 h-4 ml-3 text-slate-400 flex-shrink-0" />
+                <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Rechercher un produit, une marque, une boutique à Dakar..."
-                  aria-label="Rechercher un produit, une marque ou une boutique"
-                  className="w-full bg-transparent text-xs px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
+                  placeholder="Rechercher une boutique, un produit, une marque à Dakar..."
+                  aria-label="Rechercher une boutique ou un produit"
+                  className="w-full bg-transparent text-xs px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
                 />
                 <button
                   type="submit"
-                  className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 p-2.5 rounded-full transition shadow-xs flex-shrink-0 mr-1.5 flex items-center justify-center"
+                  className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 p-2.5 rounded-full transition shadow-xs flex-shrink-0 flex items-center justify-center"
                   aria-label="Rechercher"
                 >
                   <Search className="w-4 h-4 stroke-[2.5px]" />
@@ -194,20 +163,28 @@ export function Header() {
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-xs" />
               </Link>
 
-              {/* Panier Desktop */}
+              {/* Panier Desktop - Ultra clair, lisible et harmonieux */}
               <Link
                 href="/panier"
-                className="flex items-center gap-2.5 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-300/70 px-3.5 py-1.5 rounded-full transition group"
+                className="flex items-center gap-2.5 bg-slate-50 hover:bg-amber-50/60 border border-slate-200/90 hover:border-amber-400 pl-1.5 pr-3.5 py-1 rounded-full transition-all duration-200 shadow-xs group"
+                aria-label="Mon panier d'achats"
               >
-                <div className="relative text-amber-700">
+                {/* Médaillon icône panier avec badge détaché */}
+                <div className="relative w-8 h-8 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
                   <ShoppingCart className="w-4 h-4 stroke-[2.2px]" />
-                  <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white">
+                  <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
                     2
                   </span>
                 </div>
-                <div className="text-left text-xs leading-none">
-                  <span className="text-[10px] text-amber-800 font-medium block">Mon Panier</span>
-                  <span className="font-extrabold text-slate-900">24 000 FCFA</span>
+
+                {/* Libellé & Montant lisibles et contrastés */}
+                <div className="text-left leading-tight">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block group-hover:text-amber-800 transition-colors">
+                    Panier
+                  </span>
+                  <span className="text-xs font-black text-slate-900 whitespace-nowrap block">
+                    24 000 FCFA
+                  </span>
                 </div>
               </Link>
 
@@ -226,29 +203,92 @@ export function Header() {
             </div>
           </div>
 
-          {/* ================= SOUS-BARRE CATÉGORIES DESKTOP ================= */}
+          {/* ================= VRAIE BARRE DE NAVIGATION PRINCIPALE DESKTOP ================= */}
           <div className="hidden md:flex items-center justify-between border-t border-slate-100 py-2.5 text-xs font-semibold text-slate-700">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 lg:gap-3">
+              {/* 1. Bouton Toutes les Boutiques */}
               <Link
-                href="/categories"
-                className="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-200/80 text-slate-900 font-bold px-3.5 py-1.5 rounded-xl transition"
+                href="/boutiques"
+                className="flex items-center gap-2 bg-[#0c1527] hover:bg-slate-900 text-amber-400 font-bold px-4 py-2 rounded-full border border-amber-400/30 transition shadow-xs group"
               >
-                <Menu className="w-4 h-4 stroke-[2.2px]" />
-                <span>Toutes les catégories</span>
+                <Store className="w-4 h-4 stroke-[2.2px] group-hover:scale-110 transition-transform duration-200" />
+                <span>Toutes les Boutiques</span>
               </Link>
-              <Link href="/categories?category=mode" className="hover:text-amber-600 transition">Mode & Friperie</Link>
-              <Link href="/categories?category=electronique" className="hover:text-amber-600 transition">Électronique & High-Tech</Link>
-              <Link href="/categories?category=beaute" className="hover:text-amber-600 transition">Beauté & Cosmétiques</Link>
-              <Link href="/categories?category=maison" className="hover:text-amber-600 transition">Maison & Décoration</Link>
-              <Link href="/categories?category=sport" className="hover:text-amber-600 transition">Sport & Fitness</Link>
-              <Link href="/categories?category=enfants" className="hover:text-amber-600 transition">Enfants & Bébés</Link>
+
+              {/* 2. Accueil */}
+              <Link
+                href="/"
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition ${
+                  pathname === '/'
+                    ? 'text-amber-600 bg-amber-50/80 font-bold'
+                    : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
+                }`}
+              >
+                <Home className="w-3.5 h-3.5" />
+                <span>Accueil</span>
+              </Link>
+
+              {/* 3. Nos Boutiques */}
+              <Link
+                href="/boutiques"
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition ${
+                  pathname.startsWith('/boutiques')
+                    ? 'text-slate-950 bg-amber-400 border border-amber-500/30 font-bold shadow-xs'
+                    : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
+                }`}
+              >
+                <Store className={`w-3.5 h-3.5 ${pathname.startsWith('/boutiques') ? 'text-slate-950' : 'text-amber-500'}`} />
+                <span>Nos Boutiques</span>
+              </Link>
+
+              {/* 4. Bons Plans Dakar */}
+              <Link
+                href="/boutiques?filter=promos"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+              >
+                <Flame className="w-3.5 h-3.5 text-rose-500" />
+                <span>Bons Plans Dakar</span>
+                <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none">
+                  HOT
+                </span>
+              </Link>
+
+              {/* 5. Nouveautés */}
+              <Link
+                href="/boutiques?sort=newest"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Nouveautés</span>
+              </Link>
+
+              {/* 6. Suivre ma commande */}
+              <Link
+                href="/suivre-commande"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+              >
+                <Truck className="w-3.5 h-3.5 text-sky-600" />
+                <span>Suivre ma commande</span>
+              </Link>
+
+              {/* 7. Artisanat Sénégalais */}
+              <Link
+                href="/boutiques?category=Mode"
+                className="hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+              >
+                <Crown className="w-3.5 h-3.5 text-amber-500" />
+                <span>Artisanat Local 🇸🇳</span>
+              </Link>
             </div>
+
+            {/* Raccourci Accès Vendeur / Ouvrir une boutique */}
             <div className="flex items-center gap-4 text-xs">
               <Link
-                href="/vendeur/dashboard"
-                className="bg-slate-950 text-amber-400 px-4 py-1.5 rounded-full font-bold hover:bg-slate-900 transition flex items-center gap-1 shadow-xs"
+                href="/vendeur/accueil"
+                className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-4 py-2 rounded-full font-black transition flex items-center gap-1.5 shadow-xs active:scale-95"
               >
-                <span>Accès Boutique</span>
+                <Store className="w-3.5 h-3.5" />
+                <span>Accès Vendeur</span>
                 <span>→</span>
               </Link>
             </div>
@@ -342,11 +382,11 @@ export function Header() {
                   Nos Boutiques
                 </Link>
                 <Link
-                  href="/categories"
+                  href="/boutiques?filter=promos"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-slate-50"
+                  className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-rose-600 font-medium"
                 >
-                  Catégories
+                  🔥 Bons Plans Dakar
                 </Link>
                 <Link
                   href="/panier"

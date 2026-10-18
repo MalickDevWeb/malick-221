@@ -14,6 +14,7 @@ import {
   User,
 } from 'lucide-react';
 import { formatFCFA } from '../../../services/api';
+import { VendorBottomNavigation } from '../../../components/layout/VendorBottomNavigation';
 
 export default function VendorProductsScreen6() {
   const [filter, setFilter] = useState('Tous');
@@ -145,29 +146,8 @@ export default function VendorProductsScreen6() {
         ))}
       </div>
 
-      {/* Barre de Navigation Vendeur Fixe */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 py-2 px-3 flex justify-around items-center max-w-md mx-auto shadow-lg">
-        <Link href="/vendeur/dashboard" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <Home className="w-5 h-5" />
-          <span className="text-[10px]">Accueil</span>
-        </Link>
-        <Link href="/vendeur/produits" className="flex flex-col items-center text-emerald-600 font-bold gap-1">
-          <Package className="w-5 h-5 stroke-[2.5px]" />
-          <span className="text-[10px]">Produits</span>
-        </Link>
-        <Link href="/vendeur/commandes" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <ShoppingBag className="w-5 h-5" />
-          <span className="text-[10px]">Commandes</span>
-        </Link>
-        <Link href="/vendeur/boutique" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <Store className="w-5 h-5" />
-          <span className="text-[10px]">Boutique</span>
-        </Link>
-        <Link href="/vendeur/profil" className="flex flex-col items-center text-slate-400 hover:text-slate-600 font-medium gap-1">
-          <User className="w-5 h-5" />
-          <span className="text-[10px]">Profil</span>
-        </Link>
-      </nav>
+      {/* Barre de Navigation Vendeur Adaptée (Mobile & Desktop) */}
+      <VendorBottomNavigation activeTab="produits" />
     </div>
   );
 }

@@ -1,25 +1,25 @@
- 'use client';
+'use client';
 
 import Link from 'next/link';
 import { useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft,
   Search,
   Star,
-  RotateCw,
-  ChevronDown,
   Crown,
-  Smartphone,
-  Tv,
+  MapPin,
+  CheckCircle2,
+  ArrowRight,
+  ShieldCheck,
+  Store,
+  X,
   Sparkles,
-  Home as HomeIcon,
-  Zap,
-  Smile,
 } from 'lucide-react';
 
 export default function ShopsListPage() {
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Toutes');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Mode');
+  const [sortBy, setSortBy] = useState<'rating' | 'reviews' | 'name'>('rating');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const boutiques = [
@@ -27,288 +27,383 @@ export default function ShopsListPage() {
       id: '1',
       name: 'Style & Mode',
       slug: 'style-and-mode',
-      subtitle: 'Vêtements, chaussures, accessoires',
-      rating: '4.8',
-      reviews: '1,2k avis',
+      subtitle: 'Prêt-à-porter, sneakers haut de gamme & accessoires...',
+      rating: '4,9',
+      ratingNum: 4.9,
+      reviews: '(1,2k avis)',
+      reviewsCount: 1240,
       tags: ['Mode', 'Chaussures', 'Accessoires'],
-      avatarBg: 'bg-black text-white',
-      logoType: 'crown-mb',
-      logoText: 'Style & Mode',
+      category: 'Mode',
+      monogram: 'SM',
+      location: 'Dakar',
+      coverImage: '/images/boutiques/cover_style_mode.jpg',
+      productsCount: '+ 340 articles',
     },
     {
       id: '2',
-      name: 'TechZone',
-      slug: 'techzone',
-      subtitle: 'Téléphones, ordinateurs, accessoires',
-      rating: '4.6',
-      reviews: '980 avis',
-      tags: ['Électronique', 'Informatique', 'Accessoires'],
-      avatarBg: 'bg-[#081a36] text-sky-400',
-      logoType: 'tech-screens',
-      logoText: 'TechZone',
+      name: 'Beauty World',
+      slug: 'beauty-world',
+      subtitle: 'Parfums de luxe, soins bio & cosmétiques naturels...',
+      rating: '4,8',
+      ratingNum: 4.8,
+      reviews: '(756 avis)',
+      reviewsCount: 756,
+      tags: ['Beauté', 'Parfums', 'Soins'],
+      category: 'Beauté',
+      monogram: 'BW',
+      location: 'Dakar',
+      coverImage: '/images/boutiques/cover_beauty_world.jpg',
+      productsCount: '+ 185 articles',
     },
     {
       id: '3',
-      name: 'Beauty World',
-      slug: 'beauty-world',
-      subtitle: 'Parfums, soins, maquillage',
-      rating: '4.7',
-      reviews: '756 avis',
-      tags: ['Beauté', 'Parfums', 'Soins'],
-      avatarBg: 'bg-[#fbcfe8] text-slate-900',
-      logoType: 'crown-mb-pink',
-      logoText: 'Beauty World',
+      name: 'TechZone',
+      slug: 'techzone',
+      subtitle: 'Smartphones récents, ordinateurs & accessoires...',
+      rating: '4,8',
+      ratingNum: 4.8,
+      reviews: '(980 avis)',
+      reviewsCount: 980,
+      tags: ['Électronique', 'Informatique', 'Accessoires'],
+      category: 'Électronique',
+      monogram: 'TZ',
+      location: 'Dakar',
+      coverImage: '/images/boutiques/cover_techzone.jpg',
+      productsCount: '+ 210 articles',
     },
     {
       id: '4',
-      name: 'Maison Chic',
-      slug: 'maison-chic',
-      subtitle: 'Décoration, cuisine, linge de maison',
-      rating: '4.5',
-      reviews: '421 avis',
-      tags: ['Maison', 'Décoration', 'Cuisine'],
-      avatarBg: 'bg-[#063327] text-white',
-      logoType: 'house-chic',
-      logoText: 'Maison Chic',
+      name: 'Kids World',
+      slug: 'kids-world',
+      subtitle: 'Jeux d’éveil, vêtements enfants & plus encore...',
+      rating: '4,8',
+      ratingNum: 4.8,
+      reviews: '(523 avis)',
+      reviewsCount: 523,
+      tags: ['Enfants', 'Jouets', 'Vêtements'],
+      category: 'Enfants',
+      monogram: 'KW',
+      location: 'Dakar',
+      coverImage: '/images/boutiques/cover_kids_world.jpg',
+      productsCount: '+ 190 articles',
     },
     {
       id: '5',
-      name: 'Sport Max',
-      slug: 'sport-max',
-      subtitle: 'Fitness, sport, accessoires',
-      rating: '4.4',
-      reviews: '367 avis',
-      tags: ['Sport', 'Fitness', 'Accessoires'],
-      avatarBg: 'bg-[#facc15] text-slate-950',
-      logoType: 'running-sport',
-      logoText: 'Sport Max',
+      name: 'Maison Chic',
+      slug: 'maison-chic',
+      subtitle: 'Salons contemporains, déco artisanale & mobilier...',
+      rating: '4,7',
+      ratingNum: 4.7,
+      reviews: '(421 avis)',
+      reviewsCount: 421,
+      tags: ['Maison', 'Décoration', 'Mobilier'],
+      category: 'Maison',
+      monogram: 'MC',
+      location: 'Dakar',
+      coverImage: '/images/boutiques/cover_maison_chic.jpg',
+      productsCount: '+ 140 articles',
     },
     {
       id: '6',
-      name: 'Kids World',
-      slug: 'kids-world',
-      subtitle: 'Jouets, vêtements, puériculture',
-      rating: '4.6',
-      reviews: '523 avis',
-      tags: ['Enfants', 'Jouets', 'Vêtements'],
-      avatarBg: 'bg-[#0284c7] text-white',
-      logoType: 'teddy-kids',
-      logoText: 'Kids World',
+      name: 'Sport Max',
+      slug: 'sport-max',
+      subtitle: 'Équipements fitness, maillots officiels & accessoires...',
+      rating: '4,6',
+      ratingNum: 4.6,
+      reviews: '(367 avis)',
+      reviewsCount: 367,
+      tags: ['Sport', 'Fitness', 'Accessoires'],
+      category: 'Sport',
+      monogram: 'SM',
+      location: 'Dakar',
+      coverImage: '/images/boutiques/cover_sport_max.jpg',
+      productsCount: '+ 165 articles',
     },
   ];
 
-  const categories = ['Mode', 'Électronique', 'Beauté', 'Maison', 'Sport', 'Enfants'];
+  const categories = [
+    { label: 'Mode', icon: '🏷️' },
+    { label: 'Électronique', icon: '💻' },
+    { label: 'Beauté', icon: '✨' },
+    { label: 'Maison', icon: '🏠' },
+    { label: 'Sport', icon: '⚽' },
+    { label: 'Enfants', icon: '🧸' },
+  ];
+
   const normalizeText = (value: string) =>
     value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr');
-  const normalizedSearch = normalizeText(search.trim());
-  const filteredBoutiques = boutiques.filter((shop) => {
-    const matchesSearch = !normalizedSearch ||
-      normalizeText([shop.name, shop.subtitle, ...shop.tags].join(' ')).includes(normalizedSearch);
-    const matchesCategory = selectedCategory === 'Toutes' ||
-      shop.tags.some((tag) => normalizeText(tag) === normalizeText(selectedCategory));
 
-    return matchesSearch && matchesCategory;
-  });
+  const normalizedSearch = normalizeText(search.trim());
+
+  const filteredBoutiques = boutiques
+    .filter((shop) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        normalizeText([shop.name, shop.subtitle, shop.location, ...shop.tags].join(' ')).includes(
+          normalizedSearch
+        );
+      const matchesCategory =
+        !selectedCategory ||
+        selectedCategory === 'Toutes' ||
+        shop.category === selectedCategory ||
+        shop.tags.some((tag) => normalizeText(tag) === normalizeText(selectedCategory));
+
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'rating') return b.ratingNum - a.ratingNum;
+      if (sortBy === 'reviews') return b.reviewsCount - a.reviewsCount;
+      return a.name.localeCompare(b.name);
+    });
 
   return (
-    <div className="w-full bg-[#fafafa] min-h-screen py-3 md:py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 md:space-y-6">
-        
-        {/* En-tête Page Mobile (< md) */}
-        <div className="md:hidden flex items-center justify-between border-b border-slate-100 pb-2.5">
-          <Link href="/" className="text-slate-900 p-1 hover:bg-slate-100 rounded-full transition">
-            <ArrowLeft className="w-6 h-6 stroke-[2.2px]" />
-          </Link>
-          <h1 className="font-black text-lg text-slate-900 tracking-tight">Nos boutiques</h1>
-          <button
-            type="button"
-            aria-label="Rechercher une boutique"
-            onClick={() => searchInputRef.current?.focus()}
-            className="text-slate-900 p-1 hover:bg-slate-100 rounded-full transition"
-          >
-            <Search className="w-5 h-5 stroke-[2.2px]" />
-          </button>
-        </div>
+    <div className="bg-[#f8f9fa] min-h-screen py-4 sm:py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        {/* ================= 1. HERO BANNER SANS BANDES NOIRES + MOTION DESIGN SHIMMER ================= */}
+        <motion.div
+          initial={{ opacity: 0, y: 18, scale: 0.99 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          whileHover={{ scale: 1.008 }}
+          className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group border border-slate-200/60"
+        >
+          <img
+            src="/images/boutiques/dakar_sunset_banner.png"
+            alt="Les meilleures boutiques du Sénégal, réunies ici"
+            className="w-full h-auto object-cover block"
+          />
 
-        {/* Titre & Description Desktop (md et +) */}
-        <div className="hidden md:flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-              Toutes les Boutiques Malick Buss
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Explorez les meilleures boutiques vérifiées du Sénégal. Mode, tech, beauté et déco en direct des commerçants.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-500 bg-slate-200/60 px-3 py-1.5 rounded-full">
-              {filteredBoutiques.length} boutique{filteredBoutiques.length === 1 ? '' : 's'} partenaire{filteredBoutiques.length === 1 ? '' : 's'}
-            </span>
-          </div>
-        </div>
+          {/* Effet Shimmer lumineux au survol */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none" />
 
-        {/* Barre de Recherche et Filtres */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-3 md:p-4 rounded-2xl border border-slate-100 shadow-2xs">
-          {/* Barre de recherche */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+          {/* Halo d'ambiance doré subtil */}
+          <div className="absolute -inset-px rounded-2xl sm:rounded-3xl border-2 border-transparent group-hover:border-amber-400/40 transition-colors duration-500 pointer-events-none" />
+        </motion.div>
+
+        {/* ================= 2. BARRE DE RECHERCHE, FILTRES GLISSANTS (SPRING) & TRI ================= */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.1, ease: 'easeOut' }}
+          className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3.5"
+        >
+          {/* Champ de recherche avec micro-interaction */}
+          <div className="relative flex-1 min-w-[280px]">
+            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2.2px]" />
             <input
               ref={searchInputRef}
               type="text"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              aria-label="Rechercher une boutique ou une marque"
-              placeholder="Rechercher une boutique, une marque..."
-              className="w-full bg-[#f4f5f7] hover:bg-[#ecedf0] focus:bg-white text-xs pl-11 pr-4 py-2.5 rounded-full border border-transparent focus:border-amber-400 focus:outline-none transition-all placeholder:text-slate-400 font-medium"
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher un nom, une catégorie, un produit, une marque..."
+              className="w-full bg-[#f8fafc] text-xs pl-11 pr-10 py-2.5 rounded-full border border-slate-200/80 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-400/20 focus:outline-none transition-all font-medium text-slate-800 placeholder:text-slate-400"
             />
+            {search && (
+              <motion.button
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                whileHover={{ rotate: 90 }}
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
+                aria-label="Effacer la recherche"
+              >
+                <X className="w-3.5 h-3.5" />
+              </motion.button>
+            )}
           </div>
 
-          {/* Filtres Pilules Horizontaux */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-none py-1">
-            <button
-              type="button"
-              aria-pressed={selectedCategory === 'Toutes'}
-              onClick={() => setSelectedCategory('Toutes')}
-              className={`${selectedCategory === 'Toutes' ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs' : 'bg-[#f0f4f8] hover:bg-slate-200 text-slate-700 font-medium'} text-xs px-4 py-1.5 rounded-full flex-shrink-0 transition`}
-            >
-              Toutes
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                aria-pressed={selectedCategory === cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`${selectedCategory === cat ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs' : 'bg-[#f0f4f8] hover:bg-slate-200 text-slate-700 font-medium'} text-xs px-4 py-1.5 rounded-full flex-shrink-0 transition`}
-              >
-                {cat}
-              </button>
-            ))}
+          {/* Filtres Catégories avec GLISSEMENT FLUIDE (Framer Motion Spring) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat.label;
+              return (
+                <button
+                  key={cat.label}
+                  type="button"
+                  onClick={() =>
+                    setSelectedCategory(selectedCategory === cat.label ? 'Toutes' : cat.label)
+                  }
+                  className={`relative text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap transition-colors duration-200 flex items-center gap-1.5 select-none ${
+                    isActive ? 'text-slate-950' : 'text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80'
+                  }`}
+                >
+                  {/* Pilule dorée fluide avec spring physics */}
+                  {isActive && (
+                    <motion.span
+                      layoutId="boutiqueCategoryPill"
+                      className="absolute inset-0 bg-amber-400 rounded-full shadow-xs z-0 border border-amber-500/20"
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-10">{cat.icon}</span>
+                  <span className="relative z-10">{cat.label}</span>
+                </button>
+              );
+            })}
           </div>
-        </div>
 
-        {/* Grille des 6 Boutiques (1 col sur mobile, 2 ou 3 cols sur desktop) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pt-2">
-          {filteredBoutiques.map((shop) => (
-            <div
-              key={shop.id}
-              className="bg-white rounded-2xl md:rounded-3xl border border-slate-100/90 p-4 shadow-2xs hover:shadow-lg hover:border-amber-200 transition-all flex items-center justify-between gap-3.5 group"
+          {/* Sélecteur de Tri */}
+          <div className="flex items-center justify-end gap-2 text-xs font-semibold text-slate-500 flex-shrink-0">
+            <span className="whitespace-nowrap">Trier :</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none cursor-pointer transition"
             >
-              {/* Logo Circulaire Spécifique */}
-              <div
-                className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex-shrink-0 flex flex-col items-center justify-center p-1 text-center border border-slate-100 shadow-xs group-hover:scale-105 transition ${shop.avatarBg}`}
-              >
-                {shop.logoType === 'crown-mb' && (
-                  <>
-                    <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 mb-0.5" />
-                    <span className="font-black text-xs md:text-sm leading-none">MB</span>
-                    <span className="text-[7px] font-bold tracking-tighter leading-none mt-0.5 scale-90">
-                      Style & Mode
-                    </span>
-                  </>
-                )}
-                {shop.logoType === 'tech-screens' && (
-                  <>
-                    <div className="flex items-center gap-0.5 text-sky-400 mb-0.5">
-                      <Smartphone className="w-2.5 h-2.5 stroke-[2.5px]" />
-                      <Tv className="w-3 h-3 stroke-[2.5px]" />
-                    </div>
-                    <span className="text-[7.5px] font-black uppercase text-white leading-none">
-                      TechZone
-                    </span>
-                    <span className="text-[5.5px] text-sky-300 font-bold uppercase tracking-wider">
-                      TECH ZONE
-                    </span>
-                  </>
-                )}
-                {shop.logoType === 'crown-mb-pink' && (
-                  <>
-                    <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400 mb-0.5" />
-                    <span className="font-black text-xs md:text-sm text-slate-900 leading-none">MB</span>
-                    <span className="text-[7px] font-bold text-slate-800 tracking-tighter leading-none mt-0.5">
-                      Beauty World
-                    </span>
-                  </>
-                )}
-                {shop.logoType === 'house-chic' && (
-                  <>
-                    <HomeIcon className="w-4 h-4 text-emerald-400 stroke-[2.2px] mb-0.5" />
-                    <span className="text-[7.5px] font-black text-white leading-none">
-                      Maison Chic
-                    </span>
-                  </>
-                )}
-                {shop.logoType === 'running-sport' && (
-                  <>
-                    <Zap className="w-4 h-4 text-slate-950 fill-slate-950 mb-0.5" />
-                    <span className="text-[7.5px] font-black uppercase text-slate-950 leading-none">
-                      Sport Max
-                    </span>
-                  </>
-                )}
-                {shop.logoType === 'teddy-kids' && (
-                  <>
-                    <Smile className="w-4 h-4 text-amber-300 stroke-[2.5px] mb-0.5" />
-                    <span className="text-[7.5px] font-black uppercase text-white leading-none">
-                      Kids World
-                    </span>
-                  </>
-                )}
-              </div>
+              <option value="rating">Mieux notées ★</option>
+              <option value="reviews">Plus d&apos;avis</option>
+              <option value="name">Alphabétique (A-Z)</option>
+            </select>
+          </div>
+        </motion.div>
 
-              {/* Infos Médianes */}
-              <div className="flex-1 min-w-0 space-y-1">
-                <h3 className="font-bold text-sm md:text-base text-slate-900 truncate group-hover:text-amber-600 transition">
-                  {shop.name}
-                </h3>
-                <p className="text-[11px] md:text-xs text-slate-500 truncate">
-                  {shop.subtitle}
-                </p>
-                <div className="flex items-center gap-1.5">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                    <span className="text-xs font-bold text-slate-900">{shop.rating}</span>
-                  </div>
-                  <span className="text-[10px] md:text-xs text-slate-400">({shop.reviews})</span>
-                </div>
-                {/* Badges Tags */}
-                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                  {shop.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="bg-emerald-50 text-emerald-700 text-[9px] md:text-[10px] font-medium px-2 py-0.5 rounded-md"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bouton Vert Voir */}
-              <Link
-                href={`/boutiques/${shop.slug}`}
-                className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs md:text-sm px-4 md:px-5 py-2 rounded-full transition shadow-2xs flex-shrink-0"
-              >
-                Voir
-              </Link>
-            </div>
-          ))}
-          {filteredBoutiques.length === 0 && (
-            <p className="col-span-full py-10 text-center text-sm text-slate-500" role="status">
-              Aucune boutique ne correspond à votre recherche.
+        {/* ================= 3. TITRE DE SECTION AVEC COMPTEUR ANIMÉ ================= */}
+        <div className="flex items-center justify-between pt-1 px-1">
+          <div className="space-y-0.5">
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
+              <Store className="w-5 h-5 text-amber-500 stroke-[2.2px]" />
+              <span>Boutiques à découvrir</span>
+              <span className="text-xs font-bold bg-amber-400/20 text-amber-800 px-2.5 py-0.5 rounded-full border border-amber-400/30">
+                {filteredBoutiques.length} actives
+              </span>
+            </h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Des boutiques sélectionnées pour la qualité de leurs produits et leur fiabilité.
             </p>
-          )}
+          </div>
+          <motion.button
+            whileHover={{ x: 3 }}
+            type="button"
+            onClick={() => {
+              setSelectedCategory('Toutes');
+              setSearch('');
+            }}
+            className="text-xs font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1 transition select-none"
+          >
+            <span>Voir toutes les boutiques</span>
+            <span>→</span>
+          </motion.button>
         </div>
 
-        {/* Bouton Apprenez plus de boutiques */}
-        <div className="pt-4 pb-8 text-center">
-          <button className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-6 py-2.5 rounded-full shadow-2xs hover:shadow-xs transition">
-            <RotateCw className="w-4 h-4 stroke-[2.2px]" />
-            <span>Charger plus de boutiques</span>
-            <ChevronDown className="w-4 h-4" />
-          </button>
-        </div>
+        {/* ================= 4. GRILLE DES BOUTIQUES (ENTRÉE STAGGER + MOTION FLUIDE) ================= */}
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence>
+            {filteredBoutiques.map((shop, index) => (
+              <motion.div
+                key={shop.id}
+                layout
+                initial={{ opacity: 0, y: 25, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{
+                  duration: 0.45,
+                  delay: index * 0.07,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                whileHover={{
+                  y: -8,
+                  boxShadow: '0 20px 30px -10px rgba(12, 21, 39, 0.12), 0 0 20px -5px rgba(245, 158, 11, 0.12)',
+                  borderColor: 'rgba(245, 158, 11, 0.4)',
+                  transition: { duration: 0.25, ease: 'easeOut' },
+                }}
+                className="bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-xs transition-colors duration-300 flex flex-col justify-between group cursor-pointer"
+              >
+                <div>
+                  {/* Couverture Panoramique avec Zoom fluide au survol */}
+                  <div className="relative h-40 w-full overflow-hidden bg-slate-900">
+                    <img
+                      src={shop.coverImage}
+                      alt={shop.name}
+                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                    />
 
+                    {/* Gradient protecteur élégant */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+
+                    {/* Badge Boutique Vérifiée avec aura émeraude */}
+                    <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-[#059669] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md shadow-emerald-900/30 backdrop-blur-xs">
+                      <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5px] animate-pulse" />
+                      <span>Boutique vérifiée</span>
+                    </div>
+
+                    {/* Badges Localisation & Articles */}
+                    <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+                      <span className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/10">
+                        <MapPin className="w-3 h-3 text-amber-400" />
+                        <span>{shop.location}</span>
+                      </span>
+                      <span className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/10">
+                        {shop.productsCount}
+                      </span>
+                    </div>
+
+                    {/* Monogramme Circulaire MB avec micro-rotation au survol */}
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: 6 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                      className="absolute -bottom-6 left-5 z-20 w-12 h-12 rounded-full bg-slate-950 text-white border-2 border-white flex flex-col items-center justify-center shadow-lg group-hover:border-amber-400 transition-colors"
+                    >
+                      <Crown className="w-3 h-3 text-amber-400 fill-amber-400 -mb-0.5" />
+                      <span className="font-black text-xs tracking-tight leading-none">
+                        {shop.monogram}
+                      </span>
+                    </motion.div>
+                  </div>
+
+                  {/* Informations de la Boutique */}
+                  <div className="pt-8 px-5 pb-3 space-y-2">
+                    {/* Titre & Note */}
+                    <div className="flex items-center justify-between">
+                      <Link
+                        href={`/boutiques/${shop.slug}/produits`}
+                        className="font-extrabold text-sm text-slate-900 group-hover:text-amber-600 transition flex items-center gap-1.5"
+                      >
+                        <span>{shop.name}</span>
+                        <CheckCircle2 className="w-4 h-4 text-amber-500 fill-amber-400" />
+                      </Link>
+                      <div className="flex items-center gap-1 text-xs font-black text-slate-950 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
+                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
+                        <span>{shop.rating}</span>
+                        <span className="text-[10px] font-semibold text-slate-400">
+                          {shop.reviews}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Sous-titre descriptif */}
+                    <p className="text-xs text-slate-500 line-clamp-1 font-medium leading-relaxed">
+                      {shop.subtitle}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Tags & Bouton d'action interactif */}
+                <div className="px-5 pb-5 pt-2 flex items-center justify-between gap-2 border-t border-slate-100">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {shop.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 group-hover:bg-amber-50 group-hover:text-amber-800 transition-colors"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      href={`/boutiques/${shop.slug}/produits`}
+                      className="inline-flex items-center gap-1.5 bg-[#0c1527] hover:bg-amber-400 text-white hover:text-slate-950 font-bold text-xs px-4 py-2 rounded-full transition-all duration-200 shadow-xs flex-shrink-0"
+                    >
+                      <span>Visiter la boutique</span>
+                      <ArrowRight className="w-3.5 h-3.5 stroke-[2.5px] group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </motion.div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </div>
   );

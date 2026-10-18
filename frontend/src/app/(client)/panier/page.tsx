@@ -1,47 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Trash2, Minus, Plus, MessageCircle, ArrowRight } from 'lucide-react';
 import { formatFCFA } from '../../../services/api';
+import { CartItem, getCartItems, saveCartItems } from '../../../services/order-flow';
 
 export default function CartPage() {
-  const [items, setItems] = useState([
-    {
-      id: '1',
-      title: 'Veste en jean vintage',
-      price: 12000,
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=300&q=80',
-    },
-    {
-      id: '2',
-      title: 'Hoodie Nike',
-      price: 15000,
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=300&q=80',
-    },
-    {
-      id: '3',
-      title: 'Sneakers',
-      price: 18000,
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=300&q=80',
-    },
-  ]);
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    setItems(getCartItems());
+  }, []);
 
   const updateQuantity = (id: string, delta: number) => {
-    setItems((prev) =>
-      prev.map((item) =>
+    setItems((prev) => {
+      const nextItems = prev.map((item) =>
         item.id === id
           ? { ...item, quantity: Math.max(1, item.quantity + delta) }
           : item
-      )
-    );
+      );
+      saveCartItems(nextItems);
+      return nextItems;
+    });
   };
 
   const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItems((prev) => {
+      const nextItems = prev.filter((item) => item.id !== id);
+      saveCartItems(nextItems);
+      return nextItems;
+    });
   };
 
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);

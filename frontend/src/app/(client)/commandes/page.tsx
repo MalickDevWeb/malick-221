@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -12,61 +12,51 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { formatFCFA } from '../../../services/api';
+import { getOrders, OrderStatus, StoredOrder } from '../../../services/order-flow';
+
+const STATUS_DETAILS: Record<OrderStatus, { label: string; color: string }> = {
+  CONFIRMED: { label: 'Commande confirmée', color: 'bg-amber-100 text-amber-800 border-amber-300' },
+  PREPARING: { label: 'En préparation', color: 'bg-amber-100 text-amber-800 border-amber-300' },
+  SHIPPED: { label: 'En cours de livraison', color: 'bg-amber-100 text-amber-800 border-amber-300' },
+  DELIVERED: { label: 'Livrée avec succès', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  CANCELLED: { label: 'Annulée', color: 'bg-slate-100 text-slate-700 border-slate-300' },
+};
 
 export default function ClientOrdersPage() {
   const [activeTab, setActiveTab] = useState<'ALL' | 'ACTIVE' | 'DELIVERED'>('ALL');
+  const [createdOrders, setCreatedOrders] = useState<StoredOrder[]>([]);
+
+  useEffect(() => {
+    setCreatedOrders(getOrders());
+  }, []);
 
   const orders = [
-    {
-      id: 'MB-2025-00123',
-      date: '12 avr. 2025 à 10:24',
-      status: 'EN_COURS',
-      statusLabel: 'En cours de livraison',
-      statusColor: 'bg-amber-100 text-amber-800 border-amber-300',
-      total: 30500,
-      paymentMethod: 'Orange Money',
-      items: [
-        {
-          name: 'T-shirt oversize vintage',
-          shop: 'Style & Mode',
-          price: 12000,
-          quantity: 1,
-          image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=200&q=80',
-        },
-        {
-          name: 'Jean vintage délavé',
-          shop: 'Style & Mode',
-          price: 18500,
-          quantity: 1,
-          image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=200&q=80',
-        },
-      ],
-    },
-    {
-      id: 'MB-2025-00098',
-      date: '28 mars 2025 à 15:40',
-      status: 'LIVREE',
-      statusLabel: 'Livrée avec succès',
-      statusColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-      total: 25000,
-      paymentMethod: 'Wave',
-      items: [
-        {
-          name: 'Sneakers Nike Air Max Edition',
-          shop: 'Style & Mode',
-          price: 25000,
-          quantity: 1,
-          image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=200&q=80',
-        },
-      ],
-    },
+    ...createdOrders.map((order) => ({
+      id: order.id,
+      date: new Date(order.createdAt).toLocaleString('fr-FR'),
+      status: order.status,
+      statusLabel: STATUS_DETAILS[order.status].label,
+      statusColor: STATUS_DETAILS[order.status].color,
+      total: order.total,
+      paymentMethod: order.paymentOption === 'cod' ? 'Paiement à la livraison' : 'Mobile Money en attente',
+      paymentStatus: order.paymentStatus,
+      items: order.items.map((item) => ({
+        name: item.title,
+        shop: item.shop,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+      })),
+    })),
   ];
 
   const filteredOrders = orders.filter((o) => {
-    if (activeTab === 'ACTIVE') return o.status === 'EN_COURS';
-    if (activeTab === 'DELIVERED') return o.status === 'LIVREE';
+    if (activeTab === 'ACTIVE') return ['CONFIRMED', 'PREPARING', 'SHIPPED'].includes(o.status);
+    if (activeTab === 'DELIVERED') return o.status === 'DELIVERED';
     return true;
   });
+  const activeOrdersCount = orders.filter((order) => ['CONFIRMED', 'PREPARING', 'SHIPPED'].includes(order.status)).length;
+  const deliveredOrdersCount = orders.filter((order) => order.status === 'DELIVERED').length;
 
   return (
     <div className="w-full bg-[#fafafa] min-h-screen pb-16">
@@ -104,7 +94,7 @@ export default function ClientOrdersPage() {
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
-            En cours (1)
+            En cours ({activeOrdersCount})
           </button>
           <button
             onClick={() => setActiveTab('DELIVERED')}
@@ -114,7 +104,7 @@ export default function ClientOrdersPage() {
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
-            Livrées (1)
+            Livrées ({deliveredOrdersCount})
           </button>
         </div>
 
@@ -164,7 +154,9 @@ export default function ClientOrdersPage() {
               {/* Total & Raccourcis */}
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-slate-400 block">Montant payé ({ord.paymentMethod})</span>
+                  <span className="text-[10px] text-slate-400 block">
+                    {ord.paymentStatus === 'PENDING' ? 'Paiement en attente' : `Montant payé (${ord.paymentMethod})`}
+                  </span>
                   <span className="font-black text-sm text-slate-900">{formatFCFA(ord.total)}</span>
                 </div>
                 <Link
