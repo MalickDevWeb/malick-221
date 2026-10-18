@@ -32,11 +32,19 @@ redis_data/
 # OS & Editeurs
 .DS_Store
 *.pem
-.idea/
-.vscode/
+.idea
+.vscode
 *.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+
+# Sandbox & Local environment dotfiles
+.bash_profile
+.bashrc
+.claude/
+.gitconfig
+.gitmodules
+.mcp.json
+.profile
+.ripgreprc
+.zprofile
+.zshrc
 
