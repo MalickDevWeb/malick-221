@@ -18,7 +18,6 @@ import {
   Facebook,
   Instagram,
   Youtube,
-  Compass,
 } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
 
@@ -334,12 +333,6 @@ export function DesktopFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/vendeur/galerie" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
-                  <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
-                  <span>Galerie des 19 Écrans Figma</span>
-                </Link>
-              </li>
-              <li>
                 <a
                   href="http://localhost:3001"
                   target="_blank"
@@ -419,7 +412,7 @@ export function DesktopFooter() {
 
         </div>
 
-        {/* ================= 4. BAS DE PAGE (COPYRIGHT & BOUTON MAQUETTES) ================= */}
+        {/* ================= 4. BAS DE PAGE (COPYRIGHT & SLOGAN) ================= */}
         <div className="pt-2 pb-2 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <div className="flex items-center gap-2">
             <span>© 2025 Malick Buss. Tous droits réservés.</span>
@@ -429,14 +422,15 @@ export function DesktopFooter() {
             </span>
           </div>
 
-          <Link
-            href="/vendeur/galerie"
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-400/60 bg-black/40 hover:bg-amber-400 hover:text-slate-950 text-amber-300 text-xs font-bold transition shadow-sm"
-          >
-            <Compass className="w-3.5 h-3.5 text-amber-400" />
-            <span>Navigateur Maquettes</span>
-            <span>→</span>
-          </Link>
+          <div className="flex items-center gap-4 text-xs text-slate-400">
+            <Link href="/conditions" className="hover:text-amber-400 transition">
+              Conditions Générales
+            </Link>
+            <span>•</span>
+            <Link href="/confidentialite" className="hover:text-amber-400 transition">
+              Politique de Confidentialité
+            </Link>
+          </div>
         </div>
 
       </div>

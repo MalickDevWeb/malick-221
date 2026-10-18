@@ -415,13 +415,6 @@ export function Header() {
                 >
                   🏪 Espace Boutiquier (Vendeur)
                 </Link>
-                <Link
-                  href="/vendeur/galerie"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block p-2.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-bold"
-                >
-                  📱 Galerie des 19 Écrans
-                </Link>
               </div>
             </div>
 
