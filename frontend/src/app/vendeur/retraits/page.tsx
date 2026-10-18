@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowUpRight,
@@ -21,6 +21,49 @@ import {
 import { formatFCFA } from '../../../services/api';
 import { VendorPortalShell } from '../../../components/layout/VendorPortalShell';
 
+const INITIAL_TRANSACTIONS = [
+  {
+    id: 1,
+    title: 'Retrait vers Wave Sénégal',
+    date: '12 avr. 2025 • 14:32',
+    status: 'Traité & Reçu',
+    amount: -25000,
+    type: 'RETRAIT',
+    operator: 'Wave',
+    ref: 'WAV-9812401',
+  },
+  {
+    id: 2,
+    title: 'Vente #MB-00123 (Ensemble Boubou Soie)',
+    date: '10 avr. 2025 • 18:15',
+    status: 'Commission validée',
+    amount: 30000,
+    type: 'VENTE',
+    operator: 'Malick Buss',
+    ref: 'CMD-2025-0123',
+  },
+  {
+    id: 3,
+    title: 'Retrait vers Orange Money',
+    date: '8 avr. 2025 • 09:20',
+    status: 'Traité & Reçu',
+    amount: -15000,
+    type: 'RETRAIT',
+    operator: 'Orange Money',
+    ref: 'OM-4410928',
+  },
+  {
+    id: 4,
+    title: 'Vente #MB-00120 (Chemise Lin Dakar)',
+    date: '5 avr. 2025 • 11:45',
+    status: 'Commission validée',
+    amount: 12500,
+    type: 'VENTE',
+    operator: 'Malick Buss',
+    ref: 'CMD-2025-0120',
+  },
+];
+
 export default function VendorPayoutsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [method, setMethod] = useState<'WAVE' | 'OM'>('WAVE');
@@ -28,49 +71,23 @@ export default function VendorPayoutsPage() {
   const [phone, setPhone] = useState('+221 77 123 45 67');
   const [successMsg, setSuccessMsg] = useState(false);
   const [filterType, setFilterType] = useState<'ALL' | 'RETRAIT' | 'VENTE'>('ALL');
+  const [availableBalance, setAvailableBalance] = useState(28750);
+  const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
 
-  const transactions = [
-    {
-      id: 1,
-      title: 'Retrait vers Wave Sénégal',
-      date: '12 avr. 2025 • 14:32',
-      status: 'Traité & Reçu',
-      amount: -25000,
-      type: 'RETRAIT',
-      operator: 'Wave',
-      ref: 'WAV-9812401',
-    },
-    {
-      id: 2,
-      title: 'Vente #MB-00123 (Ensemble Boubou Soie)',
-      date: '10 avr. 2025 • 18:15',
-      status: 'Commission validée',
-      amount: 30000,
-      type: 'VENTE',
-      operator: 'Malick Buss',
-      ref: 'CMD-2025-0123',
-    },
-    {
-      id: 3,
-      title: 'Retrait vers Orange Money',
-      date: '8 avr. 2025 • 09:20',
-      status: 'Traité & Reçu',
-      amount: -15000,
-      type: 'RETRAIT',
-      operator: 'Orange Money',
-      ref: 'OM-4410928',
-    },
-    {
-      id: 4,
-      title: 'Vente #MB-00120 (Chemise Lin Dakar)',
-      date: '5 avr. 2025 • 11:45',
-      status: 'Commission validée',
-      amount: 12500,
-      type: 'VENTE',
-      operator: 'Malick Buss',
-      ref: 'CMD-2025-0120',
-    },
-  ];
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('malick_vendor_payouts');
+      if (stored) {
+        setTransactions(JSON.parse(stored));
+      }
+      const storedBal = localStorage.getItem('malick_vendor_balance');
+      if (storedBal) {
+        setAvailableBalance(Number(storedBal));
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+  }, []);
 
   const filteredTransactions = transactions.filter((t) => {
     if (filterType === 'ALL') return true;
@@ -79,11 +96,38 @@ export default function VendorPayoutsPage() {
 
   const handleWithdraw = (e: React.FormEvent) => {
     e.preventDefault();
+    const withdrawAmount = Number(amount) || 0;
+    if (withdrawAmount <= 0) return;
+
+    const newTx = {
+      id: Date.now(),
+      title: `Retrait vers ${method === 'WAVE' ? 'Wave Sénégal' : 'Orange Money'} (${phone})`,
+      date: `Aujourd'hui • ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`,
+      status: 'Traité & Reçu',
+      amount: -withdrawAmount,
+      type: 'RETRAIT',
+      operator: method === 'WAVE' ? 'Wave' : 'Orange Money',
+      ref: `${method === 'WAVE' ? 'WAV' : 'OM'}-${Date.now().toString().slice(-7)}`,
+    };
+
+    const nextTransactions = [newTx, ...transactions];
+    const nextBalance = Math.max(0, availableBalance - withdrawAmount);
+
+    setTransactions(nextTransactions);
+    setAvailableBalance(nextBalance);
+
+    try {
+      localStorage.setItem('malick_vendor_payouts', JSON.stringify(nextTransactions));
+      localStorage.setItem('malick_vendor_balance', nextBalance.toString());
+    } catch (e) {
+      console.warn(e);
+    }
+
     setSuccessMsg(true);
     setTimeout(() => {
       setSuccessMsg(false);
       setModalOpen(false);
-    }, 2000);
+    }, 1200);
   };
 
   return (
@@ -115,7 +159,7 @@ export default function VendorPayoutsPage() {
             </div>
             <div className="pt-3">
               <div className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight">
-                28 750 <span className="text-xs font-bold text-slate-300">FCFA</span>
+                {formatFCFA(availableBalance)}
               </div>
               <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-1">
                 <span>✓</span> Prêt pour virement immédiat
@@ -123,7 +167,7 @@ export default function VendorPayoutsPage() {
             </div>
             <button
               onClick={() => setModalOpen(true)}
-              className="mt-4 w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs py-2 px-3 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5"
+              className="mt-4 w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs py-2 px-3 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>Retirer mes fonds</span>
               <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5px]" />

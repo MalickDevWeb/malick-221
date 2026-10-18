@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { formatFCFA } from '../../../../../services/api';
 import { addCartItem, createOrder } from '../../../../../services/order-flow';
+import { getVendorProducts } from '../../../../../services/productStore';
 
 interface ProductItem {
   id: string;
@@ -225,10 +226,46 @@ export default function ShopProductsListingPage({
       inStock: true,
     },
   ];
+ 
+  const [productsList, setProductsList] = useState<ProductItem[]>(products);
+
+  useEffect(() => {
+    const syncProducts = () => {
+      try {
+        const vendorProds = getVendorProducts();
+        if (vendorProds && vendorProds.length > 0) {
+          const activeVendorItems: ProductItem[] = vendorProds
+            .filter((p) => p.status === 'Actif' || p.status === 'Stock Faible')
+            .map((p) => ({
+              id: p.id,
+              title: p.title,
+              category: p.category,
+              price: p.price,
+              originalPrice: p.discountPrice ? p.discountPrice : undefined,
+              rating: '4.9',
+              reviewsCount: 18,
+              image: p.image || 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=600&q=80',
+              tag: p.discountPrice ? 'Promo 🔥' : (p.stock <= 5 ? 'Stock Limité ⚡' : 'Nouveau ✨'),
+              inStock: p.stock > 0,
+            }));
+
+          const existingIds = new Set(activeVendorItems.map((p) => p.id));
+          const combined = [...activeVendorItems, ...products.filter((p) => !existingIds.has(p.id))];
+          setProductsList(combined);
+        }
+      } catch (err) {
+        console.error('Error syncing products with store:', err);
+      }
+    };
+
+    syncProducts();
+    window.addEventListener('malick_products_updated', syncProducts);
+    return () => window.removeEventListener('malick_products_updated', syncProducts);
+  }, []);
 
   const categories = ['Tous', 'Boubous & Bazin', 'Chaussures', 'Homme', 'Femme', 'Accessoires'];
 
-  const filteredProducts = products
+  const filteredProducts = productsList
     .filter((p) => {
       if (activeCategory === 'Tous') return true;
       return p.category === activeCategory;

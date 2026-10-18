@@ -47,4 +47,5 @@ redis_data/
 .ripgreprc
 .zprofile
 .zshrc
+.tmp/
 
