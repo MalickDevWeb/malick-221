@@ -20,7 +20,7 @@ export function MockupNavigator() {
   const clientScreens: ScreenItem[] = [
     { num: 1, name: 'Écran de démarrage', path: '/splash' },
     { num: 2, name: 'Accueil', path: '/' },
-    { num: 3, name: 'Catégories', path: '/categories' },
+    { num: 3, name: 'Toutes les Boutiques', path: '/boutiques' },
     { num: 4, name: 'Liste des boutiques', path: '/boutiques' },
     { num: 5, name: 'Page d’une boutique', path: '/boutiques/style-and-mode' },
     { num: 6, name: 'Liste des produits', path: '/boutiques/style-and-mode/produits' },

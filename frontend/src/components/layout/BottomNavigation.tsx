@@ -6,12 +6,9 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Home,
-  LayoutGrid,
-  Heart,
   ShoppingCart,
   User,
   Store,
-  Sparkles,
 } from 'lucide-react';
 
 export function BottomNavigation() {
@@ -29,8 +26,7 @@ export function BottomNavigation() {
 
   const navItems = [
     { label: 'Accueil', href: '/', icon: Home },
-    { label: 'Catégories', href: '/categories', icon: LayoutGrid },
-    { label: 'Boutiques', href: '/boutiques', icon: Heart },
+    { label: 'Boutiques', href: '/boutiques', icon: Store },
     { label: 'Panier', href: '/panier', icon: ShoppingCart, badge: 2 },
     { label: 'Profil', href: '/profil', icon: User },
   ];

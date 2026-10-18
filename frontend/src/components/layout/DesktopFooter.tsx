@@ -256,26 +256,26 @@ export function DesktopFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/categories" className="hover:text-amber-400 transition flex items-center justify-between group">
+                <Link href="/boutiques?filter=promos" className="hover:text-amber-400 transition flex items-center justify-between group">
                   <span className="flex items-center gap-1.5">
                     <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
-                    <span>Grands rayons & univers</span>
+                    <span>Bons Plans & Promos Dakar</span>
                   </span>
-                  <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full">
-                    6 rayons
+                  <span className="text-[10px] bg-rose-500 text-white font-black px-2 py-0.5 rounded-full">
+                    HOT 🔥
                   </span>
                 </Link>
               </li>
               <li>
-                <Link href="/categories?category=mode" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
+                <Link href="/boutiques?category=Mode" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
                   <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
-                  <span>Mode, Friperie & Bazin Riche</span>
+                  <span>Boutiques Mode & Bazin Riche</span>
                 </Link>
               </li>
               <li>
-                <Link href="/categories?category=electronique" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
+                <Link href="/boutiques?category=Électronique" className="hover:text-amber-400 transition flex items-center gap-1.5 group">
                   <ChevronRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
-                  <span>Électronique, iPhones & High-Tech</span>
+                  <span>Boutiques High-Tech & Smartphones</span>
                 </Link>
               </li>
               <li>
