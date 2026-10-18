@@ -296,14 +296,34 @@ export async function updateAdminShopStatus(
     if (err instanceof AdminApiError) throw err;
   }
 
+  function syncProfile(shopName: string, active: boolean) {
+    if (typeof window === 'undefined') return;
+    try {
+      ['malick_buss_vendor_profile', 'malick_vendor_profile'].forEach((key) => {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (!shopName || p.shopName === shopName || p.isVerified !== active) {
+            p.isVerified = active;
+            p.badge = active ? 'Vendeur Vérifié Or' : 'En attente de validation';
+            localStorage.setItem(key, JSON.stringify(p));
+          }
+        }
+      });
+      window.dispatchEvent(new Event('malick_profile_updated'));
+    } catch {}
+  }
+
   const shops = getLocalShops();
   const index = shops.findIndex((s) => s.id === shopId);
   if (index >= 0) {
     shops[index] = { ...shops[index], status };
     saveLocalShops(shops);
+    syncProfile(shops[index].name, status === 'ACTIVE');
     return shops[index];
   }
 
+  syncProfile('', status === 'ACTIVE');
   return {
     id: shopId,
     name: 'Boutique',

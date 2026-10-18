@@ -102,3 +102,76 @@ export function saveVendorProfile(updates: Partial<VendorProfile>): VendorProfil
   return updated;
 }
 
+/**
+ * Enregistre une nouvelle boutique créée par un vendeur, la place en attente
+ * et la synchronise directement avec la liste du Super Admin.
+ */
+export function registerNewVendorShop(params: {
+  name: string;
+  shopName: string;
+  phone: string;
+  category: string;
+  district: string;
+  description?: string;
+  avatarUrl?: string;
+}): VendorProfile {
+  const slug = params.shopName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+
+  const newProfile: VendorProfile = {
+    ...DEFAULT_PROFILE,
+    id: `vendor-${Date.now()}`,
+    name: params.name,
+    shopName: params.shopName,
+    shopSlug: slug || 'ma-boutique',
+    phone: params.phone,
+    email: `${slug}@malickbuss.sn`,
+    category: params.category,
+    district: params.district,
+    address: `${params.district}, Dakar`,
+    description: params.description || `Boutique officielle ${params.shopName}`,
+    avatarUrl: params.avatarUrl || '',
+    isVerified: false,
+    badge: 'En attente de validation',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (typeof window !== 'undefined') {
+    try {
+      // 1. Sauvegarde dans le profil commerçant
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newProfile));
+      localStorage.setItem('malick_vendor_profile', JSON.stringify(newProfile));
+      window.dispatchEvent(new CustomEvent('malick_profile_updated', { detail: newProfile }));
+
+      // 2. Synchronisation dans malick_admin_shops pour le Super Admin
+      const rawShops = localStorage.getItem('malick_admin_shops');
+      const shops = rawShops ? JSON.parse(rawShops) : [];
+      const newAdminShop = {
+        id: `shop-${Date.now()}`,
+        name: params.shopName,
+        slug: slug || 'ma-boutique',
+        status: 'PENDING_VERIFICATION',
+        createdAt: new Date().toISOString(),
+        owner: {
+          fullName: params.name,
+          email: `${slug}@malickbuss.sn`,
+          phoneNumber: params.phone,
+          isActive: true,
+        },
+        _count: { products: 0 },
+      };
+      const updatedShops = [newAdminShop, ...shops.filter((s: any) => s.slug !== slug)];
+      localStorage.setItem('malick_admin_shops', JSON.stringify(updatedShops));
+    } catch (err) {
+      console.error('Erreur synchronisation boutique vendeur vers Super Admin:', err);
+    }
+  }
+
+  return newProfile;
+}
+

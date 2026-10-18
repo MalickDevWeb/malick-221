@@ -165,10 +165,17 @@ export default function VendorDashboardPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-bold text-xs text-white truncate">{profile.shopName}</h3>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Active & En ligne
-                </span>
+                {profile.isVerified ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Active & En ligne
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                    En attente de validation ⏳
+                  </span>
+                )}
               </div>
             </div>
 
@@ -255,9 +262,15 @@ export default function VendorDashboardPage() {
               <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
                 Tableau de bord
               </h1>
-              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
-                Boutique Ouverte 🟢
-              </span>
+              {profile.isVerified ? (
+                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
+                  Boutique Ouverte 🟢
+                </span>
+              ) : (
+                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
+                  En attente de validation 🟡
+                </span>
+              )}
             </div>
             <p className="hidden md:block text-xs text-slate-500 font-medium">
               Bonjour {profile.name.split(' ')[0]} 👋, voici le résumé de l&apos;activité de votre boutique aujourd&apos;hui.
@@ -315,6 +328,47 @@ export default function VendorDashboardPage() {
 
         {/* Contenu de la page avec grille aérée */}
         <main className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
+          {/* Bannière d'attente de validation Super Admin & WhatsApp */}
+          {!profile.isVerified && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border-2 border-amber-400/80 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-white p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20">
+                  <Clock className="h-6 w-6 stroke-[2.3px]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm sm:text-base font-black text-slate-900">
+                      Boutique &ldquo;{profile.shopName}&rdquo; en attente d&apos;approbation
+                    </h3>
+                    <span className="inline-flex rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-900">
+                      ⏳ En attente de validation Super Admin
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-600 leading-relaxed max-w-2xl">
+                    Votre boutique a été transmise au Super Admin. Pour accélérer sa validation et commencer à publier vos produits immédiatement, échangez directement avec le Super Admin sur WhatsApp au <strong>+221 77 171 90 13</strong>.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <a
+                  href={`https://wa.me/221771719013?text=${encodeURIComponent(
+                    `Bonjour Super Admin Malick Buss, je viens de créer ma boutique "${profile.shopName}" (Commerçant: ${profile.name}, Tél: ${profile.phone}). Pouvez-vous vérifier et valider ma boutique s'il vous plaît ? Merci !`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-3 text-xs font-black text-white shadow-md shadow-emerald-600/20 transition active:scale-95"
+                >
+                  <MessageCircle className="h-4 w-4 fill-white/20 stroke-[2.2px]" />
+                  <span>Demander validation sur WhatsApp</span>
+                </a>
+              </div>
+            </motion.div>
+          )}
           {/* ================= 3. LES 4 CARTES KPI EXÉCUTIVES ================= */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {/* KPI 1 : Chiffre d'affaires du jour */}
@@ -766,13 +820,13 @@ export default function VendorDashboardPage() {
                 </div>
 
                 <a
-                  href="https://wa.me/221770000000?text=Bonjour%20Malick%20Buss%2C%20j%27ai%20besoin%20d%27assistance%20vendeur"
+                  href="https://wa.me/221771719013?text=Bonjour%20Malick%20Buss%2C%20j%27ai%20besoin%20d%27assistance%20vendeur"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-md shadow-emerald-500/20"
                 >
                   <MessageCircle className="w-4 h-4 stroke-[2.5px]" />
-                  <span>Contacter sur WhatsApp</span>
+                  <span>Contacter sur WhatsApp (77 171 90 13)</span>
                 </a>
               </div>
             </div>

@@ -27,8 +27,11 @@ import {
   FileText,
   X,
   Check,
+  MessageCircle,
+  Clock,
 } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
+import { registerNewVendorShop } from '../../services/vendorProfileStore';
 
 const VENDOR_CATEGORIES = [
   'Mode & Prêt-à-porter',
@@ -125,6 +128,7 @@ export function AuthLoginView({
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [selectedAvatarIcon, setSelectedAvatarIcon] = useState<string>('🛍️');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingValidationModal, setPendingValidationModal] = useState(false);
 
   const isVendorSignup = mode === 'SIGNUP' && role === 'VENDEUR';
   const isPasswordsMatching = confirmPassword ? password === confirmPassword : true;
@@ -287,30 +291,27 @@ export function AuthLoginView({
       if (mode === 'SIGNUP') {
         if (role === 'VENDEUR') {
           try {
-            const vendorProfile = {
+            registerNewVendorShop({
               name: fullName || 'Boutiquier',
               shopName: shopName || 'Ma Boutique',
               phone: phone,
               category: category,
               district: district,
               description: description,
-              logo: logoPreview || null,
-              avatarIcon: selectedAvatarIcon,
-              createdAt: new Date().toISOString(),
-            };
-            localStorage.setItem('malick_vendor_profile', JSON.stringify(vendorProfile));
+              avatarUrl: logoPreview || '',
+            });
             localStorage.setItem('malick_user_role', 'VENDEUR');
           } catch (err) {
-            console.error('Failed to save vendor to localStorage', err);
+            console.error('Failed to register vendor shop', err);
           }
+          setLoading(false);
+          setPendingValidationModal(true);
+          return;
         }
+
         setSuccessMessage(true);
         setTimeout(() => {
-          if (role === 'VENDEUR') {
-            router.push('/vendeur/dashboard');
-          } else {
-            router.push('/');
-          }
+          router.push('/');
         }, 800);
       } else {
         if (role === 'VENDEUR') {
@@ -1210,6 +1211,72 @@ export function AuthLoginView({
           </button>
         </motion.div>
       </main>
+
+      {/* ================= MODAL ATTENTE VALIDATION SUPER ADMIN ================= */}
+      {pendingValidationModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#071328] border border-amber-400/40 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 animate-in zoom-in-95 text-white">
+            <div className="text-center space-y-2">
+              <div className="w-16 h-16 rounded-2xl bg-amber-400/15 border border-amber-400/40 text-amber-400 flex items-center justify-center mx-auto text-3xl shadow-inner">
+                ⏳
+              </div>
+              <h3 className="text-xl font-black text-white tracking-tight">
+                Boutique créée avec succès !
+              </h3>
+              <p className="text-xs text-amber-300 font-bold uppercase tracking-wider">
+                En attente de validation par le Super Admin
+              </p>
+            </div>
+
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-2.5 text-xs">
+              <div className="flex justify-between items-center py-1 border-b border-slate-800">
+                <span className="text-slate-400">Nom de la boutique :</span>
+                <span className="font-bold text-white">{shopName}</span>
+              </div>
+              <div className="flex justify-between items-center py-1 border-b border-slate-800">
+                <span className="text-slate-400">Gérant responsable :</span>
+                <span className="font-bold text-white">{fullName}</span>
+              </div>
+              <div className="flex justify-between items-center py-1 border-b border-slate-800">
+                <span className="text-slate-400">Téléphone WhatsApp :</span>
+                <span className="font-bold text-white">{phone}</span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-400">Statut actuel :</span>
+                <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-black text-[10px] border border-amber-400/30">
+                  À vérifier (KYC)
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed text-center font-medium">
+              Pour activer immédiatement votre vitrine, envoyez un message au Super Admin sur le canal WhatsApp officiel <strong>77 171 90 13</strong> :
+            </p>
+
+            <div className="space-y-3">
+              <a
+                href={`https://wa.me/221771719013?text=${encodeURIComponent(
+                  `Bonjour Super Admin Malick Buss, je viens de créer ma boutique *${shopName}* (Gérant: ${fullName}, Téléphone: ${phone}, Catégorie: ${category}, Quartier: ${district}). Pouvez-vous vérifier et valider ma boutique s'il vous plaît ?`
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 px-4 rounded-full flex items-center justify-center gap-2 transition active:scale-95 shadow-lg shadow-emerald-600/30 text-xs sm:text-sm text-center"
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span>Envoyer message au Super Admin (77 171 90 13)</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={() => router.push('/vendeur/dashboard')}
+                className="w-full bg-white/10 hover:bg-white/15 text-slate-300 font-bold py-3 px-4 rounded-full text-xs transition active:scale-95 text-center"
+              >
+                Accéder à mon espace commerçant
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

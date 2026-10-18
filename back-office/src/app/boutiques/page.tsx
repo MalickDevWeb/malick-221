@@ -3,7 +3,18 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CircleCheck, LoaderCircle, Pause, RotateCcw, Store, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  CircleCheck,
+  CheckCircle2,
+  LoaderCircle,
+  MessageCircle,
+  Pause,
+  RotateCcw,
+  Store,
+  X,
+  ExternalLink,
+} from 'lucide-react';
 import {
   AdminApiError,
   AdminShop,
@@ -32,6 +43,7 @@ export default function AdminShopsPage() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [approvedShopModal, setApprovedShopModal] = useState<AdminShop | null>(null);
 
   useEffect(() => {
     const token = sessionStorage.getItem('super-admin-token');
@@ -66,6 +78,9 @@ export default function AdminShopsPage() {
     try {
       const updatedShop = await updateAdminShopStatus(token, shop.id, status);
       setShops((current) => current.map((item) => item.id === updatedShop.id ? updatedShop : item));
+      if (status === 'ACTIVE') {
+        setApprovedShopModal(updatedShop);
+      }
     } catch (cause) {
       if (cause instanceof AdminApiError && (cause.status === 401 || cause.status === 403)) {
         sessionStorage.removeItem('super-admin-token');
@@ -174,6 +189,83 @@ export default function AdminShopsPage() {
           )}
         </div>
       </section>
+
+      {/* Modal de Confirmation & Notification WhatsApp au Vendeur */}
+      {approvedShopModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs">
+          <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-100">
+            <button
+              type="button"
+              onClick={() => setApprovedShopModal(null)}
+              className="absolute right-4 top-4 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              aria-label="Fermer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+                <CheckCircle2 className="h-7 w-7" />
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-slate-900">Boutique approuvée avec succès ! 🎉</h2>
+                <p className="text-xs text-slate-500 font-medium">Le statut est désormais actif sur la marketplace</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-4 space-y-2 mb-5">
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500 font-medium">Boutique :</span>
+                <span className="font-bold text-slate-900">{approvedShopModal.name}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500 font-medium">Commerçant :</span>
+                <span className="font-bold text-slate-900">{approvedShopModal.owner.fullName}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500 font-medium">Téléphone WhatsApp :</span>
+                <span className="font-bold text-emerald-700">{approvedShopModal.owner.phoneNumber}</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 mb-5 leading-relaxed">
+              Vous pouvez maintenant envoyer une notification WhatsApp directe au vendeur pour lui annoncer l&apos;ouverture officielle de sa boutique et lui permettre de publier ses articles.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              {(() => {
+                const rawPhone = approvedShopModal.owner.phoneNumber || '';
+                const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+                const phoneWithCountry = cleanPhone.startsWith('221') ? cleanPhone : `221${cleanPhone || '771719013'}`;
+                const message = `Bonjour ${approvedShopModal.owner.fullName}, Félicitations ! 🎉\n\nVotre boutique "${approvedShopModal.name}" a été vérifiée et validée avec succès par l'équipe Super Admin de Malick Buss.\n\nVotre boutique est désormais active et vous pouvez dès à présent ajouter vos produits et gérer vos ventes :\n👉 https://malickbuss.sn/vendeur/dashboard\n\nBienvenue parmi nous et excellentes ventes !`;
+                const whatsappUrl = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(message)}`;
+
+                return (
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setApprovedShopModal(null)}
+                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3 px-4 shadow-md shadow-emerald-600/20 transition active:scale-98"
+                  >
+                    <MessageCircle className="h-4 w-4 fill-white/20 stroke-[2.2px]" />
+                    <span>Notifier le vendeur par WhatsApp</span>
+                    <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+                  </a>
+                );
+              })()}
+
+              <button
+                type="button"
+                onClick={() => setApprovedShopModal(null)}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

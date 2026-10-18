@@ -132,7 +132,7 @@ export default function VendorSupportPage() {
       breadcrumbs={[{ label: 'Support & Assistance' }]}
       actionElement={
         <a
-          href="https://wa.me/221771234567?text=Bonjour%20Support%20Malick%20Buss%2C%20je%20suis%20g%C3%A9rant%20de%20boutique"
+          href="https://wa.me/221771719013?text=Bonjour%20Support%20Malick%20Buss%2C%20je%20suis%20g%C3%A9rant%20de%20boutique"
           target="_blank"
           rel="noreferrer"
           className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-4 py-2 rounded-full transition shadow-xs flex items-center gap-1.5 active:scale-95"
@@ -186,7 +186,7 @@ export default function VendorSupportPage() {
         {/* ================= 2. 3 CANAUX DE CONTACT RAPIDES ================= */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <a
-            href="https://wa.me/221771234567?text=Bonjour%20Support%20Malick%20Buss"
+            href="https://wa.me/221771719013?text=Bonjour%20Support%20Malick%20Buss"
             target="_blank"
             rel="noreferrer"
             className="group bg-white rounded-3xl p-5 border border-slate-200/90 hover:border-emerald-500 hover:shadow-lg transition-all flex items-start gap-4"
@@ -202,7 +202,7 @@ export default function VendorSupportPage() {
                 Discussion directe avec un agent support dédié à Dakar.
               </p>
               <span className="text-[11px] font-bold text-emerald-600 block pt-1">
-                +221 77 123 45 67 →
+                +221 77 171 90 13 →
               </span>
             </div>
           </a>
@@ -441,7 +441,7 @@ export default function VendorSupportPage() {
 
             <div className="space-y-3">
               <a
-                href="https://wa.me/221771234567?text=Bonjour%20Support%20Malick%20Buss"
+                href="https://wa.me/221771719013?text=Bonjour%20Support%20Malick%20Buss"
                 target="_blank"
                 rel="noreferrer"
                 className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3.5 text-emerald-900 hover:bg-emerald-100 transition"
@@ -451,12 +451,12 @@ export default function VendorSupportPage() {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold">WhatsApp Direct (Recommandé)</h4>
-                  <p className="text-[11px] text-emerald-700">+221 77 123 45 67 • Réponse en ~2 min</p>
+                  <p className="text-[11px] text-emerald-700">+221 77 171 90 13 • Réponse en ~2 min</p>
                 </div>
               </a>
 
               <a
-                href="tel:+221771234567"
+                href="tel:+221771719013"
                 className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-3.5 text-slate-900 hover:bg-slate-100 transition"
               >
                 <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center">
@@ -464,7 +464,7 @@ export default function VendorSupportPage() {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold">Appel Téléphonique Direct</h4>
-                  <p className="text-[11px] text-slate-500">+221 77 123 45 67 • Gratuit</p>
+                  <p className="text-[11px] text-slate-500">+221 77 171 90 13 • Gratuit</p>
                 </div>
               </a>
 
