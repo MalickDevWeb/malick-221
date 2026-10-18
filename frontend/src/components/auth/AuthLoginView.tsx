@@ -323,7 +323,7 @@ export function AuthLoginView({
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[#040b17] text-white flex flex-col justify-between overflow-x-hidden font-sans select-none">
+    <div className="relative h-screen w-full bg-[#040b17] text-white flex flex-col justify-between overflow-hidden font-sans select-none">
       {/* ================= 1. BACKGROUND IMMERSIF HD DU BOUTIQUIER DAKAROIS ================= */}
       <div
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-90 transition-all duration-700"
@@ -332,11 +332,11 @@ export function AuthLoginView({
         }}
       />
       {/* Dégradés d'ambiance pour une lisibilité parfaite des cartes */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#040b17] via-transparent to-[#040b17]/85 pointer-events-none" />
-      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#040b17]/95 via-[#040b17]/60 to-[#040b17]/90 lg:to-[#040b17]/70 pointer-events-none" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#040b17] via-transparent to-[#040b17]/90 pointer-events-none" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#040b17]/95 via-[#040b17]/75 to-[#040b17]/95 pointer-events-none" />
 
       {/* ================= 2. EN-TÊTE ÉLÉGANT FIDÈLE À LA MAQUETTE ================= */}
-      <header className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 flex items-center justify-between">
+      <header className="relative z-30 w-full max-w-4xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between shrink-0">
         {/* Logo MB + Badge Espace Boutiquier */}
         <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
           <Link href="/" className="hover:opacity-95 transition">
@@ -359,7 +359,7 @@ export function AuthLoginView({
         </div>
 
         {/* Liens d'aide et sécurité à droite */}
-        <div className="flex items-center gap-4 sm:gap-6 text-xs font-semibold">
+        <div className="flex items-center gap-3 sm:gap-5 text-xs font-semibold">
           <Link
             href="/support"
             className="flex items-center gap-1.5 text-slate-300 hover:text-white transition"
@@ -375,20 +375,20 @@ export function AuthLoginView({
         </div>
       </header>
 
-      {/* ================= 3. CORPS CENTRAL : FORMULAIRE GLASSMORPHIC & CARTES FLOTTANTES ================= */}
-      <main className="relative z-20 flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col lg:flex-row items-center lg:items-start justify-between gap-8 lg:gap-12">
-        {/* CARTE DE CONNEXION / CRÉATION DE COMPTE GAUCHE */}
+      {/* ================= 3. CORPS CENTRAL : FORMULAIRE CENTRÉ SANS SCROLL ================= */}
+      <main className="relative z-20 flex-1 w-full max-w-xl mx-auto px-4 flex items-center justify-center overflow-y-auto sm:overflow-hidden py-1 sm:py-2">
+        {/* CARTE DE CONNEXION / CRÉATION DE COMPTE CENTRÉE */}
         <motion.div
           layout
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
           className={`w-full ${
             isVendorSignup ? 'max-w-lg lg:max-w-xl' : 'max-w-md'
-          } bg-[#071328]/95 backdrop-blur-2xl border border-slate-700/60 rounded-3xl p-5 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.65)] space-y-4`}
+          } bg-[#071328]/95 backdrop-blur-2xl border border-slate-700/60 rounded-3xl p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.65)] space-y-3 mx-auto my-auto`}
         >
           {/* Commutateurs Vendeur / Client & Mode Connexion / Inscription */}
-          <div className="flex items-center justify-between pb-1">
+          <div className="flex items-center justify-between pb-0.5">
             <div className="inline-flex p-1 bg-[#0b172c] border border-slate-700/70 rounded-full text-xs">
               <button
                 type="button"
@@ -433,48 +433,43 @@ export function AuthLoginView({
           </div>
 
           {/* Titre & Accroche Dynamiques selon le Mode */}
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-snug">
+          <div className="space-y-0.5">
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
               {mode === 'LOGIN' ? (
                 role === 'VENDEUR' ? (
                   <>
-                    Votre boutique mérite <br />
-                    de <span className="text-amber-400">briller.</span>
+                    Votre boutique mérite de <span className="text-amber-400">briller.</span>
                   </>
                 ) : (
                   <>
-                    Le meilleur de Dakar <br />
-                    à <span className="text-amber-400">portée de clic.</span>
+                    Le meilleur de Dakar à <span className="text-amber-400">portée de clic.</span>
                   </>
                 )
               ) : role === 'VENDEUR' ? (
                 signupStep === 1 ? (
                   <>
-                    Étape 1 : Créez <br />
-                    votre <span className="text-amber-400">boutique.</span>
+                    Étape 1 : Créez votre <span className="text-amber-400">boutique.</span>
                   </>
                 ) : (
                   <>
-                    Étape 2 : Vos accès <br />
-                    <span className="text-amber-400">gérant officiel.</span>
+                    Étape 2 : Vos accès <span className="text-amber-400">gérant officiel.</span>
                   </>
                 )
               ) : (
                 <>
-                  Créez votre compte <br />
-                  <span className="text-amber-400">gratuitement.</span>
+                  Créez votre compte <span className="text-amber-400">gratuitement.</span>
                 </>
               )}
             </h1>
-            <p className="text-xs text-slate-300 font-medium leading-relaxed">
+            <p className="text-xs text-slate-300 font-medium">
               {mode === 'LOGIN'
                 ? role === 'VENDEUR'
-                  ? 'Connectez-vous pour gérer vos produits, vos commandes et vos revenus en toute simplicité.'
-                  : 'Connectez-vous pour suivre vos commandes, vos favoris et vos livraisons express.'
+                  ? 'Connectez-vous pour gérer vos produits, vos commandes et vos revenus.'
+                  : 'Connectez-vous pour suivre vos commandes et vos livraisons express.'
                 : role === 'VENDEUR'
                 ? signupStep === 1
                   ? 'Renseignez l’identité et la catégorie de votre boutique en quelques clics.'
-                  : 'Définissez vos identifiants pour sécuriser vos accès et recevoir vos paiements Wave.'
+                  : 'Définissez vos identifiants pour sécuriser vos accès et vos retraits Wave.'
                 : 'Accédez à des milliers de produits authentiques au Sénégal avec livraison express.'}
             </p>
           </div>
@@ -1197,120 +1192,24 @@ export function AuthLoginView({
                 setConfirmPassword('');
               }
             }}
-            className="w-full border border-slate-700 hover:border-slate-500 bg-slate-900/40 hover:bg-slate-900/70 text-white font-semibold text-xs py-3 rounded-xl transition flex items-center justify-center text-center shadow-xs cursor-pointer"
+            className="w-full border border-slate-700/80 hover:border-slate-500 bg-slate-900/50 hover:bg-slate-900/80 text-white font-semibold text-xs py-2.5 rounded-xl transition flex items-center justify-center text-center shadow-xs cursor-pointer"
           >
-            {mode === 'LOGIN'
-              ? role === 'VENDEUR'
-                ? 'Créer ma boutique'
-                : 'Créer mon compte'
-              : 'Déjà un compte ? Se connecter'}
+            {mode === 'LOGIN' ? (
+              <span>
+                Nouveau sur Malick Buss ?{' '}
+                <strong className="text-amber-400 underline font-bold">
+                  {role === 'VENDEUR' ? 'Ouvrir ma boutique' : 'Créer un compte'}
+                </strong>
+              </span>
+            ) : (
+              <span>
+                Vous avez déjà un compte ?{' '}
+                <strong className="text-amber-400 underline font-bold">Se connecter</strong>
+              </span>
+            )}
           </button>
-
-          {/* Note de Réassurance Bas de Carte */}
-          <div className="pt-2 flex items-center gap-3 border-t border-slate-800/80">
-            <div className="w-8 h-8 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400 flex-shrink-0">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-            <div className="text-left text-xs">
-              <p className="font-bold text-slate-200">
-                {role === 'VENDEUR'
-                  ? 'Vos ventes, vos commandes, vos commissions.'
-                  : 'Paiements sécurisés Wave, Orange Money et Cash.'}
-              </p>
-              <p className="text-[11px] text-slate-400 font-medium">Tout au même endroit.</p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* COLONNE DROITE : 3 CARTES FLOTTANTES GLASSMORPHIC (Visibles sur grand écran) */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="hidden lg:flex flex-col space-y-4 max-w-sm w-full"
-        >
-          {/* Card 1 : Vitrine en ligne */}
-          <div className="bg-[#071328]/85 backdrop-blur-xl border border-slate-700/60 hover:border-amber-400/50 rounded-2xl p-4 shadow-xl transition-all duration-300 group cursor-pointer hover:-translate-y-0.5">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-400 flex-shrink-0 group-hover:scale-105 transition-transform">
-                <Store className="w-5 h-5 stroke-[2px]" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-white group-hover:text-amber-400 transition">
-                    Vitrine en ligne
-                  </h3>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-400 group-hover:translate-x-1 transition" />
-                </div>
-                <p className="text-[11px] text-slate-400 font-medium mt-1 leading-relaxed">
-                  Présentez vos produits et attirez plus de clients à Dakar.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2 : Commandes en temps réel */}
-          <div className="bg-[#071328]/85 backdrop-blur-xl border border-slate-700/60 hover:border-cyan-400/50 rounded-2xl p-4 shadow-xl transition-all duration-300 group cursor-pointer hover:-translate-y-0.5">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-cyan-400/15 border border-cyan-400/30 flex items-center justify-center text-cyan-400 flex-shrink-0 group-hover:scale-105 transition-transform">
-                <Package className="w-5 h-5 stroke-[2px]" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-white group-hover:text-cyan-400 transition">
-                    Commandes en temps réel
-                  </h3>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-400 group-hover:translate-x-1 transition" />
-                </div>
-                <p className="text-[11px] text-slate-400 font-medium mt-1 leading-relaxed">
-                  Suivez vos commandes à chaque étape de la livraison.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3 : Retraits Wave */}
-          <div className="bg-[#071328]/85 backdrop-blur-xl border border-slate-700/60 hover:border-sky-400/50 rounded-2xl p-4 shadow-xl transition-all duration-300 group cursor-pointer hover:-translate-y-0.5">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-[#1da1f2]/20 border border-[#1da1f2]/40 flex items-center justify-center text-[#1da1f2] font-black text-sm flex-shrink-0 group-hover:scale-105 transition-transform">
-                W
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-white group-hover:text-sky-400 transition">
-                    Retraits Wave
-                  </h3>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-sky-400 group-hover:translate-x-1 transition" />
-                </div>
-                <p className="text-[11px] text-slate-400 font-medium mt-1 leading-relaxed">
-                  Recevez vos revenus en toute sécurité instantanément.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Slogan & Carte du Sénégal stylisée */}
-          <div className="pt-2 flex items-center gap-3 pl-2">
-            <div className="w-0.5 h-8 bg-amber-400 rounded-full" />
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-400 text-xs font-black">
-                🇸🇳
-              </div>
-              <p className="text-xs text-slate-300 font-medium">
-                Tout votre commerce,{' '}
-                <span className="text-amber-400 font-bold block sm:inline">
-                  en un seul espace.
-                </span>
-              </p>
-            </div>
-          </div>
         </motion.div>
       </main>
-
-      {/* ================= 4. MINI-FOOTER DISCRET ================= */}
-      <footer className="relative z-20 w-full text-center py-4 text-xs text-slate-500 font-medium">
-        © {new Date().getFullYear()} Malick Buss • Le Marketplace du Sénégal 🇸🇳 • Tous droits réservés.
-      </footer>
     </div>
   );
 }
