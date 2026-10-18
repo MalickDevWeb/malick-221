@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,8 +18,45 @@ import {
   Phone,
   Briefcase,
   CheckCircle2,
+  Upload,
+  Camera,
+  MapPin,
+  Tag,
+  AlertCircle,
+  FileText,
+  X,
+  Check,
 } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
+
+const VENDOR_CATEGORIES = [
+  'Mode & Prêt-à-porter',
+  'Chaussures & Sneakers',
+  'Beauté, Parfums & Cosmétiques',
+  'High-Tech, Téléphonie & Informatique',
+  'Artisanat Local & Maroquinerie',
+  'Maison, Mobilier & Décoration',
+  'Alimentation & Épicerie Fine',
+  'Bijoux & Accessoires de Luxe',
+  'Autre Univers',
+];
+
+const DAKAR_DISTRICTS = [
+  'Dakar Plateau / Centre-ville',
+  'Sandaga / Marché Petersen',
+  'Médina / Fass / Gueule Tapée',
+  'Almadies / Ngor / Virage',
+  'Mermoz / Sacré-Cœur',
+  'HLM / Grand Dakar',
+  'Ouakam / Mamelles',
+  'Grand Yoff / Liberté 6',
+  'Parcelles Assainies',
+  'Pikine / Guédiawaye',
+  'Rufisque / Diamniadio',
+  'En ligne uniquement / Tout Sénégal',
+];
+
+const PRESET_AVATARS = ['🛍️', '👑', '💎', '👗', '👟', '📱', '💄', '🇸🇳'];
 
 export function AuthLoginView({
   initialRole = 'VENDEUR',
@@ -40,17 +77,78 @@ export function AuthLoginView({
   const [shopName, setShopName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('password123');
+  const [confirmPassword, setConfirmPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+
+  // Additional vendor fields
+  const [category, setCategory] = useState(VENDOR_CATEGORIES[0]);
+  const [district, setDistrict] = useState(DAKAR_DISTRICTS[0]);
+  const [description, setDescription] = useState('');
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [selectedAvatarIcon, setSelectedAvatarIcon] = useState<string>('🛍️');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isVendorSignup = mode === 'SIGNUP' && role === 'VENDEUR';
+  const isPasswordsMatching = confirmPassword ? password === confirmPassword : true;
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("La taille du fichier ne doit pas dépasser 5 Mo.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (mode === 'SIGNUP') {
+      if (password !== confirmPassword) {
+        setPasswordError('Les mots de passe ne correspondent pas.');
+        return;
+      }
+      if (password.length < 6) {
+        setPasswordError('Le mot de passe doit contenir au moins 6 caractères.');
+        return;
+      }
+    }
+
+    setPasswordError('');
     setLoading(true);
 
     setTimeout(() => {
       if (mode === 'SIGNUP') {
+        if (role === 'VENDEUR') {
+          try {
+            const vendorProfile = {
+              name: fullName || 'Boutiquier',
+              shopName: shopName || 'Ma Boutique',
+              phone: phone,
+              category: category,
+              district: district,
+              description: description,
+              logo: logoPreview || null,
+              avatarIcon: selectedAvatarIcon,
+              createdAt: new Date().toISOString(),
+            };
+            localStorage.setItem('malick_vendor_profile', JSON.stringify(vendorProfile));
+            localStorage.setItem('malick_user_role', 'VENDEUR');
+          } catch (err) {
+            console.error('Failed to save vendor to localStorage', err);
+          }
+        }
         setSuccessMessage(true);
         setTimeout(() => {
           if (role === 'VENDEUR') {
@@ -123,14 +221,16 @@ export function AuthLoginView({
       </header>
 
       {/* ================= 3. CORPS CENTRAL : FORMULAIRE GLASSMORPHIC & CARTES FLOTTANTES ================= */}
-      <main className="relative z-20 flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
+      <main className="relative z-20 flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col lg:flex-row items-center lg:items-start justify-between gap-8 lg:gap-12">
         {/* CARTE DE CONNEXION / CRÉATION DE COMPTE GAUCHE */}
         <motion.div
           layout
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md bg-[#071328]/90 backdrop-blur-2xl border border-slate-700/60 rounded-3xl p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.65)] space-y-4"
+          className={`w-full ${
+            isVendorSignup ? 'max-w-xl lg:max-w-2xl' : 'max-w-md'
+          } bg-[#071328]/95 backdrop-blur-2xl border border-slate-700/60 rounded-3xl p-5 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.65)] space-y-4`}
         >
           {/* Commutateurs Vendeur / Client & Mode Connexion / Inscription */}
           <div className="flex items-center justify-between pb-1">
@@ -212,9 +312,311 @@ export function AuthLoginView({
           </div>
 
           {/* Formulaire Dynamique (Connexion ou Inscription) */}
-          <form onSubmit={handleSubmit} className="space-y-3 pt-1">
-            {mode === 'SIGNUP' && (
-              <>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+            {/* ================= ENROLLEMENT VENDEUR COMPLET ================= */}
+            {isVendorSignup ? (
+              <div className="space-y-4">
+                {/* 1. SECTION LOGO ET IDENTITÉ VISUELLE */}
+                <div className="bg-[#0b172c]/70 border border-slate-700/60 rounded-2xl p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Logo & Image de Marque</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400">Recommandé • Max 5Mo</span>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    {/* Zone d'aperçu du Logo / Avatar */}
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#071328] border-2 border-dashed border-amber-400/50 hover:border-amber-400 flex items-center justify-center cursor-pointer overflow-hidden transition group shrink-0 shadow-inner"
+                      title="Cliquez pour importer un logo"
+                    >
+                      {logoPreview ? (
+                        <>
+                          <img
+                            src={logoPreview}
+                            alt="Logo boutique"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLogoPreview(null);
+                            }}
+                            className="absolute top-1 right-1 w-5 h-5 bg-red-600/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-xs"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="text-center p-1">
+                          <span className="text-2xl sm:text-3xl block leading-none select-none">
+                            {selectedAvatarIcon}
+                          </span>
+                          <span className="text-[9px] text-amber-400/90 font-bold block mt-1">
+                            + Importer
+                          </span>
+                        </div>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                      />
+                    </div>
+
+                    {/* Explications & Badges d'emblème rapide */}
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <p className="text-xs text-slate-300 font-medium">
+                        Importez le logo officiel de votre boutique ou choisissez un emblème :
+                      </p>
+
+                      {/* Émoticônes prédéfinies si le commerçant n'a pas encore de logo PNG */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {PRESET_AVATARS.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => {
+                              setSelectedAvatarIcon(emoji);
+                              setLogoPreview(null);
+                            }}
+                            className={`w-7 h-7 rounded-lg text-sm flex items-center justify-center transition ${
+                              selectedAvatarIcon === emoji && !logoPreview
+                                ? 'bg-amber-400/30 border border-amber-400 scale-110 shadow-xs'
+                                : 'bg-[#071328] border border-slate-700/60 hover:border-slate-500'
+                            }`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. INFORMATIONS SUR LA BOUTIQUE */}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Nom de la boutique */}
+                    <div className="relative">
+                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                        Nom de la boutique *
+                      </label>
+                      <div className="relative">
+                        <Briefcase className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                        <input
+                          type="text"
+                          value={shopName}
+                          onChange={(e) => setShopName(e.target.value)}
+                          placeholder="Ex: Keur Friperie, Dakar Luxe"
+                          required
+                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-3 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Catégorie principale */}
+                    <div className="relative">
+                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                        Catégorie principale *
+                      </label>
+                      <div className="relative">
+                        <Tag className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px] pointer-events-none" />
+                        <select
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium appearance-none cursor-pointer"
+                        >
+                          {VENDOR_CATEGORIES.map((cat) => (
+                            <option key={cat} value={cat} className="bg-[#071328] text-white">
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Localisation / Quartier à Dakar */}
+                    <div className="relative">
+                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                        Emplacement / Quartier *
+                      </label>
+                      <div className="relative">
+                        <MapPin className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px] pointer-events-none" />
+                        <select
+                          value={district}
+                          onChange={(e) => setDistrict(e.target.value)}
+                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium appearance-none cursor-pointer"
+                        >
+                          {DAKAR_DISTRICTS.map((dist) => (
+                            <option key={dist} value={dist} className="bg-[#071328] text-white">
+                              {dist}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Courte présentation / Slogan */}
+                    <div className="relative">
+                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                        Bio ou Slogan court
+                      </label>
+                      <div className="relative">
+                        <FileText className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                        <input
+                          type="text"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Ex: Mode chic & streetwear 100% garanti"
+                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-3 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. CONTACT ET SÉCURITÉ DU GÉRANT */}
+                <div className="border-t border-slate-800/80 pt-3 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Nom complet du gérant */}
+                    <div className="relative">
+                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                        Nom & Prénom du gérant *
+                      </label>
+                      <div className="relative">
+                        <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                        <input
+                          type="text"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          placeholder="Modou Fall"
+                          required
+                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Téléphone WhatsApp */}
+                    <div className="relative">
+                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                        Numéro WhatsApp *
+                      </label>
+                      <div className="relative">
+                        <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="+221 77 000 00 00"
+                          required
+                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Mot de passe */}
+                    <div className="relative">
+                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block mb-1">
+                        Mot de passe *
+                      </label>
+                      <div className="relative">
+                        <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            if (passwordError) setPasswordError('');
+                          }}
+                          placeholder="Au moins 6 caractères"
+                          required
+                          className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-9 py-2.5 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition"
+                          aria-label={showPassword ? 'Masquer' : 'Afficher'}
+                        >
+                          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Confirmation du mot de passe */}
+                    <div className="relative">
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wide block">
+                          Confirmer le mot de passe *
+                        </label>
+                        {confirmPassword && (
+                          <span
+                            className={`text-[10px] font-bold flex items-center gap-1 ${
+                              isPasswordsMatching ? 'text-emerald-400' : 'text-amber-400'
+                            }`}
+                          >
+                            {isPasswordsMatching ? (
+                              <>
+                                <Check className="w-3 h-3 stroke-[2.5px]" />
+                                <span>Identique</span>
+                              </>
+                            ) : (
+                              <>
+                                <AlertCircle className="w-3 h-3" />
+                                <span>Différent</span>
+                              </>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                        <input
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          value={confirmPassword}
+                          onChange={(e) => {
+                            setConfirmPassword(e.target.value);
+                            if (passwordError) setPasswordError('');
+                          }}
+                          placeholder="Retapez le mot de passe"
+                          required
+                          className={`w-full bg-[#0b172c]/90 border rounded-xl text-xs pl-10 pr-9 py-2.5 text-white placeholder:text-slate-400 focus:outline-none transition font-medium ${
+                            confirmPassword && !isPasswordsMatching
+                              ? 'border-amber-400/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                              : 'border-slate-700/80 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition"
+                          aria-label={showConfirmPassword ? 'Masquer' : 'Afficher'}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="w-3.5 h-3.5" />
+                          ) : (
+                            <Eye className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : mode === 'SIGNUP' ? (
+              /* ================= INSCRIPTION CLIENT STANDARD ================= */
+              <div className="space-y-3">
                 {/* Nom complet */}
                 <div className="relative">
                   <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
@@ -222,26 +624,11 @@ export function AuthLoginView({
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Nom complet du gérant"
+                    placeholder="Nom & Prénom"
                     required
                     className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
                   />
                 </div>
-
-                {/* Nom de la boutique (si vendeur) */}
-                {role === 'VENDEUR' && (
-                  <div className="relative">
-                    <Briefcase className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
-                    <input
-                      type="text"
-                      value={shopName}
-                      onChange={(e) => setShopName(e.target.value)}
-                      placeholder="Nom de votre boutique (ex: Dakar Luxe)"
-                      required
-                      className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
-                    />
-                  </div>
-                )}
 
                 {/* Téléphone WhatsApp */}
                 <div className="relative">
@@ -255,44 +642,101 @@ export function AuthLoginView({
                     className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
                   />
                 </div>
-              </>
-            )}
 
-            {/* Champ Identifiant (Email ou Téléphone) en mode LOGIN */}
-            {mode === 'LOGIN' && (
-              <div className="relative">
-                <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
-                <input
-                  type="text"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="Adresse e-mail ou téléphone"
-                  required
-                  className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
-                />
+                {/* Mot de passe */}
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (passwordError) setPasswordError('');
+                    }}
+                    placeholder="Mot de passe (min 6 caractères)"
+                    required
+                    className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-10 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition"
+                    aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                {/* Confirmation Mot de passe */}
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (passwordError) setPasswordError('');
+                    }}
+                    placeholder="Confirmer le mot de passe"
+                    required
+                    className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-10 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition"
+                    aria-label={showConfirmPassword ? 'Masquer' : 'Afficher'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* ================= MODE CONNEXION STANDARD ================= */
+              <div className="space-y-3">
+                {/* Champ Identifiant (Email ou Téléphone) en mode LOGIN */}
+                <div className="relative">
+                  <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                  <input
+                    type="text"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="Adresse e-mail ou téléphone"
+                    required
+                    className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                  />
+                </div>
+
+                {/* Mot de passe */}
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Mot de passe"
+                    required
+                    className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-10 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition"
+                    aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
             )}
 
-            {/* Mot de passe */}
-            <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2px]" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mot de passe"
-                required
-                className="w-full bg-[#0b172c]/90 border border-slate-700/80 rounded-xl text-xs pl-10 pr-10 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 transition font-medium"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition"
-                aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
+            {/* Message d'erreur de mot de passe */}
+            {passwordError && (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold animate-pulse">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{passwordError}</span>
+              </div>
+            )}
 
             {/* Options additionnelles */}
             {mode === 'LOGIN' ? (
@@ -328,14 +772,14 @@ export function AuthLoginView({
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 active:scale-[0.99] text-slate-950 font-black text-sm py-3.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 transition duration-200 mt-2"
+              className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 active:scale-[0.99] text-slate-950 font-black text-sm py-3.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 transition duration-200 mt-2 cursor-pointer"
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
               ) : successMessage ? (
                 <>
                   <CheckCircle2 className="w-4 h-4 text-slate-950" />
-                  <span>Compte créé avec succès !</span>
+                  <span>Boutique créée avec succès !</span>
                 </>
               ) : (
                 <>
@@ -344,7 +788,7 @@ export function AuthLoginView({
                     {mode === 'LOGIN'
                       ? 'Se connecter'
                       : role === 'VENDEUR'
-                      ? 'Créer ma boutique'
+                      ? 'Ouvrir ma boutique officielle'
                       : 'Créer mon compte'}
                   </span>
                 </>
@@ -365,8 +809,9 @@ export function AuthLoginView({
             onClick={() => {
               setMode(mode === 'LOGIN' ? 'SIGNUP' : 'LOGIN');
               setSuccessMessage(false);
+              setPasswordError('');
             }}
-            className="w-full border border-slate-700 hover:border-slate-500 bg-slate-900/40 hover:bg-slate-900/70 text-white font-semibold text-xs py-3 rounded-xl transition flex items-center justify-center text-center shadow-xs"
+            className="w-full border border-slate-700 hover:border-slate-500 bg-slate-900/40 hover:bg-slate-900/70 text-white font-semibold text-xs py-3 rounded-xl transition flex items-center justify-center text-center shadow-xs cursor-pointer"
           >
             {mode === 'LOGIN'
               ? role === 'VENDEUR'
