@@ -293,40 +293,60 @@ function ShopsListContent() {
           </div>
         </div>
 
-        {/* ================= 2. BARRE DE RECHERCHE, FILTRE 'TOUTES' & TRI ================= */}
+        {/* ================= 2. BARRE DE RECHERCHE, FILTRE 'TOUTES' & TRI (SANS SCROLLBAR) ================= */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.1, ease: 'easeOut' }}
-          className="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3.5"
+          className="bg-white p-3.5 sm:p-4 rounded-3xl border border-slate-200/90 shadow-xs space-y-3.5"
         >
-          {/* Champ de recherche avec micro-interaction */}
-          <div className="relative flex-1 min-w-[280px]">
-            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2.2px]" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher une boutique, catégorie, marque, quartier..."
-              className="w-full bg-[#f8fafc] text-xs pl-11 pr-10 py-2.5 rounded-full border border-slate-200/80 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-400/20 focus:outline-none transition-all font-medium text-slate-800 placeholder:text-slate-400"
-            />
-            {search && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileHover={{ rotate: 90 }}
-                onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
-                aria-label="Effacer la recherche"
+          {/* Ligne 1 : Recherche & Tri */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            {/* Champ de recherche avec micro-interaction */}
+            <div className="relative flex-1 max-w-xl">
+              <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2.2px]" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Rechercher une boutique, catégorie, marque, quartier..."
+                className="w-full bg-[#f8fafc] text-xs pl-11 pr-10 py-2.5 rounded-full border border-slate-200/80 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-400/20 focus:outline-none transition-all font-medium text-slate-800 placeholder:text-slate-400"
+              />
+              {search && (
+                <motion.button
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  whileHover={{ rotate: 90 }}
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
+                  aria-label="Effacer la recherche"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </motion.button>
+              )}
+            </div>
+
+            {/* Sélecteur de Tri */}
+            <div className="flex items-center justify-end gap-2 text-xs font-semibold text-slate-500 shrink-0">
+              <span className="whitespace-nowrap">Trier par :</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none cursor-pointer transition shadow-2xs"
               >
-                <X className="w-3.5 h-3.5" />
-              </motion.button>
-            )}
+                <option value="rating">Mieux notées ★</option>
+                <option value="reviews">Plus d&apos;avis</option>
+                <option value="name">Alphabétique (A-Z)</option>
+              </select>
+            </div>
           </div>
 
-          {/* FILTRES CATÉGORIES AVEC 'TOUTES' EN PREMIER & ANIMATION FLUIDE */}
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+          {/* Séparateur subtil et propre */}
+          <div className="h-px bg-slate-100 w-full" />
+
+          {/* Ligne 2 : FILTRES CATÉGORIES AVEC 'TOUTES' EN PREMIER & ZÉRO SCROLLBAR */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1">
             {CATEGORIES_LIST.map((cat) => {
               const isActive = selectedCategory === cat.label;
               const count = categoryCounts[cat.label] || 0;
@@ -342,7 +362,7 @@ function ShopsListContent() {
                       setSelectedCategory(cat.label);
                     }
                   }}
-                  className={`relative text-xs font-bold px-3.5 py-2 rounded-full whitespace-nowrap transition-colors duration-200 flex items-center gap-1.5 select-none ${
+                  className={`relative text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap transition-colors duration-200 flex items-center gap-1.5 select-none shrink-0 ${
                     isActive
                       ? 'text-slate-950 font-black'
                       : 'text-slate-600 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/80'
@@ -356,13 +376,13 @@ function ShopsListContent() {
                       transition={{ type: 'spring', stiffness: 450, damping: 32 }}
                     />
                   )}
-                  <span className="relative z-10">{cat.icon}</span>
+                  <span className="relative z-10 text-sm leading-none">{cat.icon}</span>
                   <span className="relative z-10">{cat.label}</span>
                   <span
-                    className={`relative z-10 text-[10px] font-black px-1.5 py-0.2 rounded-full transition-colors ${
+                    className={`relative z-10 text-[10px] font-black px-1.5 py-0.5 rounded-full transition-colors ${
                       isActive
                         ? 'bg-slate-950/15 text-slate-950'
-                        : 'bg-slate-200/70 text-slate-500'
+                        : 'bg-slate-200/80 text-slate-500'
                     }`}
                   >
                     {count}
@@ -370,20 +390,6 @@ function ShopsListContent() {
                 </button>
               );
             })}
-          </div>
-
-          {/* Sélecteur de Tri */}
-          <div className="flex items-center justify-end gap-2 text-xs font-semibold text-slate-500 flex-shrink-0">
-            <span className="whitespace-nowrap">Trier par :</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none cursor-pointer transition"
-            >
-              <option value="rating">Mieux notées ★</option>
-              <option value="reviews">Plus d&apos;avis</option>
-              <option value="name">Alphabétique (A-Z)</option>
-            </select>
           </div>
         </motion.div>
 
