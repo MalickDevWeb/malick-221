@@ -40,6 +40,7 @@ export function Header() {
   };
 
   // Pages avec header personnalisé ou sans header global (ex: splash, back-office)
+  // Pages avec header personnalisé ou sans header global (ex: splash, back-office)
   const customHeaderRoutes = [
     '/splash',
     '/checkout',
@@ -51,6 +52,9 @@ export function Header() {
     route === '/' ? false : pathname.startsWith(route)
   );
 
+  // Vérifier si on est sur la vitrine dédiée d'une boutique spécifique
+  const isBoutiqueStorefront = pathname.startsWith('/boutiques/') && pathname.includes('/produits');
+
   if (hasCustomHeader) {
     return null;
   }
@@ -58,7 +62,7 @@ export function Header() {
   return (
     <>
       {/* HEADER PRINCIPAL AVEC BANDEAU SUPÉRIEUR ANCRÉ */}
-      <header className={`sticky top-0 z-40 bg-white border-b border-slate-100 shadow-xs ${pathname === '/' ? '' : 'hidden md:block'}`}>
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-xs">
         {/* 1. TOP ANNOUNCEMENT BAR DESKTOP (Ultra-lisible, spacieux et prestige) */}
         <div className="hidden md:block bg-gradient-to-r from-[#071328] via-[#0c1a35] to-[#071328] text-slate-100 text-xs py-2 border-b border-amber-400/20 shadow-xs antialiased">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -101,34 +105,30 @@ export function Header() {
               <BrandLogo size="md" variant="dark" layout="horizontal" />
             </Link>
 
-            {/* Barre de Recherche Large (masquée sur /boutiques pour éviter le doublon avec la recherche locale) */}
-            {!pathname.startsWith('/boutiques') ? (
-              <div className="flex-1 max-w-2xl">
-                <form
-                  onSubmit={handleSearch}
-                  className="relative flex items-center bg-[#f4f5f7] border border-slate-200/80 rounded-full focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all pl-3.5 pr-1.5 py-1"
+            {/* Barre de Recherche Large */}
+            <div className="flex-1 max-w-2xl">
+              <form
+                onSubmit={handleSearch}
+                className="relative flex items-center bg-[#f4f5f7] border border-slate-200/80 rounded-full focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all pl-3.5 pr-1.5 py-1"
+              >
+                <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Rechercher une boutique, un produit, une marque à Dakar..."
+                  aria-label="Rechercher une boutique ou un produit"
+                  className="w-full bg-transparent text-xs px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
+                />
+                <button
+                  type="submit"
+                  className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 p-2.5 rounded-full transition shadow-xs flex-shrink-0 flex items-center justify-center cursor-pointer"
+                  aria-label="Rechercher"
                 >
-                  <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
-                    placeholder="Rechercher une boutique, un produit, une marque à Dakar..."
-                    aria-label="Rechercher une boutique ou un produit"
-                    className="w-full bg-transparent text-xs px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 p-2.5 rounded-full transition shadow-xs flex-shrink-0 flex items-center justify-center"
-                    aria-label="Rechercher"
-                  >
-                    <Search className="w-4 h-4 stroke-[2.5px]" />
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <div className="flex-1" />
-            )}
+                  <Search className="w-4 h-4 stroke-[2.5px]" />
+                </button>
+              </form>
+            </div>
 
             {/* Raccourcis Droite Desktop */}
             <div className="flex items-center gap-3.5 lg:gap-4 flex-shrink-0">
@@ -189,10 +189,10 @@ export function Header() {
             </div>
           </div>
 
-          {/* ================= BARRE DE DÉCOUVERTE (UNIQUEMENT SUR LA PAGE D'ACCUEIL) ================= */}
-          {pathname === '/' && (
+          {/* ================= BARRE DE DÉCOUVERTE ET NAVIGATION PRINCIPALE ================= */}
+          {!isBoutiqueStorefront && (
             <div className="hidden md:flex items-center justify-between border-t border-slate-100 py-2.5 text-xs font-semibold text-slate-700">
-              <div className="flex items-center gap-2 lg:gap-3">
+              <div className="flex items-center gap-2 lg:gap-3 flex-wrap">
                 {/* 1. Accueil */}
                 <Link
                   href="/"
@@ -210,12 +210,12 @@ export function Header() {
                 <Link
                   href="/boutiques"
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition ${
-                    pathname.startsWith('/boutiques')
+                    pathname === '/boutiques'
                       ? 'text-slate-950 bg-amber-400 border border-amber-500/30 font-bold shadow-xs'
                       : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
                   }`}
                 >
-                  <Store className={`w-3.5 h-3.5 ${pathname.startsWith('/boutiques') ? 'text-slate-950' : 'text-amber-500'}`} />
+                  <Store className={`w-3.5 h-3.5 ${pathname === '/boutiques' ? 'text-slate-950' : 'text-amber-500'}`} />
                   <span>Nos Boutiques</span>
                 </Link>
 
@@ -243,7 +243,11 @@ export function Header() {
                 {/* 5. Suivre ma commande */}
                 <Link
                   href="/suivre-commande"
-                  className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition ${
+                    pathname === '/suivre-commande'
+                      ? 'text-slate-950 bg-amber-400 font-bold shadow-xs'
+                      : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
+                  }`}
                 >
                   <Truck className="w-3.5 h-3.5 text-sky-600" />
                   <span>Suivre ma commande</span>
@@ -252,17 +256,25 @@ export function Header() {
                 {/* 6. Artisanat Sénégalais */}
                 <Link
                   href="/boutiques?category=Artisanat"
-                  className="hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+                  className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
                 >
                   <Crown className="w-3.5 h-3.5 text-amber-500" />
                   <span>Artisanat Local 🇸🇳</span>
                 </Link>
               </div>
+
+              {/* Raccourci droite sur la navbar */}
+              <div className="hidden xl:flex items-center gap-3 text-slate-500 text-xs font-semibold">
+                <span className="flex items-center gap-1.5 text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Dakar Express disponible</span>
+                </span>
+              </div>
             </div>
           )}
 
-          {/* ================= VUE MOBILE (< md) : UNIQUEMENT SUR LA PAGE D'ACCUEIL '/' ================= */}
-          {pathname === '/' && (
+          {/* ================= VUE MOBILE (< md) ================= */}
+          {!isBoutiqueStorefront && (
             <div className="md:hidden pt-2 pb-2.5 space-y-2.5">
               {/* Ligne En-tête Mobile */}
               <div className="flex items-center justify-between">
