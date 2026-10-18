@@ -224,3 +224,4 @@ export function toggleVendorProductStatus(id: string): VendorProduct | null {
   const nextStatus = product.status === 'Désactivé' ? calculateStatus(product.stock) : 'Désactivé';
   return updateVendorProduct(id, { status: nextStatus });
 }
+

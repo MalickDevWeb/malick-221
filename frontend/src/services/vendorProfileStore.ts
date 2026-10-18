@@ -1,0 +1,104 @@
+/**
+ * Service de persistance et synchronisation pour le Profil et la Boutique Vendeur
+ * Permet la modification complète des informations du commerçant, de sa vitrine,
+ * de ses coordonnées et de ses horaires, synchronisé en direct sur tout le portail.
+ */
+
+export interface VendorProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  shopName: string;
+  shopSlug: string;
+  category: string;
+  district: string;
+  address: string;
+  description: string;
+  avatarUrl: string;
+  coverUrl: string;
+  rating: string;
+  reviewsCount: number;
+  followersCount: string;
+  openingHours: string;
+  deliveryZones: string;
+  paymentMethods: string;
+  returnPolicy: string;
+  badge: string;
+  isVerified: boolean;
+  isVip: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const STORAGE_KEY = 'malick_buss_vendor_profile';
+
+const DEFAULT_PROFILE: VendorProfile = {
+  id: 'vendor-001',
+  name: 'Malick Diop',
+  email: 'malick.diop@malickbuss.sn',
+  phone: '+221 77 123 45 67',
+  shopName: 'Style & Mode',
+  shopSlug: 'style-and-mode',
+  category: 'Mode & Prêt-à-porter',
+  district: 'Dakar Plateau • Sandaga',
+  address: 'Dakar, Avenue Ponty (Plateau)',
+  description: 'Prêt-à-porter de luxe, Getzner Bazin Riche brodé, sneakers originales & maroquinerie sénégalaise haut de gamme.',
+  avatarUrl: '/images/mockup/vendor_man_clean.jpg',
+  coverUrl: '/images/boutiques/cover_style_mode.jpg',
+  rating: '4,9',
+  reviewsCount: 1240,
+  followersCount: '2.4K',
+  openingHours: 'Du Lundi au Samedi : 09h00 - 20h30 (Dimanche sur RDV)',
+  deliveryZones: 'Dakar Express 24h & Banlieue (Thiès, Saint-Louis, Mbour, Touba...)',
+  paymentMethods: 'Wave Sénégal, Orange Money & Espèces à la livraison',
+  returnPolicy: 'Échange sous 48h en cas de problème de taille avec étiquette',
+  badge: 'Vendeur Vérifié Or',
+  isVerified: true,
+  isVip: true,
+  createdAt: '2025-01-15T10:00:00.000Z',
+  updatedAt: new Date().toISOString(),
+};
+
+/**
+ * Récupère le profil du vendeur connecté (localStorage avec fallback par défaut)
+ */
+export function getVendorProfile(): VendorProfile {
+  if (typeof window === 'undefined') return DEFAULT_PROFILE;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PROFILE));
+      return DEFAULT_PROFILE;
+    }
+    const parsed = JSON.parse(raw);
+    return { ...DEFAULT_PROFILE, ...parsed };
+  } catch (err) {
+    console.error('Erreur lecture vendor profile:', err);
+    return DEFAULT_PROFILE;
+  }
+}
+
+/**
+ * Sauvegarde les modifications du profil vendeur et émet un événement
+ */
+export function saveVendorProfile(updates: Partial<VendorProfile>): VendorProfile {
+  const current = getVendorProfile();
+  const updated: VendorProfile = {
+    ...current,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent('malick_profile_updated', { detail: updated }));
+    } catch (err) {
+      console.error('Erreur écriture vendor profile:', err);
+    }
+  }
+
+  return updated;
+}
+

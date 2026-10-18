@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -37,8 +37,35 @@ import {
 import { formatFCFA } from '../../../services/api';
 import { BrandLogo } from '../../../components/ui/BrandLogo';
 import { VendorBottomNavigation } from '../../../components/layout/VendorBottomNavigation';
+import { getVendorProfile, VendorProfile } from '../../../services/vendorProfileStore';
+import { getVendorProducts } from '../../../services/productStore';
+import { getVendorNotifications } from '../../../services/notificationStore';
 
 export default function VendorDashboardPage() {
+  const [profile, setProfile] = useState<VendorProfile>(getVendorProfile());
+  const [prodCount, setProdCount] = useState(0);
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
+
+  useEffect(() => {
+    const syncAll = () => {
+      setProfile(getVendorProfile());
+      setProdCount(getVendorProducts().length);
+      const notifs = getVendorNotifications();
+      setUnreadNotifs(notifs.filter((n) => !n.read).length);
+    };
+
+    syncAll();
+    window.addEventListener('malick_profile_updated', syncAll);
+    window.addEventListener('malick_products_updated', syncAll);
+    window.addEventListener('malick_notifications_updated', syncAll);
+
+    return () => {
+      window.removeEventListener('malick_profile_updated', syncAll);
+      window.removeEventListener('malick_products_updated', syncAll);
+      window.removeEventListener('malick_notifications_updated', syncAll);
+    };
+  }, []);
+
   const [selectedPeriod, setSelectedPeriod] = useState<'7j' | '30j' | 'an'>('7j');
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
 
@@ -101,12 +128,13 @@ export default function VendorDashboardPage() {
 
   const navMenuItems = [
     { label: 'Tableau de bord', href: '/vendeur/dashboard', icon: BarChart3, active: true },
-    { label: 'Mes Produits', href: '/vendeur/produits', icon: Package, badge: '24' },
-    { label: 'Commandes', href: '/vendeur/commandes', icon: ShoppingBag, badge: '5', alert: true },
+    { label: 'Mes Produits', href: '/vendeur/produits', icon: Package, badge: prodCount ? String(prodCount) : '28' },
+    { label: 'Commandes', href: '/vendeur/commandes', icon: ShoppingBag, badge: '4' },
     { label: 'Ma Boutique', href: '/vendeur/boutique', icon: Store },
-    { label: 'Retraits & Finances', href: '/vendeur/retraits', icon: DollarSign, badge: 'Wave' },
-    { label: 'Notifications', href: '/vendeur/notifications', icon: Bell, badge: '3' },
-    { label: 'Paramètres', href: '/vendeur/parametres', icon: Settings },
+    { label: 'Retraits & Finances', href: '/vendeur/retraits', icon: DollarSign, badge: '58 000 F' },
+    { label: 'Notifications', href: '/vendeur/notifications', icon: Bell, badge: unreadNotifs > 0 ? String(unreadNotifs) : undefined, alert: unreadNotifs > 0 },
+    { label: 'Profil & Sécurité', href: '/vendeur/profil', icon: User },
+    { label: 'Support & Aide', href: '/vendeur/support', icon: HelpCircle },
   ];
 
   return (
@@ -128,11 +156,15 @@ export default function VendorDashboardPage() {
           {/* Capsule Boutique Actuelle */}
           <div className="bg-[#0c1a35] border border-slate-700/80 rounded-2xl p-3.5 space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-950 border border-amber-400/30 flex items-center justify-center text-amber-400 font-black text-xs shadow-inner flex-shrink-0">
-                SM
+              <div className="w-10 h-10 rounded-xl bg-slate-950 border border-amber-400/30 flex items-center justify-center text-amber-400 font-black text-xs shadow-inner flex-shrink-0 overflow-hidden">
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt={profile.shopName} className="w-full h-full object-cover" />
+                ) : (
+                  profile.shopName.substring(0, 2).toUpperCase()
+                )}
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-xs text-white truncate">Style & Mode</h3>
+                <h3 className="font-bold text-xs text-white truncate">{profile.shopName}</h3>
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Active & En ligne
@@ -141,7 +173,8 @@ export default function VendorDashboardPage() {
             </div>
 
             <Link
-              href="/boutiques/style-and-mode/produits"
+              href={`/boutiques/${profile.shopSlug || 'style-and-mode'}/produits`}
+              target="_blank"
               className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-amber-300 text-[11px] font-semibold rounded-lg transition"
             >
               <span>Voir ma vitrine</span>
@@ -196,15 +229,19 @@ export default function VendorDashboardPage() {
             <span>Retour au Marketplace</span>
           </Link>
 
-          <div className="flex items-center gap-3 pt-2">
-            <div className="w-9 h-9 rounded-full bg-slate-800 text-amber-400 border border-slate-700 flex items-center justify-center font-bold text-xs">
-              MD
+          <Link href="/vendeur/profil" className="flex items-center gap-3 pt-2 hover:opacity-85 transition">
+            <div className="w-9 h-9 rounded-full bg-slate-800 text-amber-400 border border-slate-700 flex items-center justify-center font-bold text-xs overflow-hidden">
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
+              ) : (
+                profile.name.substring(0, 2).toUpperCase()
+              )}
             </div>
             <div className="min-w-0 text-left">
-              <p className="text-xs font-bold text-white truncate">Malick Diop</p>
-              <p className="text-[10px] text-slate-400">Gérant vérifié 👑</p>
+              <p className="text-xs font-bold text-white truncate">{profile.name}</p>
+              <p className="text-[10px] text-slate-400">{profile.badge} 👑</p>
             </div>
-          </div>
+          </Link>
         </div>
       </aside>
 
@@ -223,14 +260,14 @@ export default function VendorDashboardPage() {
               </span>
             </div>
             <p className="hidden md:block text-xs text-slate-500 font-medium">
-              Bonjour Malick 👋, voici le résumé de l&apos;activité de votre boutique aujourd&apos;hui.
+              Bonjour {profile.name.split(' ')[0]} 👋, voici le résumé de l&apos;activité de votre boutique aujourd&apos;hui.
             </p>
           </div>
 
           {/* Raccourcis Actions & Profil */}
           <div className="flex items-center gap-3 sm:gap-4">
             <Link
-              href="/vendeur/produits"
+              href="/vendeur/produits/ajouter"
               className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-4 py-2 rounded-full transition shadow-xs flex items-center gap-1.5 active:scale-95"
             >
               <Plus className="w-3.5 h-3.5 stroke-[3px]" />
@@ -239,7 +276,8 @@ export default function VendorDashboardPage() {
             </Link>
 
             <Link
-              href="/boutiques/style-and-mode/produits"
+              href={`/boutiques/${profile.shopSlug || 'style-and-mode'}/produits`}
+              target="_blank"
               className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-amber-600 border border-slate-200 rounded-full px-3.5 py-2 hover:bg-slate-50 transition"
             >
               <span>Boutique en direct</span>
@@ -252,18 +290,24 @@ export default function VendorDashboardPage() {
               title="Notifications"
             >
               <Bell className="w-5 h-5 stroke-[2px]" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+              {unreadNotifs > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+              )}
             </Link>
 
             <Link
               href="/vendeur/profil"
               className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 bg-slate-100 hover:bg-slate-200 rounded-full transition"
             >
-              <div className="w-7 h-7 rounded-full bg-slate-950 text-white flex items-center justify-center text-xs font-bold">
-                MD
+              <div className="w-7 h-7 rounded-full bg-slate-950 text-amber-400 flex items-center justify-center text-xs font-bold overflow-hidden border border-amber-400/30">
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
+                ) : (
+                  profile.name.substring(0, 2).toUpperCase()
+                )}
               </div>
               <span className="text-xs font-bold text-slate-800 hidden md:inline">
-                Style & Mode ▾
+                {profile.shopName} ▾
               </span>
             </Link>
           </div>

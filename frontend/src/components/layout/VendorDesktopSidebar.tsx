@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -17,6 +17,9 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
+import { getVendorProfile, VendorProfile } from '../../services/vendorProfileStore';
+import { getVendorNotifications } from '../../services/notificationStore';
+import { getVendorProducts } from '../../services/productStore';
 
 interface NavMenuItem {
   href: string;
@@ -28,6 +31,30 @@ interface NavMenuItem {
 
 export function VendorDesktopSidebar() {
   const pathname = usePathname();
+  const [profile, setProfile] = useState<VendorProfile>(getVendorProfile());
+  const [prodCount, setProdCount] = useState(0);
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
+
+  useEffect(() => {
+    const syncAll = () => {
+      setProfile(getVendorProfile());
+      const prods = getVendorProducts();
+      setProdCount(prods.length);
+      const notifs = getVendorNotifications();
+      setUnreadNotifs(notifs.filter((n) => !n.read).length);
+    };
+
+    syncAll();
+    window.addEventListener('malick_profile_updated', syncAll);
+    window.addEventListener('malick_products_updated', syncAll);
+    window.addEventListener('malick_notifications_updated', syncAll);
+
+    return () => {
+      window.removeEventListener('malick_profile_updated', syncAll);
+      window.removeEventListener('malick_products_updated', syncAll);
+      window.removeEventListener('malick_notifications_updated', syncAll);
+    };
+  }, []);
 
   const navMenuItems: NavMenuItem[] = [
     {
@@ -45,7 +72,7 @@ export function VendorDesktopSidebar() {
       href: '/vendeur/produits',
       label: 'Mes Produits & Stock',
       icon: Package,
-      badge: '28',
+      badge: prodCount ? String(prodCount) : undefined,
     },
     {
       href: '/vendeur/boutique',
@@ -62,8 +89,8 @@ export function VendorDesktopSidebar() {
       href: '/vendeur/notifications',
       label: 'Notifications',
       icon: Bell,
-      badge: '2',
-      alert: true,
+      badge: unreadNotifs > 0 ? String(unreadNotifs) : undefined,
+      alert: unreadNotifs > 0,
     },
     {
       href: '/vendeur/profil',
@@ -94,11 +121,15 @@ export function VendorDesktopSidebar() {
         {/* Capsule Boutique Actuelle */}
         <div className="bg-[#0c1a35] border border-slate-700/80 rounded-2xl p-3.5 space-y-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-950 border border-amber-400/30 flex items-center justify-center text-amber-400 font-black text-xs shadow-inner flex-shrink-0">
-              SM
+            <div className="w-10 h-10 rounded-xl bg-slate-950 border border-amber-400/30 flex items-center justify-center text-amber-400 font-black text-xs shadow-inner flex-shrink-0 overflow-hidden">
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt={profile.shopName} className="w-full h-full object-cover" />
+              ) : (
+                profile.shopName.substring(0, 2).toUpperCase()
+              )}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-xs text-white truncate">Style & Mode</h3>
+              <h3 className="font-bold text-xs text-white truncate">{profile.shopName}</h3>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Active & En ligne
@@ -107,7 +138,7 @@ export function VendorDesktopSidebar() {
           </div>
 
           <Link
-            href="/boutiques/style-and-mode/produits"
+            href={`/boutiques/${profile.shopSlug || 'style-and-mode'}/produits`}
             target="_blank"
             className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-amber-300 text-[11px] font-semibold rounded-lg transition"
           >
