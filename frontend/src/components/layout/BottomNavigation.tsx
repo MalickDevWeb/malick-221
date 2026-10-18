@@ -81,45 +81,6 @@ export function BottomNavigation() {
           );
         })}
       </nav>
-
-      {/* ================= 2. VUE DESKTOP (md+) : NAVBAR DOCK LUXE FLOTTANTE ================= */}
-      <nav className="hidden md:flex fixed bottom-5 left-1/2 -translate-x-1/2 z-40 bg-[#0c1527]/90 backdrop-blur-2xl border border-amber-400/40 hover:border-amber-400/70 rounded-full px-5 py-2 shadow-[0_10px_35px_rgba(0,0,0,0.35)] items-center gap-5 text-white transition-all duration-300 select-none">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            item.href === '/'
-              ? pathname === '/'
-              : pathname.startsWith(item.href);
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all group relative ${
-                isActive
-                  ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/25'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <div className="relative">
-                <Icon
-                  className={`w-4 h-4 ${
-                    isActive
-                      ? 'fill-slate-950 stroke-slate-950 stroke-[2px]'
-                      : 'stroke-[2px] group-hover:scale-110 transition-transform'
-                  }`}
-                />
-                {item.badge && !isActive && (
-                  <span className="absolute -top-1.5 -right-2 bg-amber-400 text-slate-950 text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center border border-[#0c1527]">
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-              <span className="tracking-tight">{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
     </>
   );
 }
