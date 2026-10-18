@@ -7,8 +7,8 @@ import { AdminApiError, adminLogin } from '../../services/admin-api';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [identity, setIdentity] = useState('');
-  const [password, setPassword] = useState('');
+  const [identity, setIdentity] = useState('qa.admin@malickbuss.sn');
+  const [password, setPassword] = useState('TestOnly-Malick-2026!');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -99,6 +99,29 @@ export default function AdminLoginPage() {
           </label>
 
           {error && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-800">{error}</p>}
+
+          <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-amber-900 flex items-center gap-1.5">
+                <Crown className="w-4 h-4 text-amber-600 fill-amber-400" />
+                <span>Identifiants Super Admin</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setIdentity('qa.admin@malickbuss.sn');
+                  setPassword('TestOnly-Malick-2026!');
+                }}
+                className="font-black text-amber-800 hover:text-amber-950 bg-amber-200/60 hover:bg-amber-200 px-2.5 py-1 rounded-lg transition"
+              >
+                Remplir en 1 clic
+              </button>
+            </div>
+            <p className="text-amber-800/80 text-[11px] leading-relaxed">
+              Email : <code className="font-mono bg-white/70 px-1 py-0.5 rounded text-amber-900 font-semibold">qa.admin@malickbuss.sn</code><br />
+              Mot de passe : <code className="font-mono bg-white/70 px-1 py-0.5 rounded text-amber-900 font-semibold">TestOnly-Malick-2026!</code>
+            </p>
+          </div>
 
           <button
             type="submit"
