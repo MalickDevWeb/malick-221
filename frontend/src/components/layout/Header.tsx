@@ -204,20 +204,21 @@ export function Header() {
           </div>
 
           {/* ================= VRAIE BARRE DE NAVIGATION PRINCIPALE DESKTOP ================= */}
-          <div className="hidden md:flex items-center justify-between border-t border-slate-100 py-2.5 text-xs font-semibold text-slate-700">
-            <div className="flex items-center gap-2 lg:gap-3">
-              {/* 1. Accueil */}
-              <Link
-                href="/"
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition ${
-                  pathname === '/'
-                    ? 'text-slate-950 bg-amber-400 font-bold shadow-xs'
-                    : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
-                }`}
-              >
-                <Home className="w-3.5 h-3.5" />
-                <span>Accueil</span>
-              </Link>
+          {!pathname.startsWith('/boutiques/') && (
+            <div className="hidden md:flex items-center justify-between border-t border-slate-100 py-2.5 text-xs font-semibold text-slate-700">
+              <div className="flex items-center gap-2 lg:gap-3">
+                {/* 1. Accueil */}
+                <Link
+                  href="/"
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition ${
+                    pathname === '/'
+                      ? 'text-slate-950 bg-amber-400 font-bold shadow-xs'
+                      : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
+                  }`}
+                >
+                  <Home className="w-3.5 h-3.5" />
+                  <span>Accueil</span>
+                </Link>
 
               {/* 3. Nos Boutiques */}
               <Link
@@ -284,6 +285,7 @@ export function Header() {
               </Link>
             </div>
           </div>
+          )}
 
           {/* ================= VUE MOBILE (< md) : UNIQUEMENT SUR LA PAGE D'ACCUEIL '/' ================= */}
           {pathname === '/' && (
