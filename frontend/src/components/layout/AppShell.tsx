@@ -8,11 +8,23 @@ import { SmoothScroll } from '../motion/SmoothScroll';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isVendorRoute = pathname.startsWith('/vendeur');
   const isAuthPage =
     pathname === '/connexion' ||
     pathname === '/login' ||
-    pathname === '/vendeur/connexion' ||
     pathname === '/splash';
+
+  // Si on est sur une route vendeur, espace dédié sans header/footer/bottomnav client
+  if (isVendorRoute) {
+    return (
+      <div className="min-h-screen antialiased bg-[#f8fafc] text-slate-900 selection:bg-amber-400 selection:text-slate-950">
+        <SmoothScroll />
+        <main className="w-full">
+          {children}
+        </main>
+      </div>
+    );
+  }
 
   // Si on est sur une page auth ou splash, plein écran immersif
   if (isAuthPage) {

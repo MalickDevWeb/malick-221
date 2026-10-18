@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   ShieldCheck,
   Truck,
@@ -22,8 +23,21 @@ import {
 import { BrandLogo } from '../ui/BrandLogo';
 
 export function DesktopFooter() {
+  const pathname = usePathname();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
+
+  // Pas de footer sur l'Espace Vendeur ni sur les pages de flux épuré
+  if (
+    pathname.startsWith('/vendeur') ||
+    pathname === '/splash' ||
+    pathname === '/connexion' ||
+    pathname === '/login' ||
+    pathname === '/checkout' ||
+    pathname === '/confirmation'
+  ) {
+    return null;
+  }
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
