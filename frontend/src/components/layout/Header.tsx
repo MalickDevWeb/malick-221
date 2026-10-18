@@ -78,27 +78,11 @@ export function Header() {
 
             <div className="flex items-center gap-3 text-xs">
               <Link
-                href="/vendeur/accueil"
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-bold text-xs hover:brightness-110 shadow-xs hover:shadow-amber-500/20 transition-all active:scale-95"
-              >
-                <Store className="w-3.5 h-3.5 stroke-[2.2px] text-slate-950" />
-                <span>Ouvrir une boutique</span>
-              </Link>
-              <span className="text-slate-700">|</span>
-              <Link
-                href="/vendeur/dashboard"
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-slate-200 hover:text-white hover:bg-white/5 font-semibold text-xs transition"
-              >
-                <User className="w-3.5 h-3.5 text-amber-400" />
-                <span>Espace Vendeur</span>
-              </Link>
-              <span className="text-slate-700">|</span>
-              <Link
                 href="/support"
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-slate-300 hover:text-white hover:bg-white/5 font-medium text-xs transition"
               >
                 <HelpCircle className="w-3.5 h-3.5 text-slate-300" />
-                <span>Aide</span>
+                <span>Aide & Support</span>
               </Link>
               <span className="text-slate-700">|</span>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/15 border border-white/15 text-white font-bold text-xs cursor-pointer transition select-none">
@@ -117,40 +101,44 @@ export function Header() {
               <BrandLogo size="md" variant="dark" layout="horizontal" />
             </Link>
 
-            {/* Barre de Recherche Large */}
-            <div className="flex-1 max-w-2xl">
-              <form
-                onSubmit={handleSearch}
-                className="relative flex items-center bg-[#f4f5f7] border border-slate-200/80 rounded-full focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all pl-3.5 pr-1.5 py-1"
-              >
-                <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Rechercher une boutique, un produit, une marque à Dakar..."
-                  aria-label="Rechercher une boutique ou un produit"
-                  className="w-full bg-transparent text-xs px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
-                />
-                <button
-                  type="submit"
-                  className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 p-2.5 rounded-full transition shadow-xs flex-shrink-0 flex items-center justify-center"
-                  aria-label="Rechercher"
+            {/* Barre de Recherche Large (masquée sur /boutiques pour éviter le doublon avec la recherche locale) */}
+            {!pathname.startsWith('/boutiques') ? (
+              <div className="flex-1 max-w-2xl">
+                <form
+                  onSubmit={handleSearch}
+                  className="relative flex items-center bg-[#f4f5f7] border border-slate-200/80 rounded-full focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all pl-3.5 pr-1.5 py-1"
                 >
-                  <Search className="w-4 h-4 stroke-[2.5px]" />
-                </button>
-              </form>
-            </div>
+                  <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder="Rechercher une boutique, un produit, une marque à Dakar..."
+                    aria-label="Rechercher une boutique ou un produit"
+                    className="w-full bg-transparent text-xs px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 p-2.5 rounded-full transition shadow-xs flex-shrink-0 flex items-center justify-center"
+                    aria-label="Rechercher"
+                  >
+                    <Search className="w-4 h-4 stroke-[2.5px]" />
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div className="flex-1" />
+            )}
 
             {/* Raccourcis Droite Desktop */}
-            <div className="flex items-center gap-5 flex-shrink-0">
-              {/* Boutiques */}
+            <div className="flex items-center gap-3.5 lg:gap-4 flex-shrink-0">
+              {/* Bouton Unique Espace Vendeur */}
               <Link
-                href="/boutiques"
-                className="flex items-center gap-1.5 text-slate-700 hover:text-amber-600 font-semibold text-xs transition"
+                href="/vendeur/accueil"
+                className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-amber-400 text-slate-800 hover:text-slate-950 font-bold text-xs px-3.5 py-2 rounded-full transition shadow-xs active:scale-95"
               >
-                <Store className="w-4 h-4 text-slate-600" />
-                <span>Nos Boutiques</span>
+                <Store className="w-3.5 h-3.5 text-slate-600" />
+                <span>Espace Vendeur</span>
               </Link>
 
               {/* Notifications */}
@@ -169,7 +157,6 @@ export function Header() {
                 className="flex items-center gap-2.5 bg-slate-50 hover:bg-amber-50/60 border border-slate-200/90 hover:border-amber-400 pl-1.5 pr-3.5 py-1 rounded-full transition-all duration-200 shadow-xs group"
                 aria-label="Mon panier d'achats"
               >
-                {/* Médaillon icône panier avec badge détaché */}
                 <div className="relative w-8 h-8 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
                   <ShoppingCart className="w-4 h-4 stroke-[2.2px]" />
                   <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
@@ -177,7 +164,6 @@ export function Header() {
                   </span>
                 </div>
 
-                {/* Libellé & Montant lisibles et contrastés */}
                 <div className="text-left leading-tight">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block group-hover:text-amber-800 transition-colors">
                     Panier
@@ -203,8 +189,8 @@ export function Header() {
             </div>
           </div>
 
-          {/* ================= VRAIE BARRE DE NAVIGATION PRINCIPALE DESKTOP ================= */}
-          {!pathname.startsWith('/boutiques/') && (
+          {/* ================= BARRE DE DÉCOUVERTE (UNIQUEMENT SUR LA PAGE D'ACCUEIL) ================= */}
+          {pathname === '/' && (
             <div className="hidden md:flex items-center justify-between border-t border-slate-100 py-2.5 text-xs font-semibold text-slate-700">
               <div className="flex items-center gap-2 lg:gap-3">
                 {/* 1. Accueil */}
@@ -220,71 +206,59 @@ export function Header() {
                   <span>Accueil</span>
                 </Link>
 
-              {/* 3. Nos Boutiques */}
-              <Link
-                href="/boutiques"
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition ${
-                  pathname.startsWith('/boutiques')
-                    ? 'text-slate-950 bg-amber-400 border border-amber-500/30 font-bold shadow-xs'
-                    : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
-                }`}
-              >
-                <Store className={`w-3.5 h-3.5 ${pathname.startsWith('/boutiques') ? 'text-slate-950' : 'text-amber-500'}`} />
-                <span>Nos Boutiques</span>
-              </Link>
+                {/* 2. Nos Boutiques */}
+                <Link
+                  href="/boutiques"
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition ${
+                    pathname.startsWith('/boutiques')
+                      ? 'text-slate-950 bg-amber-400 border border-amber-500/30 font-bold shadow-xs'
+                      : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
+                  }`}
+                >
+                  <Store className={`w-3.5 h-3.5 ${pathname.startsWith('/boutiques') ? 'text-slate-950' : 'text-amber-500'}`} />
+                  <span>Nos Boutiques</span>
+                </Link>
 
-              {/* 4. Bons Plans Dakar */}
-              <Link
-                href="/boutiques?filter=promos"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
-              >
-                <Flame className="w-3.5 h-3.5 text-rose-500" />
-                <span>Bons Plans Dakar</span>
-                <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none">
-                  HOT
-                </span>
-              </Link>
+                {/* 3. Bons Plans Dakar */}
+                <Link
+                  href="/boutiques?filter=promos"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+                >
+                  <Flame className="w-3.5 h-3.5 text-rose-500" />
+                  <span>Bons Plans Dakar</span>
+                  <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none">
+                    HOT
+                  </span>
+                </Link>
 
-              {/* 5. Nouveautés */}
-              <Link
-                href="/boutiques?sort=newest"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>Nouveautés</span>
-              </Link>
+                {/* 4. Nouveautés */}
+                <Link
+                  href="/boutiques?sort=newest"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Nouveautés</span>
+                </Link>
 
-              {/* 6. Suivre ma commande */}
-              <Link
-                href="/suivre-commande"
-                className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
-              >
-                <Truck className="w-3.5 h-3.5 text-sky-600" />
-                <span>Suivre ma commande</span>
-              </Link>
+                {/* 5. Suivre ma commande */}
+                <Link
+                  href="/suivre-commande"
+                  className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+                >
+                  <Truck className="w-3.5 h-3.5 text-sky-600" />
+                  <span>Suivre ma commande</span>
+                </Link>
 
-              {/* 7. Artisanat Sénégalais */}
-              <Link
-                href="/boutiques?category=Artisanat"
-                className="hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
-              >
-                <Crown className="w-3.5 h-3.5 text-amber-500" />
-                <span>Artisanat Local 🇸🇳</span>
-              </Link>
+                {/* 6. Artisanat Sénégalais */}
+                <Link
+                  href="/boutiques?category=Artisanat"
+                  className="hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+                >
+                  <Crown className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Artisanat Local 🇸🇳</span>
+                </Link>
+              </div>
             </div>
-
-            {/* Raccourci Accès Vendeur / Ouvrir une boutique */}
-            <div className="flex items-center gap-4 text-xs">
-              <Link
-                href="/vendeur/accueil"
-                className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-4 py-2 rounded-full font-black transition flex items-center gap-1.5 shadow-xs active:scale-95"
-              >
-                <Store className="w-3.5 h-3.5" />
-                <span>Accès Vendeur</span>
-                <span>→</span>
-              </Link>
-            </div>
-          </div>
           )}
 
           {/* ================= VUE MOBILE (< md) : UNIQUEMENT SUR LA PAGE D'ACCUEIL '/' ================= */}
