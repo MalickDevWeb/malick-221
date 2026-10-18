@@ -205,6 +205,33 @@ export default function VendorShopProfilePage() {
           onChange={handleLogoUpload}
         />
 
+        {/* Alerte si boutique non vérifiée */}
+        {!profile.isVerified && (
+          <div className="rounded-3xl border-2 border-amber-400 bg-amber-50/80 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center flex-shrink-0 font-bold">
+                <Clock className="w-5 h-5 stroke-[2.3px]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Boutique en attente de vérification Super Admin</h3>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Votre vitrine sera visible par les acheteurs dès sa validation par l&apos;administrateur. Discutez directement avec le Super Admin sur WhatsApp au <strong>+221 77 171 90 13</strong>.
+                </p>
+              </div>
+            </div>
+            <a
+              href={`https://wa.me/221771719013?text=${encodeURIComponent(
+                `Bonjour Super Admin Malick Buss, je viens de créer ma boutique "${profile.shopName}" (Commerçant: ${profile.name}). Pouvez-vous vérifier et valider ma boutique s'il vous plaît ? Merci !`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition active:scale-95 flex-shrink-0"
+            >
+              <span>Relancer sur WhatsApp</span>
+            </a>
+          </div>
+        )}
+
         {/* ================= 1. COUVERTURE ET HEADER DE BOUTIQUE ================= */}
         <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-2xs">
           {/* Bannière de Couverture HD */}
@@ -270,10 +297,17 @@ export default function VendorShopProfilePage() {
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                     {profile.shopName}
                   </h2>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    En Ligne & Vérifié
-                  </span>
+                  {profile.isVerified ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      En Ligne & Vérifié
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      En attente de validation 🟡
+                    </span>
+                  )}
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/60">
                     👑 Sponsorisé VIP
                   </span>

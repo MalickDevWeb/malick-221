@@ -161,6 +161,33 @@ export default function VendorProfilePage() {
           onChange={handleAvatarFile}
         />
 
+        {/* Alerte si boutique non vérifiée */}
+        {!profile.isVerified && (
+          <div className="rounded-3xl border-2 border-amber-400 bg-amber-50/80 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center flex-shrink-0 font-bold">
+                <AlertCircle className="w-5 h-5 stroke-[2.3px]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Boutique en attente de vérification</h3>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Votre boutique &ldquo;{profile.shopName}&rdquo; a été soumise au Super Admin. Contactez directement l&apos;équipe au <strong>+221 77 171 90 13</strong> sur WhatsApp pour accélérer l&apos;approbation.
+                </p>
+              </div>
+            </div>
+            <a
+              href={`https://wa.me/221771719013?text=${encodeURIComponent(
+                `Bonjour Super Admin Malick Buss, je viens de créer ma boutique "${profile.shopName}" (Commerçant: ${profile.name}). Pouvez-vous vérifier et valider ma boutique s'il vous plaît ? Merci !`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition active:scale-95 flex-shrink-0"
+            >
+              <span>Relancer sur WhatsApp</span>
+            </a>
+          </div>
+        )}
+
         {/* ================= 1. CARTE PROFIL VENDEUR PRESTIGE ================= */}
         <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-2xs">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
@@ -199,7 +226,13 @@ export default function VendorProfilePage() {
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                     {profile.name}
                   </h2>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-100" />
+                  {profile.isVerified ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-100" />
+                  ) : (
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                      En attente 🟡
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-slate-500 font-medium flex items-center gap-2 flex-wrap">
                   <span>Gérant Principal</span>
@@ -242,7 +275,11 @@ export default function VendorProfilePage() {
           <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs">
             <span className="text-xs font-semibold text-slate-500 block">Boutiques gérées</span>
             <div className="text-2xl font-black text-slate-900 mt-2">1 boutique</div>
-            <span className="text-[11px] text-emerald-600 font-semibold block mt-1">✓ Statut active</span>
+            {profile.isVerified ? (
+              <span className="text-[11px] text-emerald-600 font-semibold block mt-1">✓ Statut active</span>
+            ) : (
+              <span className="text-[11px] text-amber-600 font-semibold block mt-1">⏳ En attente Super Admin</span>
+            )}
           </div>
 
           <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs">
