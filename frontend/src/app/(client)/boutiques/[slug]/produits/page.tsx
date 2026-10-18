@@ -48,19 +48,79 @@ export default function ShopProductsListingPage({
 }) {
   const router = useRouter();
 
-  // Boutique Info
-  const boutiqueInfo = {
-    name: params.slug === 'techzone' ? 'TechZone' : params.slug === 'beauty-world' ? 'Beauty World' : 'Style & Mode',
+  // Boutique Info Dynamique
+  const BOUTIQUES_INFO: Record<string, any> = {
+    'style-and-mode': {
+      name: 'Style & Mode',
+      monogram: 'SM',
+      slug: 'style-and-mode',
+      badge: '👑 Vendeur Officiel',
+      rating: '4,9',
+      reviewsCount: 1240,
+      district: 'Dakar Plateau • Sandaga',
+      whatsapp: '221771234567',
+    },
+    'beauty-world': {
+      name: 'Beauty World',
+      monogram: 'BW',
+      slug: 'beauty-world',
+      badge: '✨ Coup de Cœur',
+      rating: '4,8',
+      reviewsCount: 756,
+      district: 'Almadies • Dakar',
+      whatsapp: '221778901234',
+    },
+    'techzone': {
+      name: 'TechZone',
+      monogram: 'TZ',
+      slug: 'techzone',
+      badge: '⚡ Top Ventes High-Tech',
+      rating: '4,8',
+      reviewsCount: 980,
+      district: 'Médina • Centenaire',
+      whatsapp: '221765432109',
+    },
+    'kids-world': {
+      name: 'Kids World',
+      monogram: 'KW',
+      slug: 'kids-world',
+      badge: '🧸 Espace Famille',
+      rating: '4,8',
+      reviewsCount: 523,
+      district: 'Mermoz • VDN',
+      whatsapp: '221781112233',
+    },
+    'maison-chic': {
+      name: 'Maison Chic',
+      monogram: 'MC',
+      slug: 'maison-chic',
+      badge: '🎨 Design & Confort',
+      rating: '4,7',
+      reviewsCount: 421,
+      district: 'Ngor • Virage',
+      whatsapp: '221774445566',
+    },
+    'sport-max': {
+      name: 'Sport Max',
+      monogram: 'SM',
+      slug: 'sport-max',
+      badge: '⚽ Performance Pro',
+      rating: '4,6',
+      reviewsCount: 367,
+      district: 'Fann Résidence • Corniche',
+      whatsapp: '221769998877',
+    },
+  };
+
+  const boutiqueInfo = BOUTIQUES_INFO[params.slug] || {
+    name: 'Style & Mode',
+    monogram: 'SM',
     slug: params.slug,
-    badge: 'Commerçant Vérifié 👑',
+    badge: '👑 Vendeur Officiel',
     rating: '4,9',
     reviewsCount: 1240,
-    location: 'Dakar Plateau • Rue Carnot x Avenue Ponty',
-    deliveryTime: 'Livraison 24h Dakar',
+    district: 'Dakar Plateau',
     whatsapp: '221771234567',
-    phone: '+221 77 123 45 67',
-    coverImage: '/images/boutiques/cover_style_mode.jpg',
-    description: 'Boutique officielle de prêt-à-porter sénégalais, Bazin riche brodé, sneakers authentiques et maroquinerie de luxe.',
   };
 
   const [activeCategory, setActiveCategory] = useState('Tous');
@@ -226,232 +286,188 @@ export default function ShopProductsListingPage({
 
   return (
     <div className="min-h-screen bg-[#f8fafc] font-sans antialiased select-none pb-16">
-      {/* ================= 1. HEADER PRESTIGE DE LA BOUTIQUE ================= */}
-      <section className="bg-white border-b border-slate-200/90 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          {/* Fil d'Ariane & Retour */}
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-            <Link
-              href="/boutiques"
-              className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-amber-600 transition group"
-            >
-              <div className="w-7 h-7 rounded-full bg-slate-100 group-hover:bg-amber-400 group-hover:text-slate-950 flex items-center justify-center transition">
+      {/* ================= 1. EN-TÊTE ULTRA COMPACT & CLAIR ================= */}
+      <section className="bg-white border-b border-slate-200/90 shadow-2xs sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+          <div className="flex items-center justify-between gap-3">
+            {/* Gauche : Bouton Retour + Identité Boutique */}
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <Link
+                href="/boutiques"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-amber-400 hover:text-slate-950 text-slate-700 flex items-center justify-center transition shrink-0"
+                title="Retour aux boutiques"
+              >
                 <ArrowLeft className="w-4 h-4 stroke-[2.2px]" />
-              </div>
-              <span>Retour à toutes les boutiques</span>
-            </Link>
+              </Link>
 
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[11px] font-bold px-3 py-1 rounded-full">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Boutique Ouverte en direct</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Carte d'Identité Boutique */}
-          <div className="pt-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-            <div className="flex items-start sm:items-center gap-4">
-              {/* Monogramme / Logo */}
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#071328] text-white flex flex-col items-center justify-center flex-shrink-0 shadow-md border-2 border-amber-400">
-                <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">MB VIP</span>
-                <span className="text-xl sm:text-2xl font-black tracking-tight leading-none text-white">SM</span>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#071328] text-white flex flex-col items-center justify-center shrink-0 border border-amber-400 shadow-xs">
+                <span className="text-[11px] font-black text-amber-300 leading-none">
+                  {boutiqueInfo.monogram}
+                </span>
               </div>
 
-              {/* Titre, Adresse & Étoiles */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h1 className="text-sm sm:text-base font-black text-slate-900 truncate">
                     {boutiqueInfo.name}
                   </h1>
-                  <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-xs">
-                    {boutiqueInfo.badge}
+                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    <span className="hidden sm:inline">Boutique Vérifiée</span>
+                    <span className="sm:hidden">✓</span>
                   </span>
                 </div>
-
-                <p className="text-xs text-slate-500 font-medium max-w-xl">
-                  {boutiqueInfo.description}
-                </p>
-
-                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 pt-1">
-                  <span className="flex items-center gap-1 font-semibold text-slate-800">
-                    <MapPin className="w-3.5 h-3.5 text-amber-500" />
-                    {boutiqueInfo.location}
-                  </span>
+                <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                  <span className="truncate">{boutiqueInfo.district}</span>
                   <span>•</span>
-                  <div className="flex items-center gap-1 font-black text-slate-950 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
-                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                    <span>{boutiqueInfo.rating}</span>
-                    <span className="text-[10px] font-medium text-slate-400">({boutiqueInfo.reviewsCount} avis)</span>
-                  </div>
+                  <span className="flex items-center gap-0.5 font-bold text-slate-900">
+                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                    {boutiqueInfo.rating}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Boutons d'Action Directe (WhatsApp & Contact) */}
-            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            {/* Droite : WhatsApp + Panier */}
+            <div className="flex items-center gap-2 shrink-0">
               <a
-                href={`https://wa.me/${boutiqueInfo.whatsapp}?text=Bonjour%20${encodeURIComponent(boutiqueInfo.name)}%2C%20je%20souhaite%20commander%20un%20article%20sur%20Malick%20Buss`}
+                href={`https://wa.me/${boutiqueInfo.whatsapp}?text=${encodeURIComponent(
+                  `Bonjour ${boutiqueInfo.name}, je souhaite commander sur Malick Buss !`
+                )}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-full transition shadow-xs active:scale-95"
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-full transition shadow-xs active:scale-95"
               >
-                <MessageCircle className="w-4 h-4" />
-                <span>WhatsApp Boutique</span>
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">WhatsApp</span>
               </a>
 
-              <a
-                href={`tel:${boutiqueInfo.whatsapp}`}
-                className="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3.5 py-2.5 rounded-full transition"
+              <Link
+                href="/panier"
+                className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3 py-1.5 rounded-full transition"
               >
-                <Phone className="w-3.5 h-3.5 text-slate-600" />
-                <span className="hidden sm:inline">Appeler</span>
-              </a>
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Panier</span>
+              </Link>
             </div>
           </div>
 
-          {/* Bandeau de Réassurance Achat Rapide */}
-          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold text-slate-600">
-            <div className="flex items-center gap-2">
-              <Truck className="w-4 h-4 text-sky-600 flex-shrink-0" />
-              <span>Livraison express à Dakar en 24h chrono</span>
+          {/* Ligne 2 : Filtres de Rayons & Recherche Rapide */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2.5 mt-2 border-t border-slate-100">
+            {/* Rayons / Catégories avec zéro scrollbar */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-full transition shrink-0 ${
+                    activeCategory === cat
+                      ? 'bg-[#0c1527] text-amber-400 shadow-xs'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-              <span>Paiement Wave, Orange Money ou Espèces à la remise</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0" />
-              <span>Garantie authenticité & échange sous 48h</span>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ================= 2. RECHERCHE ET RAYONS DE LA BOUTIQUE ================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs space-y-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            {/* Recherche interne à la boutique */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            {/* Recherche compacte */}
+            <div className="relative sm:w-60 shrink-0">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={`Rechercher dans ${boutiqueInfo.name}...`}
-                className="w-full bg-[#f4f5f7] focus:bg-white text-xs pl-10 pr-4 py-2.5 rounded-full border border-slate-200/80 focus:border-amber-400 focus:outline-none transition"
+                placeholder="Rechercher un article..."
+                className="w-full bg-[#f8fafc] text-xs pl-8 pr-3 py-1.5 rounded-full border border-slate-200 focus:border-amber-400 focus:bg-white focus:outline-none transition"
               />
             </div>
-
-            {/* Nombre d'articles */}
-            <div className="text-xs font-semibold text-slate-500">
-              <strong className="text-slate-900 font-black">{filteredProducts.length}</strong> article{filteredProducts.length > 1 ? 's' : ''} disponible{filteredProducts.length > 1 ? 's' : ''}
-            </div>
-          </div>
-
-          {/* Filtres Rayons en Capsules */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`text-xs font-bold px-4 py-2 rounded-full transition flex-shrink-0 ${
-                  activeCategory === cat
-                    ? 'bg-[#0c1527] text-amber-400 shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
           </div>
         </div>
       </section>
 
-      {/* ================= 3. GRILLE DES PRODUITS OPTIMISÉE POUR ACHAT RAPIDE ================= */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      {/* ================= 2. CATALOGUE DES PRODUITS : CLAIR, NET & ACHAT 2 CLICS DIRECT ================= */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+        <div className="flex items-center justify-between pb-3">
+          <p className="text-xs font-bold text-slate-500">
+            Rayon : <span className="text-slate-900 font-black">{activeCategory}</span> ({filteredProducts.length} articles)
+          </p>
+        </div>
+
         {filteredProducts.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/90 shadow-2xs space-y-3">
-            <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-              <ShoppingBag className="w-7 h-7" />
-            </div>
-            <h3 className="font-bold text-base text-slate-900">Aucun article trouvé</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Aucun produit ne correspond à vos filtres actuels. Réinitialisez la recherche pour voir tous les articles de {boutiqueInfo.name}.
-            </p>
+          <div className="bg-white rounded-3xl p-10 text-center border border-slate-200/90 shadow-2xs space-y-3">
+            <ShoppingBag className="w-10 h-10 text-slate-400 mx-auto" />
+            <h3 className="font-bold text-sm text-slate-900">Aucun article trouvé</h3>
             <button
               onClick={() => {
                 setActiveCategory('Tous');
                 setSearchTerm('');
               }}
-              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-full transition"
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs px-4 py-2 rounded-full transition"
             >
               Voir tout le catalogue
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4.5">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="group bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-2xs hover:shadow-xl hover:border-amber-400/80 transition-all duration-300 flex flex-col justify-between"
+                className="group bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-lg hover:border-amber-400/80 transition-all duration-200 flex flex-col justify-between"
               >
-                {/* Photo Produit & Badge */}
                 <div>
-                  <div className="relative aspect-[4/4] sm:aspect-[4/4.2] w-full overflow-hidden bg-slate-100">
+                  {/* Photo Produit & Badge */}
+                  <div className="relative h-44 sm:h-48 w-full overflow-hidden bg-slate-100">
                     <img
                       src={product.image}
                       alt={product.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
 
-                    {/* Badge État */}
+                    {/* Badge */}
                     {product.tag && (
-                      <span className="absolute top-2.5 left-2.5 z-10 bg-slate-950/85 backdrop-blur-md text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-full shadow-xs">
+                      <span className="absolute top-2 left-2 z-10 bg-slate-950/85 backdrop-blur-md text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs">
                         {product.tag}
                       </span>
                     )}
 
-                    {/* Bouton WhatsApp Direct Flottant sur Image */}
+                    {/* Bouton WhatsApp direct sur photo */}
                     <a
-                      href={`https://wa.me/${boutiqueInfo.whatsapp}?text=Bonjour%20${encodeURIComponent(boutiqueInfo.name)}%2C%20je%20veux%20commander%20l'article%20%3A%20${encodeURIComponent(product.title)}%20(${formatFCFA(product.price)})`}
+                      href={`https://wa.me/${boutiqueInfo.whatsapp}?text=${encodeURIComponent(
+                        `Bonjour ${boutiqueInfo.name}, je souhaite commander : ${product.title} (${formatFCFA(product.price)})`
+                      )}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-md opacity-90 hover:opacity-100 hover:scale-105 transition"
-                      title="Commander directement sur WhatsApp"
+                      className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-md transition hover:scale-110"
+                      title="Commander sur WhatsApp"
                     >
-                      <MessageCircle className="w-4 h-4" />
+                      <MessageCircle className="w-3.5 h-3.5" />
                     </a>
                   </div>
 
-                  {/* Détails Produit */}
-                  <div className="p-3.5 sm:p-4 space-y-1.5">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  {/* Infos Produit */}
+                  <div className="p-3 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
                       {product.category}
                     </span>
 
-                    <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-amber-600 transition line-clamp-2 leading-snug min-h-[2.5rem]">
+                    <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-amber-600 transition line-clamp-2 leading-snug">
                       {product.title}
                     </h3>
 
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <div className="flex items-center text-amber-400">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                        <span className="text-slate-800 font-black ml-1 text-xs">{product.rating}</span>
-                      </div>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        ({product.reviewsCount})
-                      </span>
+                    <div className="flex items-center gap-1 text-[11px] text-amber-500">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      <span className="text-slate-900 font-black">{product.rating}</span>
+                      <span className="text-slate-400">({product.reviewsCount})</span>
                     </div>
 
-                    {/* Prix en grand FCFA */}
-                    <div className="pt-1 flex items-baseline gap-2">
+                    {/* Prix */}
+                    <div className="pt-1 flex items-baseline gap-1.5">
                       <span className="text-sm sm:text-base font-black text-slate-950">
                         {formatFCFA(product.price)}
                       </span>
                       {product.originalPrice && (
-                        <span className="text-[11px] text-slate-400 line-through">
+                        <span className="text-[10px] text-slate-400 line-through">
                           {formatFCFA(product.originalPrice)}
                         </span>
                       )}
@@ -459,23 +475,21 @@ export default function ShopProductsListingPage({
                   </div>
                 </div>
 
-                {/* ================= BOUTONS D'ACHAT EN 2 CLICS MAX ================= */}
-                <div className="p-3 sm:p-4 pt-0 space-y-2">
-                  {/* Bouton Acheter Directement en 2 Clics */}
+                {/* Boutons d'Action (Achat 2 Clics + Panier) */}
+                <div className="p-3 pt-0 space-y-1.5">
                   <button
                     onClick={() => handleOpenExpressBuy(product)}
-                    className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-110 active:scale-95 text-slate-950 font-black text-xs py-2.5 px-3 rounded-full transition shadow-xs flex items-center justify-center gap-1.5 tracking-tight"
+                    className="w-full bg-gradient-to-r from-amber-400 to-amber-300 hover:brightness-105 active:scale-95 text-slate-950 font-black text-xs py-2 px-3 rounded-full transition shadow-xs flex items-center justify-center gap-1.5"
                   >
-                    <Zap className="w-3.5 h-3.5 stroke-[2.5px] fill-slate-950" />
-                    <span>Acheter en 2 Clics</span>
+                    <Zap className="w-3.5 h-3.5 fill-slate-950" />
+                    <span>⚡ Acheter en 2 Clics</span>
                   </button>
 
-                  {/* Bouton Ajouter au Panier */}
                   <button
                     onClick={() => handleAddToCart(product)}
-                    className="w-full bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-bold text-xs py-2 px-3 rounded-full transition flex items-center justify-center gap-1.5"
+                    className="w-full bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-bold text-[11px] py-1.5 px-3 rounded-full transition flex items-center justify-center gap-1"
                   >
-                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <ShoppingBag className="w-3 h-3" />
                     <span>Ajouter au panier</span>
                   </button>
                 </div>

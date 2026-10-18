@@ -206,21 +206,12 @@ export function Header() {
           {/* ================= VRAIE BARRE DE NAVIGATION PRINCIPALE DESKTOP ================= */}
           <div className="hidden md:flex items-center justify-between border-t border-slate-100 py-2.5 text-xs font-semibold text-slate-700">
             <div className="flex items-center gap-2 lg:gap-3">
-              {/* 1. Bouton Toutes les Boutiques */}
-              <Link
-                href="/boutiques"
-                className="flex items-center gap-2 bg-[#0c1527] hover:bg-slate-900 text-amber-400 font-bold px-4 py-2 rounded-full border border-amber-400/30 transition shadow-xs group"
-              >
-                <Store className="w-4 h-4 stroke-[2.2px] group-hover:scale-110 transition-transform duration-200" />
-                <span>Toutes les Boutiques</span>
-              </Link>
-
-              {/* 2. Accueil */}
+              {/* 1. Accueil */}
               <Link
                 href="/"
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition ${
                   pathname === '/'
-                    ? 'text-amber-600 bg-amber-50/80 font-bold'
+                    ? 'text-slate-950 bg-amber-400 font-bold shadow-xs'
                     : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
                 }`}
               >
