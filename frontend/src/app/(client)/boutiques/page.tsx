@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Suspense, useRef, useState, useMemo } from 'react';
+import { Suspense, useRef, useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -52,7 +52,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     ratingNum: 4.9,
     reviews: '(1,2k avis)',
     reviewsCount: 1240,
-    tags: ['Mode', 'Chaussures', 'Accessoires'],
+    tags: ['Mode', 'Chaussures', 'Accessoires', 'Artisanat'],
     category: 'Mode',
     monogram: 'SM',
     location: 'Dakar',
@@ -128,7 +128,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     ratingNum: 4.7,
     reviews: '(421 avis)',
     reviewsCount: 421,
-    tags: ['Maison', 'Décoration', 'Mobilier'],
+    tags: ['Maison', 'Décoration', 'Mobilier', 'Artisanat'],
     category: 'Maison',
     monogram: 'MC',
     location: 'Dakar',
@@ -161,6 +161,7 @@ const BOUTIQUES_DATA: Boutique[] = [
 
 const CATEGORIES_LIST = [
   { label: 'Toutes', icon: '✨' },
+  { label: 'Artisanat', icon: '🇸🇳' },
   { label: 'Mode', icon: '👗' },
   { label: 'Électronique', icon: '💻' },
   { label: 'Beauté', icon: '💄' },
@@ -172,11 +173,40 @@ const CATEGORIES_LIST = [
 function ShopsListContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'Toutes';
+  const initialSort = (searchParams.get('sort') as any) || 'rating';
 
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('q') || '');
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
-  const [sortBy, setSortBy] = useState<'rating' | 'reviews' | 'name'>('rating');
+  const [sortBy, setSortBy] = useState<'rating' | 'reviews' | 'name' | 'newest'>(initialSort);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Synchronisation dynamique quand l'utilisateur clique sur un lien de navigation avec paramètres d'URL
+  useEffect(() => {
+    const cat = searchParams.get('category');
+    if (cat) {
+      setSelectedCategory(cat);
+    } else if (!searchParams.get('sort') && !searchParams.get('q') && !searchParams.get('filter')) {
+      setSelectedCategory('Toutes');
+    }
+
+    const sort = searchParams.get('sort');
+    if (sort === 'newest') {
+      setSortBy('newest');
+    } else if (sort === 'rating' || sort === 'reviews' || sort === 'name') {
+      setSortBy(sort);
+    }
+
+    const q = searchParams.get('q');
+    if (q) {
+      setSearch(q);
+    }
+
+    const filter = searchParams.get('filter');
+    if (filter === 'promos') {
+      setSelectedCategory('Toutes');
+      setSortBy('reviews');
+    }
+  }, [searchParams]);
 
   const normalizeText = (value: string) =>
     value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr');
@@ -213,6 +243,7 @@ function ShopsListContent() {
 
       return matchesSearch && matchesCategory;
     }).sort((a, b) => {
+      if (sortBy === 'newest') return Number(b.id) - Number(a.id);
       if (sortBy === 'rating') return b.ratingNum - a.ratingNum;
       if (sortBy === 'reviews') return b.reviewsCount - a.reviewsCount;
       return a.name.localeCompare(b.name);
@@ -221,6 +252,7 @@ function ShopsListContent() {
 
   const handleResetFilters = () => {
     setSelectedCategory('Toutes');
+    setSortBy('rating');
     setSearch('');
     if (searchInputRef.current) {
       searchInputRef.current.focus();
@@ -293,6 +325,7 @@ function ShopsListContent() {
                 className="bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none cursor-pointer transition shadow-2xs"
               >
                 <option value="rating">Mieux notées ★</option>
+                <option value="newest">Nouveautés ✨</option>
                 <option value="reviews">Plus d&apos;avis</option>
                 <option value="name">Alphabétique (A-Z)</option>
               </select>

@@ -265,7 +265,7 @@ export function Header() {
 
               {/* 7. Artisanat Sénégalais */}
               <Link
-                href="/boutiques?category=Mode"
+                href="/boutiques?category=Artisanat"
                 className="hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
               >
                 <Crown className="w-3.5 h-3.5 text-amber-500" />

@@ -20,7 +20,7 @@ import {
   Package,
 } from 'lucide-react';
 import { formatFCFA } from '../../../services/api';
-import { getOrder, StoredOrder } from '../../../services/order-flow';
+import { getOrder, getOrders, StoredOrder } from '../../../services/order-flow';
 
 interface TimelineStep {
   id: number;
@@ -30,22 +30,71 @@ interface TimelineStep {
   current?: boolean;
 }
 
+const DEMO_FALLBACK_ORDER: StoredOrder = {
+  id: 'CMD-2026-7842',
+  createdAt: new Date().toISOString(),
+  status: 'SHIPPED',
+  paymentOption: 'cod',
+  deliveryOption: 'express',
+  paymentStatus: 'PENDING',
+  subtotal: 30000,
+  shipping: 2000,
+  total: 32000,
+  items: [
+    {
+      id: 'style-and-mode-p1',
+      title: 'Ensemble Boubou Bazin Getzner Riche Brodé',
+      price: 32000,
+      quantity: 1,
+      image: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=600&q=80',
+      shop: 'Style & Mode',
+    },
+  ],
+};
+
 function OrderTrackingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('id') || '';
-  const [order, setOrder] = useState<StoredOrder | null>(null);
+  const [searchOrderId, setSearchOrderId] = useState(searchParams.get('id') || '');
+  const [order, setOrder] = useState<StoredOrder>(DEMO_FALLBACK_ORDER);
 
   useEffect(() => {
-    const foundOrder = orderId ? getOrder(orderId) : undefined;
-    if (!foundOrder) {
-      router.replace('/commandes');
-      return;
+    const idFromUrl = searchParams.get('id');
+    if (idFromUrl) {
+      const found = getOrder(idFromUrl);
+      if (found) {
+        setOrder(found);
+        setSearchOrderId(idFromUrl);
+        return;
+      }
     }
-    setOrder(foundOrder);
-  }, [orderId, router]);
 
-  if (!order) return null;
+    const allOrders = getOrders();
+    if (allOrders && allOrders.length > 0) {
+      setOrder(allOrders[0]);
+      setSearchOrderId(allOrders[0].id);
+    } else {
+      setOrder(DEMO_FALLBACK_ORDER);
+      setSearchOrderId(DEMO_FALLBACK_ORDER.id);
+    }
+  }, [searchParams]);
+
+  const handleSearchOrder = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchOrderId.trim()) return;
+    const found = getOrder(searchOrderId.trim());
+    if (found) {
+      setOrder(found);
+    } else {
+      const allOrders = getOrders();
+      const match = allOrders.find((o: StoredOrder) =>
+        o.id.toLowerCase().includes(searchOrderId.trim().toLowerCase())
+      );
+      if (match) {
+        setOrder(match);
+      }
+    }
+  };
 
   const steps: TimelineStep[] = [
     {
@@ -56,36 +105,45 @@ function OrderTrackingContent() {
     },
     {
       id: 2,
-      title: order.status === 'CANCELLED' ? 'Commande annulée' : 'En préparation',
-      timestamp: order.status === 'CONFIRMED'
-        ? 'En attente du vendeur'
-        : order.status === 'PREPARING' ? 'En cours' : order.status === 'CANCELLED' ? 'Annulée' : 'Étape terminée',
+      title: order.status === 'CANCELLED' ? 'Commande annulée' : 'En préparation à Dakar',
+      timestamp:
+        order.status === 'CONFIRMED'
+          ? 'En attente du vendeur'
+          : order.status === 'PREPARING'
+          ? 'En cours'
+          : order.status === 'CANCELLED'
+          ? 'Annulée'
+          : 'Terminé',
       completed: ['SHIPPED', 'DELIVERED'].includes(order.status),
       current: order.status === 'CONFIRMED' || order.status === 'PREPARING',
     },
     {
       id: 3,
-      title: 'Expédiée',
-      timestamp: order.status === 'SHIPPED' ? 'En cours' : order.status === 'DELIVERED' ? 'Étape terminée' : 'En attente',
+      title: 'En cours de livraison express',
+      timestamp:
+        order.status === 'SHIPPED'
+          ? 'Coursier en route'
+          : order.status === 'DELIVERED'
+          ? 'Étape terminée'
+          : 'En attente',
       completed: order.status === 'DELIVERED',
       current: order.status === 'SHIPPED',
     },
     {
       id: 4,
-      title: 'Livrée',
-      timestamp: order.status === 'DELIVERED' ? 'Livrée' : 'En attente',
+      title: 'Colis remis en main propre',
+      timestamp: order.status === 'DELIVERED' ? 'Livré avec succès' : 'En attente',
       completed: order.status === 'DELIVERED',
     },
   ];
 
-  const orderItem = order.items[0];
+  const orderItem = order.items && order.items.length > 0 ? order.items[0] : DEMO_FALLBACK_ORDER.items[0];
 
   return (
     <div className="w-full bg-[#f8fafc] min-h-screen pb-20">
       {/* Conteneur principal adapté Mobile & Desktop */}
-      <div className="max-w-xl mx-auto px-4 py-4 space-y-5">
-        
-        {/* Entête conforme maquette : Flèche retour + Titre centré */}
+      <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
+        {/* Entête : Flèche retour + Titre centré */}
         <header className="relative flex items-center justify-between pt-1 pb-2">
           <Link
             href="/commandes"
@@ -107,7 +165,28 @@ function OrderTrackingContent() {
           </Link>
         </header>
 
-        {/* 1. Carte Entête Commande (Identique à la maquette) */}
+        {/* Barre de recherche d'une commande par identifiant */}
+        <form
+          onSubmit={handleSearchOrder}
+          className="relative flex items-center bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-1.5"
+        >
+          <Package className="w-4 h-4 ml-3 text-slate-400 shrink-0" />
+          <input
+            type="text"
+            value={searchOrderId}
+            onChange={(e) => setSearchOrderId(e.target.value)}
+            placeholder="Numéro de commande (ex: CMD-2026-7842)..."
+            className="w-full text-xs font-semibold px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold px-4 py-2 rounded-xl transition shadow-2xs shrink-0"
+          >
+            Suivre
+          </button>
+        </form>
+
+        {/* 1. Carte Entête Commande */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -122,7 +201,7 @@ function OrderTrackingContent() {
           {/* Numéro et date de passage */}
           <div className="flex-1 min-w-0">
             <h2 className="font-black text-sm md:text-base text-slate-900 truncate tracking-tight">
-              Commande #{orderId}
+              Commande #{order.id}
             </h2>
             <p className="text-xs text-slate-400 font-medium mt-0.5">
               Passée le {new Date(order.createdAt).toLocaleString('fr-FR')}
@@ -130,7 +209,7 @@ function OrderTrackingContent() {
             <div className="flex items-center gap-1.5 mt-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[11px] font-bold text-emerald-700">
-                {order.deliveryOption === 'express' ? 'Livraison express' : 'Livraison standard'} • suivi en attente du vendeur
+                {order.deliveryOption === 'express' ? 'Livraison express 24h' : 'Livraison standard'} • Suivi en direct
               </span>
             </div>
           </div>
@@ -279,7 +358,7 @@ function OrderTrackingContent() {
             <div className="pt-1 flex gap-2">
               <a
                 href={`https://wa.me/221771234567?text=${encodeURIComponent(
-                  `Bonjour, je souhaite des nouvelles de ma commande #${orderId}.`
+                  `Bonjour, je souhaite des nouvelles de ma commande #${order.id}.`
                 )}`}
                 target="_blank"
                 rel="noreferrer"
