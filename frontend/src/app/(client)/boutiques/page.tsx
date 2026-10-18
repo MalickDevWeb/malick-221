@@ -250,49 +250,6 @@ function ShopsListContent() {
           <div className="absolute -inset-px rounded-2xl sm:rounded-3xl border-2 border-transparent group-hover:border-amber-400/40 transition-colors duration-500 pointer-events-none" />
         </motion.div>
 
-        {/* ================= BARRE DE VALEUR & CONFIANCE MALICK BUSS ================= */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
-          <div className="flex items-center gap-2.5 text-xs">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0 border border-emerald-100">
-              <ShieldCheck className="w-4 h-4 stroke-[2.5px]" />
-            </div>
-            <div>
-              <p className="font-extrabold text-slate-900 leading-tight">6 Boutiques Vérifiées</p>
-              <p className="text-[11px] text-slate-500 font-medium">Commerçants certifiés</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 text-xs">
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shrink-0 border border-amber-100">
-              <Zap className="w-4 h-4 stroke-[2.5px]" />
-            </div>
-            <div>
-              <p className="font-extrabold text-slate-900 leading-tight">Achat en 2 Clics</p>
-              <p className="text-[11px] text-slate-500 font-medium">Wave, Orange Money, Cash</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 text-xs">
-            <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold shrink-0 border border-sky-100">
-              <Truck className="w-4 h-4 stroke-[2.5px]" />
-            </div>
-            <div>
-              <p className="font-extrabold text-slate-900 leading-tight">Livraison Rapide</p>
-              <p className="text-[11px] text-slate-500 font-medium">Dakar & Toutes Régions</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 text-xs">
-            <div className="w-8 h-8 rounded-xl bg-green-50 text-green-600 flex items-center justify-center font-bold shrink-0 border border-green-100">
-              <MessageCircle className="w-4 h-4 stroke-[2.5px]" />
-            </div>
-            <div>
-              <p className="font-extrabold text-slate-900 leading-tight">Contact Direct</p>
-              <p className="text-[11px] text-slate-500 font-medium">WhatsApp direct vendeur</p>
-            </div>
-          </div>
-        </div>
-
         {/* ================= 2. BARRE DE RECHERCHE, FILTRE 'TOUTES' & TRI (SANS SCROLLBAR) ================= */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
