@@ -28,6 +28,7 @@ import {
 import { formatFCFA } from '../../../../../services/api';
 import { addCartItem, createOrder } from '../../../../../services/order-flow';
 import { getVendorProducts } from '../../../../../services/productStore';
+import { getVendorProfile } from '../../../../../services/vendorProfileStore';
 
 interface ProductItem {
   id: string;
@@ -48,6 +49,14 @@ export default function ShopProductsListingPage({
   params: { slug: string };
 }) {
   const router = useRouter();
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    try {
+      const p = getVendorProfile();
+      setProfile(p);
+    } catch {}
+  }, []);
 
   // Boutique Info Dynamique
   const BOUTIQUES_INFO: Record<string, any> = {
@@ -59,7 +68,7 @@ export default function ShopProductsListingPage({
       rating: '4,9',
       reviewsCount: 1240,
       district: 'Dakar Plateau • Sandaga',
-      whatsapp: '221771234567',
+      whatsapp: '221771719013',
     },
     'beauty-world': {
       name: 'Beauty World',
@@ -113,16 +122,37 @@ export default function ShopProductsListingPage({
     },
   };
 
-  const boutiqueInfo = BOUTIQUES_INFO[params.slug] || {
-    name: 'Style & Mode',
-    monogram: 'SM',
-    slug: params.slug,
-    badge: '👑 Vendeur Officiel',
-    rating: '4,9',
-    reviewsCount: 1240,
-    district: 'Dakar Plateau',
-    whatsapp: '221771234567',
-  };
+  const boutiqueInfo = (() => {
+    if (profile && (profile.shopSlug === params.slug || params.slug === 'style-and-mode')) {
+      const rawPhone = profile.phone ? profile.phone.replace(/[^0-9]/g, '') : '221771719013';
+      const cleanPhone = rawPhone.startsWith('221') ? rawPhone : `221${rawPhone}`;
+      return {
+        name: profile.shopName || 'Style & Mode',
+        monogram: (profile.shopName || 'SM').substring(0, 2).toUpperCase(),
+        slug: params.slug,
+        badge: profile.isVerified ? '👑 Vendeur Officiel' : '⏳ En attente de validation',
+        isVerified: profile.isVerified,
+        rating: profile.rating || '4,9',
+        reviewsCount: profile.reviewsCount || 1240,
+        district: profile.district || profile.address || 'Dakar Plateau • Sandaga',
+        whatsapp: cleanPhone,
+        avatarUrl: profile.avatarUrl,
+      };
+    }
+    return (
+      BOUTIQUES_INFO[params.slug] || {
+        name: 'Style & Mode',
+        monogram: 'SM',
+        slug: params.slug,
+        badge: '👑 Vendeur Officiel',
+        isVerified: true,
+        rating: '4,9',
+        reviewsCount: 1240,
+        district: 'Dakar Plateau',
+        whatsapp: '221771719013',
+      }
+    );
+  })();
 
   const [activeCategory, setActiveCategory] = useState('Tous');
   const [searchTerm, setSearchTerm] = useState('');
@@ -337,10 +367,14 @@ export default function ShopProductsListingPage({
                 <ArrowLeft className="w-4 h-4 stroke-[2.2px]" />
               </Link>
 
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#071328] text-white flex flex-col items-center justify-center shrink-0 border border-amber-400 shadow-xs">
-                <span className="text-[11px] font-black text-amber-300 leading-none">
-                  {boutiqueInfo.monogram}
-                </span>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#071328] text-white flex flex-col items-center justify-center shrink-0 border border-amber-400 shadow-xs overflow-hidden">
+                {boutiqueInfo.avatarUrl ? (
+                  <img src={boutiqueInfo.avatarUrl} alt={boutiqueInfo.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-[11px] font-black text-amber-300 leading-none">
+                    {boutiqueInfo.monogram}
+                  </span>
+                )}
               </div>
 
               <div className="min-w-0">
@@ -348,11 +382,19 @@ export default function ShopProductsListingPage({
                   <h1 className="text-sm sm:text-base font-black text-slate-900 truncate">
                     {boutiqueInfo.name}
                   </h1>
-                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                    <span className="hidden sm:inline">Boutique Vérifiée</span>
-                    <span className="sm:hidden">✓</span>
-                  </span>
+                  {boutiqueInfo.isVerified ? (
+                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span className="hidden sm:inline">Boutique Vérifiée</span>
+                      <span className="sm:hidden">✓</span>
+                    </span>
+                  ) : (
+                    <span className="bg-amber-50 text-amber-800 border border-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      <span className="hidden sm:inline">En vérification</span>
+                      <span className="sm:hidden">⏳</span>
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
                   <span className="truncate">{boutiqueInfo.district}</span>
