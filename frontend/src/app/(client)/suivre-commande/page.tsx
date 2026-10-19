@@ -357,7 +357,7 @@ function OrderTrackingContent() {
             {/* Boutons d'action direct avec le livreur / support */}
             <div className="pt-1 flex gap-2">
               <a
-                href={`https://wa.me/221771234567?text=${encodeURIComponent(
+                href={`https://wa.me/221771719013?text=${encodeURIComponent(
                   `Bonjour, je souhaite des nouvelles de ma commande #${order.id}.`
                 )}`}
                 target="_blank"
@@ -369,7 +369,7 @@ function OrderTrackingContent() {
               </a>
 
               <a
-                href="tel:+221771234567"
+                href="tel:+221771719013"
                 className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-bold text-xs flex items-center justify-center gap-2 transition"
               >
                 <Phone className="w-4 h-4" />

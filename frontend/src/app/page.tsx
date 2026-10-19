@@ -70,7 +70,7 @@ export default function HomePage() {
       subtitle: 'Prêt-à-porter, sneakers haut de gamme & maroquinerie de luxe.',
       tags: ['Mode', 'Sneakers', 'Luxe'],
       coverImage: '/images/boutiques/cover_style_mode.jpg',
-      whatsapp: '221770000001',
+      whatsapp: '221771719013',
     },
     {
       id: '2',
@@ -660,7 +660,7 @@ export default function HomePage() {
             </Link>
 
             <Link
-              href="/support"
+              href="/vendeur/support"
               className="w-full sm:w-auto bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-xs sm:text-sm px-5 py-3.5 rounded-full transition text-center"
             >
               En savoir plus

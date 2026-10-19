@@ -216,7 +216,7 @@ export default function CartPage() {
                 </Link>
 
                 <a
-                  href={`https://wa.me/221770000000?text=${whatsappMessage}`}
+                  href={`https://wa.me/221771719013?text=${whatsappMessage}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-500/30 text-emerald-800 font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition cursor-pointer"
