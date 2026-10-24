@@ -14,6 +14,10 @@ import {
   Store,
   X,
   ExternalLink,
+  Settings,
+  Edit3,
+  Save,
+  RotateCcw as ResetIcon,
 } from 'lucide-react';
 import {
   AdminApiError,
@@ -21,6 +25,14 @@ import {
   getAdminShops,
   updateAdminShopStatus,
 } from '../../services/admin-api';
+import {
+  getPlatformSettings,
+  savePlatformSettings,
+  generateValidationApprovalMessage,
+  buildWhatsAppUrl,
+  formatPhoneForWhatsApp,
+  PlatformSettings,
+} from '../../services/platformSettingsStore';
 
 const STATUS_LABELS: Record<AdminShop['status'], string> = {
   PENDING_VERIFICATION: 'À vérifier',
@@ -44,6 +56,16 @@ export default function AdminShopsPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [approvedShopModal, setApprovedShopModal] = useState<AdminShop | null>(null);
+
+  // Platform & WhatsApp settings (dynamic, non-figé)
+  const [platformSettings, setPlatformSettings] = useState<PlatformSettings>(getPlatformSettings());
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [tempSettings, setTempSettings] = useState<PlatformSettings>(platformSettings);
+  const [settingsSavedSuccess, setSettingsSavedSuccess] = useState(false);
+
+  // Approval modal editable state
+  const [approvalMessage, setApprovalMessage] = useState('');
+  const [vendorPhoneInput, setVendorPhoneInput] = useState('');
 
   useEffect(() => {
     const token = sessionStorage.getItem('super-admin-token');
@@ -79,6 +101,15 @@ export default function AdminShopsPage() {
       const updatedShop = await updateAdminShopStatus(token, shop.id, status);
       setShops((current) => current.map((item) => item.id === updatedShop.id ? updatedShop : item));
       if (status === 'ACTIVE') {
+        const phone = updatedShop.owner.phoneNumber || '';
+        setVendorPhoneInput(phone);
+        setApprovalMessage(
+          generateValidationApprovalMessage({
+            shopName: updatedShop.name,
+            vendorName: updatedShop.owner.fullName,
+            vendorPhone: phone,
+          })
+        );
         setApprovedShopModal(updatedShop);
       }
     } catch (cause) {
@@ -109,7 +140,22 @@ export default function AdminShopsPage() {
               <h1 className="text-xl font-black">Gestion des boutiques</h1>
             </div>
           </div>
-          <Link href="/" className="hidden text-sm font-semibold text-emerald-800 hover:underline sm:block">Tableau de bord</Link>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setTempSettings(platformSettings);
+                setSettingsSavedSuccess(false);
+                setIsSettingsModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
+              title="Configurer les numéros et modèles WhatsApp"
+            >
+              <Settings className="h-3.5 w-3.5 text-emerald-700" />
+              <span>Paramètres WhatsApp ({platformSettings.superAdminPhone})</span>
+            </button>
+            <Link href="/" className="hidden text-sm font-semibold text-emerald-800 hover:underline sm:block">Tableau de bord</Link>
+          </div>
         </div>
       </header>
 
@@ -190,10 +236,10 @@ export default function AdminShopsPage() {
         </div>
       </section>
 
-      {/* Modal de Confirmation & Notification WhatsApp au Vendeur */}
+      {/* Modal de Confirmation & Notification WhatsApp au Vendeur (Entièrement personnalisable) */}
       {approvedShopModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-100 my-8 space-y-4">
             <button
               type="button"
               onClick={() => setApprovedShopModal(null)}
@@ -203,8 +249,8 @@ export default function AdminShopsPage() {
               <X className="h-5 w-5" />
             </button>
 
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 shrink-0">
                 <CheckCircle2 className="h-7 w-7" />
               </div>
               <div>
@@ -213,47 +259,75 @@ export default function AdminShopsPage() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-4 space-y-2 mb-5">
-              <div className="flex justify-between text-xs">
+            <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 space-y-2 text-xs">
+              <div className="flex justify-between">
                 <span className="text-slate-500 font-medium">Boutique :</span>
                 <span className="font-bold text-slate-900">{approvedShopModal.name}</span>
               </div>
-              <div className="flex justify-between text-xs">
+              <div className="flex justify-between">
                 <span className="text-slate-500 font-medium">Commerçant :</span>
                 <span className="font-bold text-slate-900">{approvedShopModal.owner.fullName}</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500 font-medium">Téléphone WhatsApp :</span>
-                <span className="font-bold text-emerald-700">{approvedShopModal.owner.phoneNumber}</span>
+              <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-200">
+                <label className="text-slate-600 font-medium whitespace-nowrap">N° WhatsApp Vendeur :</label>
+                <input
+                  type="tel"
+                  value={vendorPhoneInput}
+                  onChange={(e) => setVendorPhoneInput(e.target.value)}
+                  className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-900 focus:border-emerald-600 focus:outline-none w-48 text-right"
+                  placeholder="Ex: 77 123 45 67"
+                />
               </div>
             </div>
 
-            <p className="text-xs text-slate-600 mb-5 leading-relaxed">
-              Vous pouvez maintenant envoyer une notification WhatsApp directe au vendeur pour lui annoncer l&apos;ouverture officielle de sa boutique et lui permettre de publier ses articles.
-            </p>
+            {/* Zone de texte du message modifiable en direct */}
+            <div className="space-y-1.5 text-xs">
+              <div className="flex items-center justify-between">
+                <label className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Message WhatsApp (Modifiable avant envoi) :</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setApprovalMessage(
+                      generateValidationApprovalMessage({
+                        shopName: approvedShopModal.name,
+                        vendorName: approvedShopModal.owner.fullName,
+                        vendorPhone: vendorPhoneInput,
+                      })
+                    );
+                  }}
+                  className="text-[11px] text-emerald-700 hover:underline flex items-center gap-1 font-medium"
+                >
+                  <ResetIcon className="h-3 w-3" />
+                  Réinitialiser
+                </button>
+              </div>
+              <textarea
+                value={approvalMessage}
+                onChange={(e) => setApprovalMessage(e.target.value)}
+                rows={5}
+                className="w-full rounded-xl border border-slate-300 p-3 text-xs text-slate-800 focus:border-emerald-600 focus:outline-none resize-none leading-relaxed"
+                placeholder="Votre message de félicitations et d'activation..."
+              />
+              <p className="text-[11px] text-slate-500">
+                Vous pouvez ajouter des instructions personnalisées avant d&apos;envoyer le message au commerçant.
+              </p>
+            </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              {(() => {
-                const rawPhone = approvedShopModal.owner.phoneNumber || '';
-                const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
-                const phoneWithCountry = cleanPhone.startsWith('221') ? cleanPhone : `221${cleanPhone || '771719013'}`;
-                const message = `Bonjour ${approvedShopModal.owner.fullName}, Félicitations ! 🎉\n\nVotre boutique "${approvedShopModal.name}" a été vérifiée et validée avec succès par l'équipe Super Admin de Malick Buss.\n\nVotre boutique est désormais active et vous pouvez dès à présent ajouter vos produits et gérer vos ventes :\n👉 https://malickbuss.sn/vendeur/dashboard\n\nBienvenue parmi nous et excellentes ventes !`;
-                const whatsappUrl = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(message)}`;
-
-                return (
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setApprovedShopModal(null)}
-                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3 px-4 shadow-md shadow-emerald-600/20 transition active:scale-98"
-                  >
-                    <MessageCircle className="h-4 w-4 fill-white/20 stroke-[2.2px]" />
-                    <span>Notifier le vendeur par WhatsApp</span>
-                    <ExternalLink className="h-3.5 w-3.5 opacity-80" />
-                  </a>
-                );
-              })()}
+            <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
+              <a
+                href={buildWhatsAppUrl(vendorPhoneInput, approvalMessage)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setApprovedShopModal(null)}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3 px-4 shadow-md shadow-emerald-600/20 transition active:scale-98"
+              >
+                <MessageCircle className="h-4 w-4 fill-white/20 stroke-[2.2px]" />
+                <span>Envoyer au vendeur ({formatPhoneForWhatsApp(vendorPhoneInput)})</span>
+                <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+              </a>
 
               <button
                 type="button"
@@ -261,6 +335,125 @@ export default function AdminShopsPage() {
                 className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
               >
                 Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Configuration Générale WhatsApp Super Admin (Non figé) */}
+      {isSettingsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-100 my-8 space-y-4">
+            <button
+              type="button"
+              onClick={() => setIsSettingsModalOpen(false)}
+              className="absolute right-4 top-4 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              aria-label="Fermer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 shrink-0">
+                <Settings className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-slate-900">Configuration WhatsApp Super Admin</h2>
+                <p className="text-xs text-slate-500 font-medium">Toutes ces coordonnées et modèles sont 100% dynamiques et modifiables.</p>
+              </div>
+            </div>
+
+            {settingsSavedSuccess && (
+              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs font-bold text-emerald-800 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                Paramètres enregistrés et synchronisés avec succès !
+              </div>
+            )}
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Numéro WhatsApp Super Admin (Validation des boutiques)
+                </label>
+                <input
+                  type="text"
+                  value={tempSettings.superAdminPhone}
+                  onChange={(e) => setTempSettings({ ...tempSettings, superAdminPhone: e.target.value })}
+                  placeholder="Ex: 77 171 90 13"
+                  className="w-full rounded-lg border border-slate-300 p-2.5 text-xs font-semibold text-slate-900 focus:border-emerald-600 focus:outline-none"
+                />
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  C&apos;est vers ce numéro WhatsApp que les nouveaux commerçants sont redirigés à la création.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Nom d&apos;affichage du Super Admin
+                </label>
+                <input
+                  type="text"
+                  value={tempSettings.superAdminName}
+                  onChange={(e) => setTempSettings({ ...tempSettings, superAdminName: e.target.value })}
+                  placeholder="Ex: Super Admin Malick Buss"
+                  className="w-full rounded-lg border border-slate-300 p-2.5 text-xs font-semibold text-slate-900 focus:border-emerald-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Numéro de Support Client WhatsApp
+                </label>
+                <input
+                  type="text"
+                  value={tempSettings.supportPhone}
+                  onChange={(e) => setTempSettings({ ...tempSettings, supportPhone: e.target.value })}
+                  placeholder="Ex: 77 171 90 13"
+                  className="w-full rounded-lg border border-slate-300 p-2.5 text-xs font-semibold text-slate-900 focus:border-emerald-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Modèle du message d&apos;approbation commerçant
+                </label>
+                <textarea
+                  value={tempSettings.validationApprovalMessage}
+                  onChange={(e) => setTempSettings({ ...tempSettings, validationApprovalMessage: e.target.value })}
+                  rows={4}
+                  className="w-full rounded-lg border border-slate-300 p-2.5 text-xs text-slate-800 focus:border-emerald-600 focus:outline-none resize-none leading-relaxed"
+                />
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Variables disponibles : <code>{'{vendorName}'}</code>, <code>{'{shopName}'}</code>, <code>{'{vendorPhone}'}</code>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const saved = savePlatformSettings(tempSettings);
+                  setPlatformSettings(saved);
+                  setSettingsSavedSuccess(true);
+                  setTimeout(() => {
+                    setSettingsSavedSuccess(false);
+                    setIsSettingsModalOpen(false);
+                  }, 800);
+                }}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-3 px-4 shadow-md transition"
+              >
+                <Save className="h-4 w-4" />
+                <span>Enregistrer la configuration</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsSettingsModalOpen(false)}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+              >
+                Annuler
               </button>
             </div>
           </div>

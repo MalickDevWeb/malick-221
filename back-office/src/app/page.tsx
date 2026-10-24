@@ -99,6 +99,10 @@ export default function AdminScreen13Page() {
                   return <Link key={item.id} href="/boutiques" className={className}><Icon className="w-4 h-4 stroke-[2px]" /><span>{item.label}</span></Link>;
                 }
 
+                if (item.id === 'products') {
+                  return <Link key={item.id} href="/catalogue/moderation" className={className}><Icon className="w-4 h-4 stroke-[2px]" /><span>{item.label}</span></Link>;
+                }
+
                 return (
                   <button key={item.id} disabled={item.id !== 'dashboard'} className={`${className} disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-400`}>
                     <Icon className="w-4 h-4 stroke-[2px]" />
