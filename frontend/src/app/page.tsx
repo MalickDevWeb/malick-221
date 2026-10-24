@@ -37,9 +37,11 @@ export default function HomePage() {
     {
       id: 0,
       image: '/images/hero/banner_woman_hd.png',
-      tag: '🇸🇳 1ER MARKETPLACE MULTI-BOUTIQUES AU SÉNÉGAL',
+      tag: '🇸🇳 1ER MARKETPLACE DU SÉNÉGAL',
+      title: 'Vos boutiques de Dakar',
+      highlight: 'réunies en un seul endroit',
       subtitle:
-        'Vos boutiques préférées de Dakar réunies en un seul endroit. Commandez facilement et faites-vous livrer en 24h avec paiement Wave & Orange Money.',
+        'Commandez facilement et faites-vous livrer en 24h avec paiement Wave & Orange Money.',
       buttonText: 'Explorer les boutiques',
       buttonHref: '/boutiques',
     },
@@ -47,8 +49,10 @@ export default function HomePage() {
       id: 1,
       image: '/images/hero/banner_man_hd.png',
       tag: 'LE MEILLEUR DU COMMERCE SÉNÉGALAIS',
+      title: 'Mode, tech & artisanat local',
+      highlight: 'directement chez vous',
       subtitle:
-        'Mode, tech, beauté, déco, artisanat local... Soutenez les commerçants sénégalais et achetez en toute sécurité.',
+        'Soutenez les commerçants sénégalais et achetez en toute sécurité.',
       buttonText: 'Découvrir nos boutiques',
       buttonHref: '/boutiques',
     },
@@ -197,203 +201,143 @@ export default function HomePage() {
   return (
     <div className="w-full bg-[#f8fafc] min-h-screen pb-16 font-sans select-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-8 sm:space-y-12">
-        {/* ================= 1. SECTION HERO COMPLÈTE (PLEINE LARGEUR HD SANS SIDEBAR) ================= */}
-        <div className="w-full bg-[#071630] text-white rounded-3xl overflow-hidden shadow-xl relative min-h-[400px] lg:min-h-[480px] flex flex-col justify-between border border-slate-800">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSlide}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
-              >
-                <img
-                  src={currentSlide.image}
-                  alt={currentSlide.tag}
-                  className="w-full h-full object-cover object-right"
-                />
-                <div
-                  className={`absolute inset-y-0 left-0 ${
-                    activeSlide === 1
-                      ? 'w-full sm:w-3/4 lg:w-[62%] bg-gradient-to-r from-[#071630] via-[#071630]/95 via-[#071630]/75 to-transparent'
-                      : 'w-full sm:w-3/5 lg:w-[50%] bg-gradient-to-r from-[#071630]/95 via-[#071630]/65 to-transparent'
-                  }`}
-                />
-              </motion.div>
-            </AnimatePresence>
+        {/* ================= 1. SECTION HERO ÉPURÉE, MODERNE & AÉRÉE ================= */}
+        <div className="w-full bg-[#071630] text-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg relative min-h-[210px] sm:min-h-[320px] lg:min-h-[360px] flex flex-col justify-center border border-slate-800/80">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSlide}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+            >
+              <img
+                src={currentSlide.image}
+                alt={currentSlide.tag}
+                className="w-full h-full object-cover object-right"
+              />
+              <div
+                className={`absolute inset-y-0 left-0 ${
+                  activeSlide === 1
+                    ? 'w-full sm:w-3/4 lg:w-[62%] bg-gradient-to-r from-[#071630] via-[#071630]/95 via-[#071630]/80 to-transparent'
+                    : 'w-full sm:w-3/5 lg:w-[55%] bg-gradient-to-r from-[#071630] via-[#071630]/95 via-[#071630]/75 to-transparent'
+                }`}
+              />
+            </motion.div>
+          </AnimatePresence>
 
-            {/* Contenu Texte & Call to Action (Gauche) */}
-            <div className="relative z-10 p-6 sm:p-8 lg:p-10 max-w-xl space-y-4 flex-1 flex flex-col justify-center">
-              <div className="inline-block">
-                <span className="text-[10px] font-black tracking-widest uppercase text-amber-400 bg-amber-400/15 border border-amber-400/30 px-3 py-1 rounded-full shadow-xs">
-                  {currentSlide.tag}
-                </span>
-              </div>
-
-              <p className="text-sm sm:text-base text-slate-100 leading-relaxed max-w-md drop-shadow-sm font-medium">
-                {currentSlide.subtitle}
-              </p>
-
-              <div className="pt-2 flex flex-wrap items-center gap-3">
-                <Link
-                  href={currentSlide.buttonHref}
-                  className="inline-flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-110 active:scale-95 text-slate-950 font-black text-xs sm:text-sm px-6 py-3.5 rounded-full shadow-lg shadow-amber-500/25 transition duration-200"
-                >
-                  <Store className="w-4 h-4 stroke-[2.5px]" />
-                  <span>{currentSlide.buttonText}</span>
-                  <ArrowRight className="w-4 h-4 stroke-[2.5px]" />
-                </Link>
-
-                <Link
-                  href="/vendeur/accueil"
-                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm px-5 py-3.5 rounded-full backdrop-blur-sm transition"
-                >
-                  <span>Ouvrir ma boutique</span>
-                  <span>→</span>
-                </Link>
-              </div>
-
-              {/* 3 Réassurances sous le bouton */}
-              <div className="pt-4 flex flex-wrap items-center gap-4 text-[11px] font-semibold text-slate-300">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-amber-400 flex-shrink-0">
-                    <Truck className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <span className="text-white font-bold block leading-none">Livraison 24h</span>
-                    <span className="text-[10px] text-slate-400">Dakar & 14 régions</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <span className="text-white font-bold block leading-none">Paiement Wave & OM</span>
-                    <span className="text-[10px] text-slate-400">100% sécurisé</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-sky-400 flex-shrink-0">
-                    <Store className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <span className="text-white font-bold block leading-none">Boutiques certifiées</span>
-                    <span className="text-[10px] text-slate-400">Commerçants vérifiés</span>
-                  </div>
-                </div>
-              </div>
+          {/* Contenu Texte & Call to Action (Gauche) */}
+          <div className="relative z-10 p-5 sm:p-7 lg:p-9 max-w-[80%] sm:max-w-lg space-y-2 sm:space-y-3 flex flex-col justify-center">
+            <div className="inline-block">
+              <span className="text-[10px] font-black tracking-wider uppercase text-amber-400 bg-amber-400/20 border border-amber-400/30 px-2.5 py-0.5 rounded-full shadow-xs whitespace-nowrap">
+                {currentSlide.tag}
+              </span>
             </div>
 
-            {/* Flèches de navigation latérales */}
-            <button
-              onClick={() => setActiveSlide((prev) => (prev > 0 ? prev - 1 : heroSlides.length - 1))}
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition border border-white/20 shadow-md"
-              aria-label="Slide précédent"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setActiveSlide((prev) => (prev < heroSlides.length - 1 ? prev + 1 : 0))}
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition border border-white/20 shadow-md"
-              aria-label="Slide suivant"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            <h1 className="text-base sm:text-2xl lg:text-3xl font-black text-white leading-snug drop-shadow-sm">
+              <span>{currentSlide.title}</span>{' '}
+              <span className="text-amber-400 block sm:inline">{currentSlide.highlight}</span>
+            </h1>
 
-            {/* Indicateurs de pagination */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
-              {heroSlides.map((_, dot) => (
-                <button
-                  key={dot}
-                  onClick={() => setActiveSlide(dot)}
-                  className={`h-2 rounded-full transition-all ${
-                    activeSlide === dot ? 'w-6 bg-amber-400 shadow-sm' : 'w-2 bg-white/40 hover:bg-white/60'
-                  }`}
-                  aria-label={`Aller au slide ${dot + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-        {/* ================= 2. COMMENT ÇA MARCHE ? (CLARTÉ DÈS LA 1ÈRE SECONDE) ================= */}
-        <section className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-xs">
-          <div className="text-center max-w-xl mx-auto space-y-1 pb-6">
-            <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-3 py-1 rounded-full uppercase tracking-wider border border-amber-200/60">
-              Guide rapide Malick Buss
-            </span>
-            <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-              Comment commander sur le marketplace ?
-            </h2>
-            <p className="text-xs text-slate-500 font-medium">
-              Une expérience d&apos;achat simple, rapide et garantie partout au Sénégal.
+            <p className="text-[11px] sm:text-sm text-slate-200 leading-snug sm:leading-relaxed max-w-md font-medium line-clamp-2 sm:line-clamp-none">
+              {currentSlide.subtitle}
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Étape 1 */}
-            <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-amber-300 transition-all group">
-              <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-700 font-black text-sm flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                1
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <Store className="w-4 h-4 text-amber-600" />
-                  <span>Choisissez une boutique</span>
-                </h3>
-                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
-                  Explorez les commerces certifiés de Dakar (mode, tech, beauté) avec avis clients réels.
-                </p>
-              </div>
-            </div>
+            <div className="pt-1 flex items-center gap-3">
+              <Link
+                href={currentSlide.buttonHref}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-110 active:scale-95 text-slate-950 font-black text-xs sm:text-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-amber-500/25 transition duration-200 whitespace-nowrap"
+              >
+                <Store className="w-3.5 h-3.5 stroke-[2.5px]" />
+                <span>{currentSlide.buttonText}</span>
+                <ArrowRight className="w-3.5 h-3.5 stroke-[2.5px]" />
+              </Link>
 
-            {/* Étape 2 */}
-            <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-emerald-300 transition-all group">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-700 font-black text-sm flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                2
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <ShoppingBag className="w-4 h-4 text-emerald-600" />
-                  <span>Remplissez votre panier</span>
-                </h3>
-                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
-                  Commandez vos articles au prix direct boutique, sans intermédiaires cachés.
-                </p>
-              </div>
-            </div>
-
-            {/* Étape 3 */}
-            <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-sky-300 transition-all group">
-              <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-700 font-black text-sm flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                3
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <Truck className="w-4 h-4 text-sky-600" />
-                  <span>Livraison 24h & Wave</span>
-                </h3>
-                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
-                  Payez en 1 clic par Wave, Orange Money ou à la livraison en toute tranquillité.
-                </p>
-              </div>
+              <Link
+                href="/vendeur/accueil"
+                className="hidden sm:inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-full backdrop-blur-sm transition"
+              >
+                <span>Ouvrir ma boutique</span>
+                <span>→</span>
+              </Link>
             </div>
           </div>
-        </section>
+
+          {/* Flèches de navigation latérales (Masquées sur mobile pour éviter la surcharge) */}
+          <button
+            onClick={() => setActiveSlide((prev) => (prev > 0 ? prev - 1 : heroSlides.length - 1))}
+            className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-md items-center justify-center transition border border-white/20 shadow-md cursor-pointer"
+            aria-label="Slide précédent"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setActiveSlide((prev) => (prev < heroSlides.length - 1 ? prev + 1 : 0))}
+            className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-md items-center justify-center transition border border-white/20 shadow-md cursor-pointer"
+            aria-label="Slide suivant"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+
+          {/* Indicateurs de pagination discrets */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
+            {heroSlides.map((_, dot) => (
+              <button
+                key={dot}
+                onClick={() => setActiveSlide(dot)}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  activeSlide === dot ? 'w-5 bg-amber-400 shadow-sm' : 'w-1.5 bg-white/40 hover:bg-white/60'
+                }`}
+                aria-label={`Aller au slide ${dot + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ================= 2. BANDEAU DE RÉASSURANCE AÉRÉ (EN DEHORS DU HERO) ================= */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 p-3 sm:p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs">
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 text-center sm:text-left">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400/15 text-amber-700 flex items-center justify-center shrink-0">
+              <Truck className="w-3.5 h-3.5 stroke-[2.2px]" />
+            </div>
+            <div>
+              <span className="text-[11px] sm:text-xs font-black text-slate-900 block leading-tight">Livraison 24h</span>
+              <span className="text-[10px] text-slate-400 hidden sm:block">Dakar & 14 régions</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 text-center sm:text-left border-x border-slate-100 px-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/15 text-emerald-700 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-3.5 h-3.5 stroke-[2.2px]" />
+            </div>
+            <div>
+              <span className="text-[11px] sm:text-xs font-black text-slate-900 block leading-tight">Wave & OM</span>
+              <span className="text-[10px] text-slate-400 hidden sm:block">100% sécurisé</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 text-center sm:text-left">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-sky-500/15 text-sky-700 flex items-center justify-center shrink-0">
+              <Store className="w-3.5 h-3.5 stroke-[2.2px]" />
+            </div>
+            <div>
+              <span className="text-[11px] sm:text-xs font-black text-slate-900 block leading-tight">Boutiques certifiées</span>
+              <span className="text-[10px] text-slate-400 hidden sm:block">Commerçants vérifiés</span>
+            </div>
+          </div>
+        </div>
 
         {/* ================= 3. SECTION MAJEURE : BOUTIQUES STARS & SPONSORISÉES (EN TÊTE) ================= */}
         <section className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-amber-500 fill-amber-400 stroke-amber-600" />
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                <Crown className="w-5 h-5 text-amber-500 fill-amber-400 stroke-amber-600 shrink-0" />
+                <h2 className="text-base sm:text-xl font-black text-slate-900 tracking-tight">
                   Boutiques Stars & Sponsorisées
                 </h2>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-400 text-slate-950">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 whitespace-nowrap shrink-0 shadow-2xs">
                   En Vedette
                 </span>
               </div>
@@ -431,7 +375,7 @@ export default function HomePage() {
 
                     {/* Badge VIP Sponsorisé */}
                     <div className="absolute top-2.5 left-2.5 z-10">
-                      <span className={`text-[10px] font-black px-3 py-1 rounded-full shadow-md backdrop-blur-md ${shop.badgeColor}`}>
+                      <span className={`text-[10px] font-black px-3 py-1 rounded-full shadow-md backdrop-blur-md whitespace-nowrap inline-flex items-center ${shop.badgeColor}`}>
                         {shop.badge}
                       </span>
                     </div>
@@ -482,21 +426,11 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Actions : Visiter & Contact WhatsApp Direct */}
-                <div className="px-4 pb-4 pt-2 flex items-center justify-between gap-2 border-t border-slate-100">
-                  <a
-                    href={`https://wa.me/${shop.whatsapp}?text=Bonjour%20${encodeURIComponent(shop.name)}%2C%20je%20vous%20contacte%20depuis%20Malick%20Buss`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition"
-                    title="Contacter sur WhatsApp"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </a>
-
+                {/* Action : Visiter la vitrine */}
+                <div className="px-4 pb-4 pt-2 border-t border-slate-100">
                   <Link
                     href={`/boutiques/${shop.slug}/produits`}
-                    className="flex-1 inline-flex items-center justify-center gap-1 bg-[#0c1527] hover:bg-amber-400 text-white hover:text-slate-950 font-bold text-xs py-2 px-3.5 rounded-full transition shadow-xs"
+                    className="w-full inline-flex items-center justify-center gap-1.5 bg-[#0c1527] hover:bg-amber-400 text-white hover:text-slate-950 font-bold text-xs py-2.5 px-3.5 rounded-xl transition shadow-xs"
                   >
                     <span>Visiter la vitrine</span>
                     <ArrowRight className="w-3.5 h-3.5 stroke-[2.5px]" />
