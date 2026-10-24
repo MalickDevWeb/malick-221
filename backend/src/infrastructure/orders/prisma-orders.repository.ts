@@ -579,15 +579,15 @@ export class PrismaOrdersRepository implements OrdersRepository {
 
   async expireUnpaidReservations(): Promise<number> {
     return this.prisma.$transaction(async (tx) => {
-      const expiredOrders = await tx.$queryRaw<Array<{ id: string; orderNumber: string }>>(Prisma.sql`
-        SELECT "id", "orderNumber"
-        FROM "orders"
-        WHERE "status" = 'PENDING_PAYMENT'::"OrderStatus"
-          AND "stockReservationExpiresAt" <= NOW()
-        ORDER BY "stockReservationExpiresAt", "id"
-        LIMIT 50
-        FOR UPDATE SKIP LOCKED
-      `);
+      const expiredOrders = await tx.order.findMany({
+        where: {
+          status: 'PENDING_PAYMENT',
+          stockReservationExpiresAt: { lte: new Date() },
+        },
+        select: { id: true, orderNumber: true },
+        orderBy: [{ stockReservationExpiresAt: 'asc' }, { id: 'asc' }],
+        take: 50,
+      });
 
       for (const order of expiredOrders) {
         const subOrders = await tx.subOrder.findMany({

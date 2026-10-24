@@ -1,159 +1,82 @@
+import 'dotenv/config';
 import { PrismaClient, UserRole, ShopStatus, ProductCondition } from '@prisma/client';
 import { randomBytes, scryptSync } from 'crypto';
 
 const prisma = new PrismaClient();
+const testPassword = process.env.SEED_TEST_PASSWORD ?? 'TestOnly-Malick-2026!';
+
+function hashPassword(password: string): string {
+  const salt = randomBytes(16);
+  return `scrypt$${salt.toString('hex')}$${scryptSync(password, salt, 64).toString('hex')}`;
+}
+
+async function upsertTestUser(email: string, phoneNumber: string, fullName: string, role: UserRole) {
+  const passwordHash = hashPassword(testPassword);
+  return prisma.user.upsert({
+    where: { email },
+    create: { email, phoneNumber, fullName, passwordHash, role },
+    update: { phoneNumber, fullName, passwordHash, role, isActive: true },
+  });
+}
 
 async function main() {
-  console.log('🌱 Début du peuplement de la base de données Malick Buss...');
-
-  const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD;
-  if (!superAdminPassword || superAdminPassword.length < 12) {
-    throw new Error('SUPER_ADMIN_PASSWORD doit être défini et contenir au moins 12 caractères.');
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Le seed de test est interdit en production.');
   }
-  const adminSalt = randomBytes(16);
-  const adminPasswordHash = `scrypt$${adminSalt.toString('hex')}$${scryptSync(superAdminPassword, adminSalt, 64).toString('hex')}`;
 
-  // Nettoyage préalable
-  await prisma.commissionLedger.deleteMany();
-  await prisma.orderItem.deleteMany();
-  await prisma.subOrder.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.shop.deleteMany();
-  await prisma.user.deleteMany();
+  const [admin, vendor, client] = await Promise.all([
+    upsertTestUser('qa.admin@malickbuss.sn', '+221770009901', 'Admin QA', UserRole.SUPER_ADMIN),
+    upsertTestUser('qa.vendor@malickbuss.sn', '+221770009902', 'Vendeur QA', UserRole.VENDOR),
+    upsertTestUser('qa.client@malickbuss.sn', '+221770009903', 'Client QA', UserRole.CLIENT),
+  ]);
 
-  // 1. Création des utilisateurs
-  const admin = await prisma.user.create({
-    data: {
-      phoneNumber: '+221770000001',
-      fullName: 'Super Admin Malick Buss',
-      email: 'admin@malickbuss.sn',
-      passwordHash: adminPasswordHash,
-      role: UserRole.SUPER_ADMIN,
-    },
-  });
-
-  const vendor1 = await prisma.user.create({
-    data: {
-      phoneNumber: '+221771234567',
-      fullName: 'Moussa Diop (Keur Friperie)',
-      email: 'moussa@keurfriperie.sn',
-      passwordHash: 'hash_securise_moussa',
-      role: UserRole.VENDOR,
-    },
-  });
-
-  const vendor2 = await prisma.user.create({
-    data: {
-      phoneNumber: '+221772345678',
-      fullName: 'Aminata Ndiaye (Dakar Streetwear)',
-      email: 'aminata@dakarstreet.sn',
-      passwordHash: 'hash_securise_aminata',
-      role: UserRole.VENDOR,
-    },
-  });
-
-  const client = await prisma.user.create({
-    data: {
-      phoneNumber: '+221773456789',
-      fullName: 'Fatou Sow',
-      email: 'fatou.sow@gmail.com',
-      passwordHash: 'hash_securise_client',
-      role: UserRole.CLIENT,
-    },
-  });
-
-  // 2. Création des boutiques
-  const shop1 = await prisma.shop.create({
-    data: {
-      ownerId: vendor1.id,
-      name: 'Keur Friperie Dakar',
-      slug: 'keur-friperie-dakar',
-      description: 'Le meilleur de la friperie européenne de qualité supérieure à Dakar (Sandaga / Plateau). Arrivages chaque semaine.',
-      logoUrl: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=300&q=80',
-      bannerUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80',
+  const shop = await prisma.shop.upsert({
+    where: { slug: 'qa-boutique-test' },
+    create: {
+      ownerId: vendor.id,
+      name: 'Boutique QA Malick Buss',
+      slug: 'qa-boutique-test',
+      description: 'Boutique réservée aux tests locaux des API.',
       status: ShopStatus.ACTIVE,
-      wavePayoutNumber: '+221771234567',
-      omPayoutNumber: '+221771234567',
+      wavePayoutNumber: vendor.phoneNumber,
+      omPayoutNumber: vendor.phoneNumber,
     },
-  });
-
-  const shop2 = await prisma.shop.create({
-    data: {
-      ownerId: vendor2.id,
-      name: 'Dakar Streetwear',
-      slug: 'dakar-streetwear',
-      description: 'Marques urbaines, hoodies, t-shirts oversize et sneakers tendance aux Almadies.',
-      logoUrl: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=300&q=80',
-      bannerUrl: 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1200&q=80',
+    update: {
+      ownerId: vendor.id,
       status: ShopStatus.ACTIVE,
-      wavePayoutNumber: '+221772345678',
-      omPayoutNumber: '+221772345678',
+      wavePayoutNumber: vendor.phoneNumber,
+      omPayoutNumber: vendor.phoneNumber,
     },
   });
 
-  // 3. Création des produits
-  await prisma.product.createMany({
-    data: [
-      {
-        shopId: shop1.id,
-        title: 'Veste Vintage en Jean Levi’s',
-        slug: 'veste-vintage-jean-levis',
-        description: 'Veste en jean rétro authentique, taille L, parfait état.',
-        basePrice: 15000,
-        discountPrice: 12500,
-        condition: ProductCondition.TRES_BON_ETAT,
-        stockQuantity: 3,
-        isPublished: true,
-      },
-      {
-        shopId: shop1.id,
-        title: 'Chemise Ralph Lauren Lin Blanche',
-        slug: 'chemise-ralph-lauren-lin',
-        description: 'Chemise en lin léger de première qualité, idéale pour le climat dakarois.',
-        basePrice: 10000,
-        discountPrice: 9000,
-        condition: ProductCondition.BON_ETAT,
-        stockQuantity: 5,
-        isPublished: true,
-      },
-      {
-        shopId: shop1.id,
-        title: 'Pantalon Cargo Kaki Militaire',
-        slug: 'pantalon-cargo-kaki',
-        description: 'Cargo multipoches streetwear, coupe droite confortable.',
-        basePrice: 8500,
-        discountPrice: null,
-        condition: ProductCondition.TRES_BON_ETAT,
-        stockQuantity: 4,
-        isPublished: true,
-      },
-      {
-        shopId: shop2.id,
-        title: 'Hoodie Oversize Dakar Club Noir',
-        slug: 'hoodie-oversize-dakar-club',
-        description: 'Sweat à capuche molletonné 450 GSM avec logo brodé édition Dakar.',
-        basePrice: 22000,
-        discountPrice: 19500,
-        condition: ProductCondition.NEUF,
-        stockQuantity: 12,
-        isPublished: true,
-      },
-      {
-        shopId: shop2.id,
-        title: 'Sneakers Retro Low Dunk',
-        slug: 'sneakers-retro-low-dunk',
-        description: 'Baskets confortables cuir synthétique blanc et vert forêt.',
-        basePrice: 35000,
-        discountPrice: 30000,
-        condition: ProductCondition.NEUF,
-        stockQuantity: 7,
-        isPublished: true,
-      },
-    ],
+  const productData = {
+    title: 'Article de test API',
+    description: 'Produit stable pour les tests locaux des endpoints.',
+    basePrice: 10000,
+    discountPrice: null,
+    condition: ProductCondition.NEUF,
+    isPublished: true,
+    stockQuantity: 50,
+    reservedQuantity: 0,
+  };
+  const existingProduct = await prisma.product.findFirst({
+    where: { shopId: shop.id, slug: 'article-test-api' },
+    select: { id: true },
   });
+  const product = existingProduct
+    ? await prisma.product.update({ where: { id: existingProduct.id }, data: productData })
+    : await prisma.product.create({
+        data: { ...productData, shopId: shop.id, slug: 'article-test-api' },
+      });
 
-  console.log('✅ Base de données peuplée avec succès avec des boutiques et produits sénégalais !');
+  console.log(JSON.stringify({
+    admin: admin.email,
+    vendor: vendor.email,
+    client: client.email,
+    password: testPassword,
+    shopSlug: shop.slug,
+    productId: product.id,
+  }));
 }
 
 main()

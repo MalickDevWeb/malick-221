@@ -22,11 +22,24 @@ export class AdminAuthService {
 
   async login(identity: string, password: string) {
     const normalizedIdentity = identity.trim();
+    const digitsOnly = normalizedIdentity.replace(/\D/g, '');
+    const phoneCandidates = new Set<string>([normalizedIdentity]);
+    if (digitsOnly) {
+      phoneCandidates.add(digitsOnly);
+      if (digitsOnly.length === 9) {
+        phoneCandidates.add(`+221${digitsOnly}`);
+        phoneCandidates.add(`221${digitsOnly}`);
+      } else if (digitsOnly.startsWith('221') && digitsOnly.length === 12) {
+        phoneCandidates.add(`+${digitsOnly}`);
+        phoneCandidates.add(digitsOnly.slice(3));
+      }
+    }
+
     const user = await this.prisma.user.findFirst({
       where: {
         OR: [
           { email: normalizedIdentity.toLowerCase() },
-          { phoneNumber: normalizedIdentity },
+          ...Array.from(phoneCandidates).map((p) => ({ phoneNumber: p })),
         ],
       },
       select: { id: true, fullName: true, email: true, phoneNumber: true, passwordHash: true, role: true, isActive: true },

@@ -1,0 +1,4 @@
+ALTER TABLE "products"
+ADD COLUMN "category" TEXT NOT NULL DEFAULT 'Autre',
+ADD COLUMN "imageUrl" TEXT,
+ADD COLUMN "additionalImageUrls" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];

@@ -51,6 +51,7 @@ La plateforme repose sur quatre principes non négociables :
 ### 3.3. Vendeur / Propriétaire de boutique
 - Crée et gère sa boutique.
 - Publie, ajuste et archive des produits.
+- Consulte le nombre de redirections vers WhatsApp générées par sa boutique et ses produits.
 - Gère le stock et la disponibilité.
 - Traite les commandes, leurs statuts et leurs livraisons.
 - Suit ses ventes et ses commissions.
@@ -65,6 +66,7 @@ La plateforme repose sur quatre principes non négociables :
 ### 3.5. Administrateur plateforme
 - Valide les boutiques.
 - Modère les produits et les comptes.
+- Consulte les redirections WhatsApp générées sur la plateforme, par boutique et par produit.
 - Définit ou configure les commissions et règles de gestion.
 - Gère les litiges et les remontées de signalements.
 - Peut suspendre, rejeter, modifier ou verrouiller des éléments selon les règles métier.
@@ -323,6 +325,15 @@ Le vendeur doit pouvoir :
 - mettre en avant des produits pour la boutique ;
 - gérer les ruptures de stock et alertes.
 
+#### Publication et modération des produits
+- Une boutique est considérée comme certifiée lorsque son statut est `ACTIVE`, après validation par le Super Admin.
+- Les produits d'un vendeur dont la boutique n'est pas certifiée sont créés en brouillon ou en attente de revue. Ils ne sont ni visibles dans le catalogue public ni commandables avant approbation par le Super Admin.
+- Les produits d'un vendeur certifié sont publiés automatiquement après validation des champs obligatoires, sans approbation préalable de l'administrateur.
+- Le Super Admin peut à tout moment masquer ou rejeter un produit, y compris celui d'un vendeur certifié. La décision et son motif sont historisés.
+- La suspension d'une boutique retire ses produits du catalogue public et bloque leur commande jusqu'à réactivation.
+- Toute modification importante d'un produit non certifié relance la revue et masque le produit jusqu'à décision. Les modifications d'un produit certifié restent soumises à la modération a posteriori.
+- Le statut de modération doit être distinct de la visibilité du produit et comprendre au minimum : brouillon, en attente, approuvé, rejeté et masqué.
+
 ### 6.3.3. Gestion stock
 Le vendeur doit pouvoir :
 - renseigner le stock disponible ;
@@ -355,6 +366,28 @@ Le vendeur doit pouvoir consulter :
 - les montants bloqués ou à payer ;
 - ses soldes et ses revenus.
 
+### 6.3.6.1. Redirections WhatsApp et leads
+- Les liens de contact WhatsApp des boutiques et produits passent par une redirection suivie par la plateforme avant l'ouverture de WhatsApp.
+- Chaque redirection valide est comptabilisée et rattachée à la boutique, au produit concerné s'il y en a un, et à sa date. Une redirection ne constitue ni une preuve d'achat ni une preuve de paiement.
+- Le vendeur consulte le total de ses redirections et leur répartition par période, produit et boutique.
+- Le Super Admin consulte les mêmes indicateurs à l'échelle de la plateforme et peut filtrer par période, boutique et produit.
+- Les indicateurs distinguent le nombre total de redirections du nombre de visiteurs uniques, afin de rendre les statistiques interprétables et de limiter les abus.
+- Les statistiques ne doivent pas exposer au vendeur les coordonnées ou l'identité des visiteurs.
+- Les crédits de redirection sont des unités distinctes des commissions, revenus et soldes retirables du vendeur. Leur conversion éventuelle en avantage financier reste soumise à une règle commerciale définie par la plateforme.
+
+#### Demande de crédit de redirection
+- Le vendeur consulte les offres de crédits actives, puis peut soumettre une demande en choisissant une offre. Il peut consulter le statut et l'historique de ses demandes.
+- Chaque offre est une donnée administrable, et non une valeur d'enum : elle possède au minimum un nom libre (ex. « Premium »), une description, un prix en FCFA, un nombre de crédits et un statut actif/inactif.
+- Le Super Admin peut créer, modifier, activer et désactiver les offres sans déploiement du code. Une offre déjà utilisée ne peut pas être supprimée de façon à effacer l'historique ; elle est désactivée ou archivée.
+- La demande conserve une copie du nom, du prix et du nombre de crédits de l'offre sélectionnée au moment de sa soumission. Les changements ultérieurs de l'offre ne modifient pas les demandes passées.
+- Une demande suit les statuts : en attente, approuvée ou refusée. Le vendeur ne peut ni approuver sa propre demande ni modifier une demande déjà décidée.
+- Le Super Admin examine la demande, consulte les statistiques de redirection associées et approuve l'offre, ajuste le nombre de crédits accordés, ou refuse la demande avec un motif.
+- Lors de l'approbation, le crédit accordé est inscrit dans un registre traçable et ajouté au compteur de crédits de redirection du vendeur. Il ne modifie pas son solde financier.
+- Si l'offre est payante, les crédits ne sont attribués qu'après confirmation du paiement par un mécanisme vérifié de la plateforme ; un message, une capture ou une confirmation WhatsApp ne constitue pas une preuve de paiement.
+- La décision est enregistrée dans la plateforme avant l'envoi d'une notification WhatsApp au numéro vérifié du vendeur. Le message indique le résultat, le nombre de crédits accordés et, le cas échéant, le motif du refus.
+- WhatsApp sert uniquement à notifier le vendeur : la décision officielle, le statut et le registre de crédits font foi dans la plateforme. En l'absence d'une intégration WhatsApp Business configurée, le Super Admin peut utiliser un lien de message prérempli pour envoyer la notification manuellement.
+- Les créations, décisions et changements de crédits sont horodatés et associés à leur auteur dans le journal d'audit.
+
 ### 6.3.7. Retraits
 Le vendeur doit pouvoir :
 - demander un retrait depuis un solde disponible ;
@@ -376,6 +409,7 @@ Le vendeur doit recevoir des notifications pour :
 - retour ou litige ;
 - commission calculée ;
 - retrait demandé ou validé ;
+- demande de crédit de redirection approuvée ou refusée ;
 - alerte de stock.
 
 ---
@@ -385,10 +419,13 @@ Le vendeur doit recevoir des notifications pour :
 L’admin doit pouvoir :
 - gérer les boutiques approuvées et refusées ;
 - valider ou suspendre un vendeur ;
-- contrôler les produits signalés ou rejetés ;
+- examiner et approuver ou rejeter les produits des vendeurs non certifiés, et modérer après publication ceux des vendeurs certifiés ;
 - gérer les commissions et paramètres globaux ;
 - traiter les litiges et évaluer les demandes de remboursement ;
+- consulter, approuver ou refuser les demandes de crédit de redirection des vendeurs ;
+- créer et gérer les offres de crédits de redirection, avec leur nom, leur prix en FCFA, leur quantité de crédits et leur disponibilité ;
 - consulter les statistiques de plateforme ;
+- consulter le volume des redirections WhatsApp, par période, boutique et produit ;
 - assurer la modération des contenus et profils.
 
 ### 6.4.1. Paramétrage global
@@ -404,6 +441,7 @@ L’admin doit pouvoir configurer :
 - Toute action critique doit être journalisée.
 - Les décisions de validation, suspension, remboursement ou refus doivent être traçables.
 - L’historique des modifications doit être accessible aux profils autorisés.
+- Les décisions et écritures de crédits de redirection doivent conserver le montant demandé, le montant accordé, le motif, l'administrateur décisionnaire et l'horodatage.
 
 ---
 
@@ -595,6 +633,54 @@ Les fonctions complémentaires suivantes peuvent être ajoutées selon la maturi
 - API pour partenaires et intégrations externes ;
 - support plus avancé avec chat/WhatsApp ;
 - reporting analytique pour administrateur et vendeur.
+
+### 14.3. Étapes de réalisation
+Réaliser les étapes dans l'ordre. Une étape est considérée comme terminée lorsque ses critères de validation sont vérifiés. Les fonctions déjà présentes dans le projet doivent d'abord être testées avant d'être réécrites.
+
+#### Étape 1 — Vérifier le socle existant
+- Démarrer le backend, le front-office et le back-office avec la base de données de développement.
+- Vérifier les migrations, les comptes de test, la compilation et les tests existants.
+- **Terminé si :** les applications démarrent et les tests existants passent.
+
+#### Étape 2 — Valider une boutique
+- Permettre au vendeur de soumettre sa boutique.
+- Permettre au Super Admin de l'approuver, la refuser ou la suspendre avec un motif.
+- **Terminé si :** seul un vendeur dont la boutique est `ACTIVE` est reconnu comme certifié, et chaque décision est historisée.
+
+#### Étape 3 — Publier et modérer les produits
+- Bloquer la publication publique des produits des vendeurs non certifiés jusqu'à approbation.
+- Publier automatiquement les produits des vendeurs certifiés après validation des champs requis.
+- Ajouter au Super Admin les actions pour approuver, rejeter ou masquer un produit.
+- **Terminé si :** les produits en attente sont absents du catalogue et ne peuvent pas être commandés; les produits masqués d'une boutique suspendue ne sont plus accessibles.
+
+#### Étape 4 — Compter les redirections WhatsApp
+- Faire passer les liens WhatsApp des fiches boutique et produit par un endpoint de redirection suivi.
+- Enregistrer la boutique, le produit éventuel et la date, puis rediriger vers WhatsApp.
+- Afficher les totaux au vendeur et au Super Admin, sans exposer l'identité des visiteurs.
+- **Terminé si :** un clic crée une mesure consultable et les filtres par période, boutique et produit fonctionnent.
+
+#### Étape 5 — Gérer les offres de crédits
+- Créer des offres configurables en base de données, sans enum : nom, description, prix FCFA, nombre de crédits et statut.
+- Ajouter au Super Admin les fonctions de création, modification, activation et désactivation.
+- Conserver une copie des valeurs d'offre dans chaque demande afin de préserver l'historique.
+- **Terminé si :** le Super Admin peut créer une nouvelle offre sans modifier ni redéployer le code.
+
+#### Étape 6 — Demander et approuver des crédits
+- Permettre au vendeur de consulter les offres actives et de demander celle de son choix.
+- Permettre au Super Admin d'approuver, d'ajuster ou de refuser la demande avec un motif.
+- Inscrire chaque décision dans un registre de crédits; ne pas modifier le solde financier du vendeur.
+- Envoyer une notification WhatsApp après enregistrement de la décision, ou fournir un message prérempli si l'intégration n'est pas configurée.
+- **Terminé si :** les rôles sont contrôlés, les crédits ne sont ajoutés qu'après approbation, et l'historique est consultable par le vendeur et l'administrateur.
+
+#### Étape 7 — Finaliser les opérations marketplace
+- Relier et valider les fonctions d'administration des commandes, commissions, retraits, litiges, remboursements et paramètres.
+- Configurer les prestataires de paiement et WhatsApp nécessaires; ne jamais prendre un message WhatsApp comme preuve de paiement.
+- **Terminé si :** les opérations sensibles suivent les règles métier, sont auditées et passent les tests d'intégration.
+
+#### Étape 8 — Recette et mise en production
+- Tester les parcours complets vendeur, client et Super Admin sur mobile et ordinateur.
+- Vérifier les refus d'accès, les erreurs, la pagination, les données personnelles et les sauvegardes.
+- **Terminé si :** les tests critiques passent sur un environnement de préproduction et les décisions restantes de la section 13 sont validées.
 
 ---
 

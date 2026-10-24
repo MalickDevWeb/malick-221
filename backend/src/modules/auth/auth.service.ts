@@ -15,6 +15,31 @@ function deriveKey(password: string, salt: Buffer): Promise<Buffer> {
   });
 }
 
+function getPhoneLookupCandidates(rawPhone: string): string[] {
+  const trimmed = rawPhone.trim();
+  const digitsOnly = trimmed.replace(/\D/g, '');
+  const candidates = new Set<string>();
+
+  if (trimmed) {
+    candidates.add(trimmed);
+  }
+  if (digitsOnly) {
+    candidates.add(digitsOnly);
+    if (digitsOnly.length === 9) {
+      candidates.add(`+221${digitsOnly}`);
+      candidates.add(`221${digitsOnly}`);
+      candidates.add(`00221${digitsOnly}`);
+    } else if (digitsOnly.startsWith('221') && digitsOnly.length === 12) {
+      const local = digitsOnly.slice(3);
+      candidates.add(`+${digitsOnly}`);
+      candidates.add(digitsOnly);
+      candidates.add(local);
+    }
+  }
+
+  return Array.from(candidates);
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -24,17 +49,19 @@ export class AuthService {
 
   async register(dto: RegisterUserDto) {
     const fullName = dto.fullName.trim();
-    const phoneNumber = dto.phoneNumber.trim();
+    const rawPhone = dto.phoneNumber.trim();
     const email = dto.email?.trim().toLowerCase() ?? null;
 
-    if (!fullName || !phoneNumber) {
+    if (!fullName || !rawPhone) {
       throw new ConflictException('Le nom complet et le numéro de téléphone sont obligatoires.');
     }
+
+    const phoneCandidates = getPhoneLookupCandidates(rawPhone);
 
     const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [
-          { phoneNumber },
+          ...phoneCandidates.map((p) => ({ phoneNumber: p })),
           ...(email ? [{ email }] : []),
         ],
       },
@@ -44,11 +71,18 @@ export class AuthService {
       throw new ConflictException('Un compte existe déjà avec ce numéro ou cet email.');
     }
 
+    const digitsOnly = rawPhone.replace(/\D/g, '');
+    const canonicalPhone = digitsOnly.length === 9
+      ? `+221${digitsOnly}`
+      : (digitsOnly.startsWith('221') && digitsOnly.length === 12
+        ? `+${digitsOnly}`
+        : rawPhone);
+
     const passwordHash = await this.hashPassword(dto.password);
     const user = await this.prisma.user.create({
       data: {
         fullName,
-        phoneNumber,
+        phoneNumber: canonicalPhone,
         email,
         passwordHash,
         role: dto.role ?? UserRole.CLIENT,
@@ -79,11 +113,12 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const identity = dto.identity.trim();
+    const phoneCandidates = getPhoneLookupCandidates(identity);
     const user = await this.prisma.user.findFirst({
       where: {
         OR: [
           { email: identity.toLowerCase() },
-          { phoneNumber: identity },
+          ...phoneCandidates.map((p) => ({ phoneNumber: p })),
         ],
       },
       select: {

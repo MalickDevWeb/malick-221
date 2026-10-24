@@ -85,6 +85,19 @@ enum ProductCondition {
   BON_ETAT
 }
 
+enum AdminCaseType {
+  DISPUTE
+  REFUND
+}
+
+enum AdminCaseStatus {
+  OPEN
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  RESOLVED
+}
+
 model User {
   id           String      @id @default(uuid())
   phoneNumber  String      @unique
@@ -102,6 +115,9 @@ model User {
   stockMovements StockMovement[]
   withdrawalRequests WithdrawalRequest[]
   withdrawalAuditLogs WithdrawalAuditLog[]
+  adminAuditLogs AdminAuditLog[]
+  updatedPlatformSettings PlatformSetting[]
+  adminCases AdminCase[]
 
   @@map("users")
 }
@@ -134,6 +150,9 @@ model Product {
   title         String
   slug          String
   description   String?
+  category      String           @default("Autre")
+  imageUrl      String?
+  additionalImageUrls String[]   @default([])
   basePrice     Decimal          @db.Decimal(12, 2)
   discountPrice Decimal?         @db.Decimal(12, 2)
   condition     ProductCondition @default(NEUF)
@@ -170,6 +189,7 @@ model Order {
   client           User          @relation(fields: [clientId], references: [id])
   subOrders        SubOrder[]
   stockMovements   StockMovement[]
+  adminCases       AdminCase[]
 
   @@unique([clientId, idempotencyKey])
   @@index([clientId, createdAt])
@@ -331,5 +351,56 @@ model OutboxEvent {
   @@index([publishedAt, availableAt, occurredAt])
   @@index([aggregateType, aggregateId, occurredAt])
   @@map("outbox_events")
+}
+
+model PlatformSetting {
+  key         String   @id
+  value       Json
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  updatedBy User? @relation(fields: [updatedById], references: [id])
+
+  @@index([updatedById, updatedAt])
+  @@map("platform_settings")
+}
+
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  reason     String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("admin_audit_logs")
+}
+
+model AdminCase {
+  id              String          @id @default(uuid())
+  orderId         String
+  requesterId     String
+  type            AdminCaseType
+  status          AdminCaseStatus @default(OPEN)
+  reason          String
+  requestedAmount Decimal?        @db.Decimal(12, 2)
+  decisionReason  String?
+  decidedAmount   Decimal?        @db.Decimal(12, 2)
+  decidedById     String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  order     Order @relation(fields: [orderId], references: [id])
+  requester User  @relation(fields: [requesterId], references: [id])
+
+  @@index([status, createdAt])
+  @@index([orderId, createdAt])
+  @@map("admin_cases")
 }
 

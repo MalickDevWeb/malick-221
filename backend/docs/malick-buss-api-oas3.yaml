@@ -1,0 +1,972 @@
+openapi: 3.0.3
+info:
+  title: Malick Buss API
+  description: |
+    API Marketplace multi-boutiques (Sénégal - FCFA).
+
+    Cette spécification documente les endpoints exposés par le backend NestJS de Malick Buss,
+    y compris les flux d'authentification, le catalogue, les commandes, les paiements, les
+    boutiques, les commissions, les livraisons, les litiges et l'administration marketplace.
+  version: '1.0.0'
+  contact:
+    name: Malick Buss
+    email: support@malickbuss.sn
+servers:
+  - url: http://localhost:4000
+    description: Serveur de développement local
+  - url: https://api.malickbuss.sn
+    description: Environnement de production
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT Bearer obtenu via /auth/login ou /admin/auth/login
+  schemas:
+    RegisterUserDto:
+      type: object
+      required:
+        - fullName
+        - phoneNumber
+        - password
+      properties:
+        fullName:
+          type: string
+          example: Fatou Sow
+          minLength: 2
+        phoneNumber:
+          type: string
+          example: '+221773456789'
+          pattern: '^\\+?[0-9\\s-]{8,20}$'
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: fatou.sow@example.com
+        password:
+          type: string
+          format: password
+          example: ClientTest2026!
+          minLength: 8
+        role:
+          type: string
+          enum: [CLIENT, VENDOR]
+          example: CLIENT
+    LoginDto:
+      type: object
+      required:
+        - identity
+        - password
+      properties:
+        identity:
+          type: string
+          example: fatou.sow@example.com
+          description: E-mail ou numéro de téléphone du compte.
+        password:
+          type: string
+          format: password
+          example: ClientTest2026!
+          minLength: 8
+    AuthUserResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 6d48045e-918c-42a5-b819-e74131747b6c
+        fullName:
+          type: string
+          example: Fatou Sow
+        email:
+          type: string
+          nullable: true
+          example: fatou.sow@example.com
+        phoneNumber:
+          type: string
+          example: '+221773456789'
+        role:
+          type: string
+          enum: [CLIENT, VENDOR, SUPER_ADMIN]
+          example: CLIENT
+    AuthResponseDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: '#/components/schemas/AuthUserResponseDto'
+    CurrentUserResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [CLIENT, VENDOR, SUPER_ADMIN]
+    AdminAuthUserResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+          example: Super Admin Malick Buss
+        email:
+          type: string
+          nullable: true
+          example: admin@malickbuss.sn
+        phoneNumber:
+          type: string
+          example: '+221770000001'
+    AdminAuthResponseDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: '#/components/schemas/AdminAuthUserResponseDto'
+    AdminLoginDto:
+      type: object
+      required:
+        - identity
+        - password
+      properties:
+        identity:
+          type: string
+          example: qa.admin@malickbuss.sn
+        password:
+          type: string
+          format: password
+          example: AdminTest2026!
+    ShippingAddressDto:
+      type: object
+      required:
+        - recipientName
+        - phone
+        - city
+        - addressLine1
+      properties:
+        recipientName:
+          type: string
+          example: Fatou Sow
+        phone:
+          type: string
+          example: '+221773456789'
+        city:
+          type: string
+          example: Dakar
+        addressLine1:
+          type: string
+          example: Rue 10, Point E
+        addressLine2:
+          type: string
+          nullable: true
+          example: Villa 12
+        postalCode:
+          type: string
+          nullable: true
+          example: '12000'
+        country:
+          type: string
+          example: SN
+    CheckoutItemDto:
+      type: object
+      required:
+        - productId
+        - quantity
+      properties:
+        productId:
+          type: string
+          format: uuid
+          example: 067fa986-1943-4851-b140-1aaed90e9c75
+        quantity:
+          type: integer
+          minimum: 1
+          example: 2
+    CreateCheckoutDto:
+      type: object
+      required:
+        - paymentMethod
+        - shippingAddress
+        - items
+      properties:
+        paymentMethod:
+          type: string
+          enum: [WAVE, ORANGE_MONEY, FREE_MONEY, CASH_ON_DELIVERY]
+          example: CASH_ON_DELIVERY
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddressDto'
+        items:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/CheckoutItemDto'
+    CreateVendorWithdrawalDto:
+      type: object
+      required:
+        - shopId
+        - amount
+        - paymentMethod
+      properties:
+        shopId:
+          type: string
+          format: uuid
+          example: 8a34f7dd-63d2-4d15-b817-8efa7ba35532
+        amount:
+          type: number
+          format: float
+          example: 25000
+        paymentMethod:
+          type: string
+          enum: [WAVE, ORANGE_MONEY, FREE_MONEY, BANK_TRANSFER]
+          example: ORANGE_MONEY
+        notes:
+          type: string
+          nullable: true
+          example: Retrait pour solde boutique Dakar
+    TransitionSubOrderDto:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [ACCEPTED, PREPARING, SHIPPED, REJECTED]
+          example: PREPARING
+        reason:
+          type: string
+          nullable: true
+          example: Produit préparé pour expédition
+    UpdateShopStatusDto:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [PENDING, VERIFIED, REJECTED]
+          example: VERIFIED
+    UpdateWithdrawalStatusDto:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+          example: APPROVED
+        reason:
+          type: string
+          nullable: true
+          example: Vérification bancaire validée
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Données invalides.
+        error:
+          type: string
+          example: Bad Request
+    PaymentWebhookResponseDto:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, REJECTED]
+          example: CONFIRMED
+        provider:
+          type: string
+          example: wave
+        reference:
+          type: string
+          nullable: true
+          example: WAVE-9dd13f
+        transactionId:
+          type: string
+          nullable: true
+          example: txn_12345
+paths:
+  /auth/register:
+    post:
+      tags: [Authentification]
+      summary: Créer un compte client ou vendeur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserDto'
+      responses:
+        '201':
+          description: Compte créé et jeton d’accès émis.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponseDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Un compte existe déjà avec cet e-mail ou ce numéro.
+  /auth/login:
+    post:
+      tags: [Authentification]
+      summary: Se connecter avec un email ou un numéro de téléphone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: Authentification réussie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponseDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /auth/me:
+    get:
+      tags: [Authentification]
+      summary: Récupérer l’utilisateur courant
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Identifiant et rôle du compte authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserResponseDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /cart/summary:
+    get:
+      tags: [Panier]
+      summary: Récupérer un résumé du panier et des commandes récentes du client
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Résumé du panier et commandes récentes du client connecté.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /categories:
+    get:
+      tags: [Catégories]
+      summary: Lister les catégories et produits phares
+      responses:
+        '200':
+          description: Produits phares regroupés par boutique.
+  /commissions/vendor/overview:
+    get:
+      tags: [Commissions]
+      summary: Obtenir la synthèse des commissions du vendeur
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Totaux de commissions du vendeur connecté.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /commissions/vendor/history:
+    get:
+      tags: [Commissions]
+      summary: Lister l’historique des commissions du vendeur
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Historique des commissions.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /deliveries/vendor/overview:
+    get:
+      tags: [Livraisons]
+      summary: Obtenir le statut des livraisons pour le vendeur
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Vue d’ensemble des livraisons du vendeur connecté.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /disputes/overview:
+    get:
+      tags: [Litiges]
+      summary: Obtenir les litiges liés à l’utilisateur connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Litiges du client ou vendeur connecté.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /notifications/recent:
+    get:
+      tags: [Notifications]
+      summary: Obtenir les notifications récentes de l’utilisateur connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Notifications récentes.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /sub-orders/vendor:
+    get:
+      tags: [Sous-commandes]
+      summary: Lister les sous-commandes du vendeur
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Sous-commandes appartenant aux boutiques du vendeur connecté.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /users/me:
+    get:
+      tags: [Utilisateurs]
+      summary: Obtenir le profil de l’utilisateur connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profil du compte authentifié.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /shops:
+    get:
+      tags: [Boutiques (Shops)]
+      summary: Lister toutes les boutiques actives
+      responses:
+        '200':
+          description: Liste des boutiques actives avec le nombre de produits publiés.
+  /shops/{slug}:
+    get:
+      tags: [Boutiques (Shops)]
+      summary: Obtenir la vitrine publique d’une boutique par son slug
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+          example: qa-boutique-test
+      responses:
+        '200':
+          description: Détails de la boutique et les produits publiés.
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /products:
+    get:
+      tags: [Produits (Products)]
+      summary: Lister les articles du catalogue avec recherche et filtres
+      parameters:
+        - in: query
+          name: search
+          required: false
+          schema:
+            type: string
+          description: Recherche par mot-clé.
+        - in: query
+          name: shopSlug
+          required: false
+          schema:
+            type: string
+          description: Filtrer par boutique.
+      responses:
+        '200':
+          description: Produits publiés avec les informations publiques de leur boutique.
+  /products/{id}:
+    get:
+      tags: [Produits (Products)]
+      summary: Obtenir la fiche détaillée d’un article
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 067fa986-1943-4851-b140-1aaed90e9c75
+      responses:
+        '200':
+          description: Détails du produit et de sa boutique.
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /payments/webhooks/{provider}:
+    post:
+      tags: [Paiements]
+      summary: Recevoir un webhook de confirmation de paiement d’un provider
+      parameters:
+        - in: path
+          name: provider
+          required: true
+          schema:
+            type: string
+            enum: [wave, orange-money, free-money]
+          example: wave
+        - in: header
+          name: x-webhook-signature
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: x-provider-event
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              example:
+                reference: WAVE-9dd13f
+                status: CONFIRMED
+                transactionId: txn_12345
+      responses:
+        '201':
+          description: Webhook traité. success et status indiquent le résultat du paiement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentWebhookResponseDto'
+  /orders/checkout:
+    post:
+      tags: [Commandes]
+      summary: Créer une commande et réserver son stock
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCheckoutDto'
+      responses:
+        '201':
+          description: Commande créée et stock réservé.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Stock indisponible ou clé d’idempotence réutilisée avec un autre panier.
+  /orders/me:
+    get:
+      tags: [Commandes]
+      summary: Lister les commandes du client connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Commandes du client authentifié.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /orders/me/{id}:
+    get:
+      tags: [Commandes]
+      summary: Consulter une commande appartenant au client connecté
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détail de la commande.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /orders/vendor/sub-orders:
+    get:
+      tags: [Commandes]
+      summary: Lister les sous-commandes des boutiques du vendeur connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Sous-commandes de ses boutiques.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /orders/vendor/sub-orders/{id}:
+    get:
+      tags: [Commandes]
+      summary: Consulter une sous-commande de ses boutiques
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détail d’une sous-commande.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /orders/vendor/dashboard:
+    get:
+      tags: [Commandes]
+      summary: 'Obtenir le tableau de bord vendeur: ventes, validation et commissions'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Indicateurs du vendeur.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /orders/vendor/commissions:
+    get:
+      tags: [Commandes]
+      summary: Lister les commissions calculées pour les sous-commandes du vendeur
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Ledger des commissions du vendeur.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /orders/vendor/balance:
+    get:
+      tags: [Commandes]
+      summary: Obtenir la balance et les soldes disponibles par boutique
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Balance et soldes disponibles par boutique.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /orders/vendor/withdrawals:
+    get:
+      tags: [Commandes]
+      summary: Lister les demandes de retrait du vendeur
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Demandes de retrait du vendeur.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [Commandes]
+      summary: Créer une demande de retrait sur un solde disponible
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVendorWithdrawalDto'
+      responses:
+        '201':
+          description: Demande de retrait créée au statut PENDING.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /orders/vendor/sub-orders/{id}/status:
+    patch:
+      tags: [Commandes]
+      summary: Faire avancer une sous-commande selon la machine d’état
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransitionSubOrderDto'
+      responses:
+        '200':
+          description: Sous-commande mise à jour selon la transition autorisée.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/auth/login:
+    post:
+      tags: [Administration]
+      summary: Authentifier un compte Super Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminLoginDto'
+      responses:
+        '200':
+          description: Authentification Super Admin réussie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAuthResponseDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /admin/dashboard:
+    get:
+      tags: [Administration]
+      summary: Obtenir les indicateurs de la marketplace
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Volumes, ventes et commissions agrégés de la marketplace.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /admin/shops:
+    get:
+      tags: [Administration]
+      summary: Lister les boutiques et leur statut de vérification
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Boutiques, propriétaires, statut et nombre de produits.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /admin/shops/{id}/status:
+    patch:
+      tags: [Administration]
+      summary: Modifier le statut de vérification d’une boutique
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateShopStatusDto'
+      responses:
+        '200':
+          description: Boutique mise à jour avec son propriétaire.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/withdrawals:
+    get:
+      tags: [Administration]
+      summary: Lister les demandes de retrait en attente et traitées
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Demandes de retrait et historique d’audit.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /admin/withdrawals/{id}/status:
+    patch:
+      tags: [Administration]
+      summary: Approuver ou rejeter une demande de retrait vendeur
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWithdrawalStatusDto'
+      responses:
+        '200':
+          description: Statut du retrait mis à jour avec entrée d’audit.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/withdrawals/{id}/process:
+    post:
+      tags: [Administration]
+      summary: Déclencher le décaissement externe d’une demande approuvée
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Décaissement transmis au provider; le retrait passe à PROCESSING.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/withdrawals/{id}/confirm:
+    post:
+      tags: [Administration]
+      summary: Confirmer le paiement externe et clôturer le retrait vendeur
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Résultat du contrôle provider; confirmation ou rejet définitif.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/withdrawals/{id}/audit:
+    get:
+      tags: [Administration]
+      summary: Obtenir l’historique d’audit d’un retrait vendeur
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Événements d’audit ordonnés.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  responses:
+    BadRequest:
+      description: Requête invalide ou payload incorrect.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentification requise ou invalide.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Accès refusé pour ce rôle ou ce compte.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Ressource introuvable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
