@@ -1,8 +1,8 @@
 'use client';
 
-import { FormEvent, useState, useEffect } from 'react';
+import { FormEvent, useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Menu,
   ShoppingCart,
@@ -28,9 +28,21 @@ import { NotificationPopover } from '../notifications/NotificationPopover';
 import { formatFCFA } from '../../services/api';
 import { getCartItems } from '../../services/order-flow';
 
-export function Header() {
+function HeaderContent() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentFilter = searchParams.get('filter');
+  const currentSort = searchParams.get('sort');
+  const currentCategory = searchParams.get('category');
+
+  const isHome = pathname === '/';
+  const isPromos = pathname === '/boutiques' && currentFilter === 'promos';
+  const isNewest = pathname === '/boutiques' && currentSort === 'newest';
+  const isArtisanat = pathname === '/boutiques' && currentCategory === 'Artisanat';
+  const isAllBoutiques = pathname === '/boutiques' && !isPromos && !isNewest && !isArtisanat;
+  const isTracking = pathname === '/suivre-commande';
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
@@ -47,12 +59,19 @@ export function Header() {
       setCartTotal(total);
     };
 
+    const handleOpenDrawer = () => {
+      updateCartSummary();
+      setCartDrawerOpen(true);
+    };
+
     updateCartSummary();
     window.addEventListener('storage', updateCartSummary);
     window.addEventListener('cart-updated', updateCartSummary);
+    window.addEventListener('open-cart-drawer', handleOpenDrawer);
     return () => {
       window.removeEventListener('storage', updateCartSummary);
       window.removeEventListener('cart-updated', updateCartSummary);
+      window.removeEventListener('open-cart-drawer', handleOpenDrawer);
     };
   }, []);
 
@@ -238,7 +257,7 @@ export function Header() {
                 <Link
                   href="/"
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition ${
-                    pathname === '/'
+                    isHome
                       ? 'text-slate-950 bg-amber-400 font-bold shadow-xs'
                       : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
                   }`}
@@ -251,23 +270,29 @@ export function Header() {
                 <Link
                   href="/boutiques"
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition ${
-                    pathname === '/boutiques'
+                    isAllBoutiques
                       ? 'text-slate-950 bg-amber-400 border border-amber-500/30 font-bold shadow-xs'
                       : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
                   }`}
                 >
-                  <Store className={`w-3.5 h-3.5 ${pathname === '/boutiques' ? 'text-slate-950' : 'text-amber-500'}`} />
+                  <Store className={`w-3.5 h-3.5 ${isAllBoutiques ? 'text-slate-950' : 'text-amber-500'}`} />
                   <span>Nos Boutiques</span>
                 </Link>
 
                 {/* 3. Bons Plans Dakar */}
                 <Link
                   href="/boutiques?filter=promos"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full font-medium transition ${
+                    isPromos
+                      ? 'text-white bg-rose-600 border border-rose-700 font-bold shadow-xs'
+                      : 'text-slate-700 hover:text-rose-600 hover:bg-slate-50'
+                  }`}
                 >
-                  <Flame className="w-3.5 h-3.5 text-rose-500" />
+                  <Flame className={`w-3.5 h-3.5 ${isPromos ? 'text-white' : 'text-rose-500'}`} />
                   <span>Bons Plans Dakar</span>
-                  <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none">
+                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none ${
+                    isPromos ? 'bg-white text-rose-600' : 'bg-rose-500 text-white'
+                  }`}>
                     HOT
                   </span>
                 </Link>
@@ -275,31 +300,39 @@ export function Header() {
                 {/* 4. Nouveautés */}
                 <Link
                   href="/boutiques?sort=newest"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full font-medium transition ${
+                    isNewest
+                      ? 'text-slate-950 bg-amber-400 border border-amber-500/30 font-bold shadow-xs'
+                      : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50'
+                  }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <Sparkles className={`w-3.5 h-3.5 ${isNewest ? 'text-slate-950' : 'text-amber-500'}`} />
                   <span>Nouveautés</span>
                 </Link>
 
                 {/* 5. Suivre ma commande */}
                 <Link
                   href="/suivre-commande"
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition ${
-                    pathname === '/suivre-commande'
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition ${
+                    isTracking
                       ? 'text-slate-950 bg-amber-400 font-bold shadow-xs'
                       : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium'
                   }`}
                 >
-                  <Truck className="w-3.5 h-3.5 text-sky-600" />
+                  <Truck className={`w-3.5 h-3.5 ${isTracking ? 'text-slate-950' : 'text-sky-600'}`} />
                   <span>Suivre ma commande</span>
                 </Link>
 
                 {/* 6. Artisanat Sénégalais */}
                 <Link
                   href="/boutiques?category=Artisanat"
-                  className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full text-slate-700 hover:text-amber-600 hover:bg-slate-50 font-medium transition"
+                  className={`hidden lg:flex items-center gap-1.5 px-3.5 py-2 rounded-full font-medium transition ${
+                    isArtisanat
+                      ? 'text-slate-950 bg-amber-400 border border-amber-500/30 font-bold shadow-xs'
+                      : 'text-slate-700 hover:text-amber-600 hover:bg-slate-50'
+                  }`}
                 >
-                  <Crown className="w-3.5 h-3.5 text-amber-500" />
+                  <Crown className={`w-3.5 h-3.5 ${isArtisanat ? 'text-slate-950' : 'text-amber-500'}`} />
                   <span>Artisanat Local 🇸🇳</span>
                 </Link>
               </div>
@@ -401,23 +434,59 @@ export function Header() {
                 <Link
                   href="/"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-slate-50"
+                  className={`block px-3 py-2 rounded-xl transition ${
+                    isHome ? 'bg-amber-400 text-slate-950 font-bold' : 'hover:bg-slate-50'
+                  }`}
                 >
                   Accueil
                 </Link>
                 <Link
                   href="/boutiques"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-emerald-600 font-bold"
+                  className={`block px-3 py-2 rounded-xl transition ${
+                    isAllBoutiques ? 'bg-amber-400 text-slate-950 font-bold' : 'hover:bg-slate-50 text-slate-800'
+                  }`}
                 >
                   Nos Boutiques
                 </Link>
                 <Link
                   href="/boutiques?filter=promos"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-slate-50 text-rose-600 font-medium"
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl transition ${
+                    isPromos ? 'bg-rose-600 text-white font-bold' : 'hover:bg-slate-50 text-rose-600 font-medium'
+                  }`}
                 >
-                  🔥 Bons Plans Dakar
+                  <span>🔥 Bons Plans Dakar</span>
+                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
+                    isPromos ? 'bg-white text-rose-600' : 'bg-rose-500 text-white'
+                  }`}>HOT</span>
+                </Link>
+                <Link
+                  href="/boutiques?sort=newest"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-xl transition ${
+                    isNewest ? 'bg-amber-400 text-slate-950 font-bold' : 'hover:bg-slate-50 text-slate-800 font-medium'
+                  }`}
+                >
+                  ✨ Nouveautés
+                </Link>
+                <Link
+                  href="/boutiques?category=Artisanat"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-xl transition ${
+                    isArtisanat ? 'bg-amber-400 text-slate-950 font-bold' : 'hover:bg-slate-50 text-slate-800 font-medium'
+                  }`}
+                >
+                  🇸🇳 Artisanat Local
+                </Link>
+                <Link
+                  href="/suivre-commande"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-xl transition ${
+                    isTracking ? 'bg-amber-400 text-slate-950 font-bold' : 'hover:bg-slate-50 text-slate-800 font-medium'
+                  }`}
+                >
+                  🚚 Suivre ma commande
                 </Link>
                 <button
                   type="button"
@@ -463,5 +532,13 @@ export function Header() {
       {/* TIROIR PANIER MODERNE (SLIDE-OVER POPUP) */}
       <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
     </>
+  );
+}
+
+export function Header() {
+  return (
+    <Suspense fallback={<div className="h-16 bg-white border-b border-slate-100" />}>
+      <HeaderContent />
+    </Suspense>
   );
 }

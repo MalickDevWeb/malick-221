@@ -157,6 +157,7 @@ export default function ShopProductsListingPage({
   const [activeCategory, setActiveCategory] = useState('Tous');
   const [searchTerm, setSearchTerm] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [addedProductId, setAddedProductId] = useState<string | null>(null);
 
   // État Achat Express 2 Clics
   const [expressModalProduct, setExpressModalProduct] = useState<ProductItem | null>(null);
@@ -305,7 +306,7 @@ export default function ShopProductsListingPage({
       return p.title.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
-  // Action 1 : Ajouter au panier rapide avec toast
+  // Action 1 : Ajouter au panier rapide avec toast et feedback bouton sans ouvrir le tiroir
   const handleAddToCart = (product: ProductItem) => {
     addCartItem({
       id: `${boutiqueInfo.slug}-${product.id}`,
@@ -314,9 +315,11 @@ export default function ShopProductsListingPage({
       quantity: 1,
       image: product.image,
       shop: boutiqueInfo.name,
-    });
+    }, false);
+    setAddedProductId(product.id);
     setToastMessage(`✓ ${product.title} ajouté au panier !`);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setAddedProductId(null), 2500);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   // Action 2 : Achat Express en 2 Clics
@@ -566,10 +569,23 @@ export default function ShopProductsListingPage({
 
                   <button
                     onClick={() => handleAddToCart(product)}
-                    className="w-full bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-bold text-[11px] py-1.5 px-3 rounded-full transition flex items-center justify-center gap-1"
+                    className={`w-full active:scale-95 font-bold text-[11px] py-1.5 px-3 rounded-full transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs ${
+                      addedProductId === product.id
+                        ? 'bg-emerald-600 text-white shadow-emerald-500/20'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                    }`}
                   >
-                    <ShoppingBag className="w-3 h-3" />
-                    <span>Ajouter au panier</span>
+                    {addedProductId === product.id ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        <span>✓ Ajouté au panier !</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag className="w-3 h-3 text-slate-600" />
+                        <span>Ajouter au panier</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

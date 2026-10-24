@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Share2, Heart, Star, MessageCircle, ShoppingBag, Minus, Plus } from 'lucide-react';
+import { ArrowLeft, Share2, Heart, Star, MessageCircle, ShoppingBag, Minus, Plus, Check } from 'lucide-react';
 import { formatFCFA } from '../../../../services/api';
 import { addCartItem } from '../../../../services/order-flow';
 
@@ -13,6 +13,9 @@ export default function ProductDetailPage({
 }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const images = [
     'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80',
@@ -32,6 +35,21 @@ export default function ProductDetailPage({
   const whatsappUrl = `https://wa.me/221771234567?text=${encodeURIComponent(
     `Bonjour Malick Buss, je souhaite commander la "${product.title}" (${formatFCFA(product.price)} × ${quantity}). Est-elle disponible ?`
   )}`;
+
+  const handleAddToCart = () => {
+    addCartItem({
+      id: params.id,
+      title: product.title,
+      price: product.price,
+      quantity,
+      image: images[0],
+      shop: 'Style & Mode',
+    }, false);
+    setAddedToCart(true);
+    setToastMessage(`✓ ${product.title} ajouté au panier !`);
+    setTimeout(() => setAddedToCart(false), 2500);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   return (
     <div className="space-y-4 pb-12">
@@ -130,21 +148,27 @@ export default function ProductDetailPage({
 
         {/* Boutons d'Action Écran 7 */}
         <div className="space-y-2.5 pt-2">
-          <Link
-            href="/panier"
-            onClick={() => addCartItem({
-              id: params.id,
-              title: product.title,
-              price: product.price,
-              quantity,
-              image: images[0],
-              shop: 'Style & Mode',
-            })}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition active:scale-[0.98]"
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className={`w-full font-bold text-xs py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition active:scale-[0.98] ${
+              addedToCart
+                ? 'bg-emerald-700 text-white'
+                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+            }`}
           >
-            <ShoppingBag className="w-4 h-4" />
-            <span>Ajouter au panier</span>
-          </Link>
+            {addedToCart ? (
+              <>
+                <Check className="w-4 h-4 text-white" />
+                <span>Ajouté au panier ✓</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-4 h-4" />
+                <span>Ajouter au panier</span>
+              </>
+            )}
+          </button>
 
           <a
             href={whatsappUrl}
@@ -157,6 +181,19 @@ export default function ProductDetailPage({
           </a>
         </div>
       </div>
+
+      {/* Toast de confirmation */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-4 right-4 z-50 max-w-md mx-auto bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center justify-between text-xs font-semibold animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <span className="truncate mr-2">{toastMessage}</span>
+          <Link
+            href="/panier"
+            className="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1"
+          >
+            Voir panier →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

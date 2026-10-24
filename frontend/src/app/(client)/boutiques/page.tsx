@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { Suspense, useRef, useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Search,
   Star,
@@ -20,6 +19,7 @@ import {
   MessageCircle,
   Truck,
   RotateCcw,
+  Flame,
 } from 'lucide-react';
 
 interface Boutique {
@@ -40,6 +40,11 @@ interface Boutique {
   productsCount: string;
   badge: string;
   whatsapp: string;
+  isPromo?: boolean;
+  promoBadge?: string;
+  discountText?: string;
+  isNew?: boolean;
+  newBadge?: string;
 }
 
 const BOUTIQUES_DATA: Boutique[] = [
@@ -52,7 +57,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     ratingNum: 4.9,
     reviews: '(1,2k avis)',
     reviewsCount: 1240,
-    tags: ['Mode', 'Chaussures', 'Accessoires', 'Artisanat'],
+    tags: ['Mode', 'Chaussures', 'Accessoires', 'Artisanat', 'Promos'],
     category: 'Mode',
     monogram: 'SM',
     location: 'Dakar',
@@ -61,6 +66,9 @@ const BOUTIQUES_DATA: Boutique[] = [
     productsCount: '+ 340 articles',
     badge: '👑 Vendeur Officiel',
     whatsapp: '221771234567',
+    isPromo: true,
+    promoBadge: '🔥 -30% Solde Dakar',
+    discountText: 'Jusqu’à -30% sur collection Bazin & Sneakers',
   },
   {
     id: '2',
@@ -71,7 +79,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     ratingNum: 4.8,
     reviews: '(756 avis)',
     reviewsCount: 756,
-    tags: ['Beauté', 'Parfums', 'Soins'],
+    tags: ['Beauté', 'Parfums', 'Soins', 'Promos'],
     category: 'Beauté',
     monogram: 'BW',
     location: 'Dakar',
@@ -80,6 +88,9 @@ const BOUTIQUES_DATA: Boutique[] = [
     productsCount: '+ 185 articles',
     badge: '✨ Coup de Cœur',
     whatsapp: '221778901234',
+    isPromo: true,
+    promoBadge: '🔥 Vente Flash Beauté',
+    discountText: '1 Soin bio offert pour tout achat parfum de luxe',
   },
   {
     id: '3',
@@ -90,7 +101,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     ratingNum: 4.8,
     reviews: '(980 avis)',
     reviewsCount: 980,
-    tags: ['Électronique', 'Informatique', 'Accessoires'],
+    tags: ['Électronique', 'Informatique', 'Accessoires', 'Promos'],
     category: 'Électronique',
     monogram: 'TZ',
     location: 'Dakar',
@@ -99,6 +110,9 @@ const BOUTIQUES_DATA: Boutique[] = [
     productsCount: '+ 210 articles',
     badge: '⚡ Top Ventes High-Tech',
     whatsapp: '221765432109',
+    isPromo: true,
+    promoBadge: '🔥 -25% Promo High-Tech',
+    discountText: '-25% sur écouteurs sans fil & chargeurs rapides',
   },
   {
     id: '4',
@@ -109,7 +123,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     ratingNum: 4.8,
     reviews: '(523 avis)',
     reviewsCount: 523,
-    tags: ['Enfants', 'Jouets', 'Vêtements'],
+    tags: ['Enfants', 'Jouets', 'Vêtements', 'Nouveauté'],
     category: 'Enfants',
     monogram: 'KW',
     location: 'Dakar',
@@ -118,6 +132,8 @@ const BOUTIQUES_DATA: Boutique[] = [
     productsCount: '+ 190 articles',
     badge: '🧸 Espace Famille',
     whatsapp: '221781112233',
+    isNew: true,
+    newBadge: '✨ Nouvelle Boutique 2026',
   },
   {
     id: '5',
@@ -128,7 +144,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     ratingNum: 4.7,
     reviews: '(421 avis)',
     reviewsCount: 421,
-    tags: ['Maison', 'Décoration', 'Mobilier', 'Artisanat'],
+    tags: ['Maison', 'Décoration', 'Mobilier', 'Artisanat', 'Nouveauté'],
     category: 'Maison',
     monogram: 'MC',
     location: 'Dakar',
@@ -137,6 +153,8 @@ const BOUTIQUES_DATA: Boutique[] = [
     productsCount: '+ 140 articles',
     badge: '🎨 Design & Confort',
     whatsapp: '221774445566',
+    isNew: true,
+    newBadge: '✨ Nouveau Déco Dakar',
   },
   {
     id: '6',
@@ -147,7 +165,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     ratingNum: 4.6,
     reviews: '(367 avis)',
     reviewsCount: 367,
-    tags: ['Sport', 'Fitness', 'Accessoires'],
+    tags: ['Sport', 'Fitness', 'Accessoires', 'Promos', 'Nouveauté'],
     category: 'Sport',
     monogram: 'SM',
     location: 'Dakar',
@@ -156,92 +174,111 @@ const BOUTIQUES_DATA: Boutique[] = [
     productsCount: '+ 165 articles',
     badge: '⚽ Performance Pro',
     whatsapp: '221769998877',
+    isPromo: true,
+    promoBadge: '🔥 -20% Flash Fitness',
+    discountText: '-20% sur les maillots officiels & running',
+    isNew: true,
+    newBadge: '✨ Nouveau Sport',
   },
 ];
 
 const CATEGORIES_LIST = [
-  { label: 'Toutes', icon: '✨' },
-  { label: 'Artisanat', icon: '🇸🇳' },
+  { label: 'Toutes', icon: '🌟' },
+  { label: 'Bons Plans', icon: '🔥' },
+  { label: 'Nouveautés', icon: '✨' },
   { label: 'Mode', icon: '👗' },
-  { label: 'Électronique', icon: '💻' },
-  { label: 'Beauté', icon: '💄' },
-  { label: 'Maison', icon: '🏠' },
-  { label: 'Sport', icon: '⚽' },
+  { label: 'Beauté', icon: '✨' },
+  { label: 'Électronique', icon: '📱' },
+  { label: 'Maison', icon: '🛋️' },
   { label: 'Enfants', icon: '🧸' },
+  { label: 'Sport', icon: '⚽' },
+  { label: 'Artisanat', icon: '🇸🇳' },
 ];
 
 function ShopsListContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const initialCategory = searchParams.get('category') || 'Toutes';
-  const initialSort = (searchParams.get('sort') as any) || 'rating';
-
-  const [search, setSearch] = useState(searchParams.get('q') || '');
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
-  const [sortBy, setSortBy] = useState<'rating' | 'reviews' | 'name' | 'newest'>(initialSort);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Synchronisation dynamique quand l'utilisateur clique sur un lien de navigation avec paramètres d'URL
+  const filterParam = searchParams.get('filter');
+  const categoryParam = searchParams.get('category');
+  const sortParam = searchParams.get('sort');
+  const queryParam = searchParams.get('q');
+
+  const [search, setSearch] = useState(queryParam || '');
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    if (filterParam === 'promos') return 'Bons Plans';
+    if (sortParam === 'newest') return 'Nouveautés';
+    if (categoryParam) return categoryParam;
+    return 'Toutes';
+  });
+  const [sortBy, setSortBy] = useState<'rating' | 'newest' | 'reviews' | 'name'>(
+    sortParam === 'newest' ? 'newest' : 'rating'
+  );
+
   useEffect(() => {
-    const cat = searchParams.get('category');
-    if (cat) {
-      setSelectedCategory(cat);
-    } else if (!searchParams.get('sort') && !searchParams.get('q') && !searchParams.get('filter')) {
-      setSelectedCategory('Toutes');
-    }
-
-    const sort = searchParams.get('sort');
-    if (sort === 'newest') {
+    if (filterParam === 'promos') {
+      setSelectedCategory('Bons Plans');
+    } else if (sortParam === 'newest') {
+      setSelectedCategory('Nouveautés');
       setSortBy('newest');
-    } else if (sort === 'rating' || sort === 'reviews' || sort === 'name') {
-      setSortBy(sort);
-    }
-
-    const q = searchParams.get('q');
-    if (q) {
-      setSearch(q);
-    }
-
-    const filter = searchParams.get('filter');
-    if (filter === 'promos') {
+    } else if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    } else {
       setSelectedCategory('Toutes');
-      setSortBy('reviews');
+      if (!sortParam) {
+        setSortBy('rating');
+      }
     }
-  }, [searchParams]);
 
-  const normalizeText = (value: string) =>
-    value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr');
+    if (queryParam !== null) {
+      setSearch(queryParam);
+    } else {
+      setSearch('');
+    }
+  }, [filterParam, categoryParam, sortParam, queryParam]);
 
-  const normalizedSearch = normalizeText(search.trim());
-
-  // Category counts
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { Toutes: BOUTIQUES_DATA.length };
-    CATEGORIES_LIST.forEach((cat) => {
-      if (cat.label === 'Toutes') return;
-      counts[cat.label] = BOUTIQUES_DATA.filter(
-        (b) =>
-          b.category === cat.label ||
-          b.tags.some((tag) => normalizeText(tag) === normalizeText(cat.label))
-      ).length;
+    const counts: Record<string, number> = {
+      Toutes: BOUTIQUES_DATA.length,
+      'Bons Plans': BOUTIQUES_DATA.filter((b) => b.isPromo || b.tags.includes('Promos')).length,
+      Nouveautés: BOUTIQUES_DATA.filter((b) => b.isNew || b.tags.includes('Nouveauté')).length,
+    };
+    BOUTIQUES_DATA.forEach((b) => {
+      counts[b.category] = (counts[b.category] || 0) + 1;
+      b.tags.forEach((tag) => {
+        if (tag === 'Artisanat') {
+          counts['Artisanat'] = (counts['Artisanat'] || 0) + 1;
+        }
+      });
     });
     return counts;
   }, []);
 
+  const normalizedSearch = search.trim().toLowerCase();
+
   const filteredBoutiques = useMemo(() => {
-    return BOUTIQUES_DATA.filter((shop) => {
+    return BOUTIQUES_DATA.filter((boutique) => {
+      let matchesCategory = true;
+      if (selectedCategory === 'Bons Plans') {
+        matchesCategory = Boolean(boutique.isPromo || boutique.tags.includes('Promos'));
+      } else if (selectedCategory === 'Nouveautés') {
+        matchesCategory = Boolean(boutique.isNew || boutique.tags.includes('Nouveauté'));
+      } else if (selectedCategory !== 'Toutes') {
+        matchesCategory =
+          boutique.category.toLowerCase() === selectedCategory.toLowerCase() ||
+          boutique.tags.some((t) => t.toLowerCase() === selectedCategory.toLowerCase());
+      }
+
       const matchesSearch =
         !normalizedSearch ||
-        normalizeText(
-          [shop.name, shop.subtitle, shop.location, shop.district, ...shop.tags].join(' ')
-        ).includes(normalizedSearch);
+        boutique.name.toLowerCase().includes(normalizedSearch) ||
+        boutique.subtitle.toLowerCase().includes(normalizedSearch) ||
+        boutique.district.toLowerCase().includes(normalizedSearch) ||
+        boutique.location.toLowerCase().includes(normalizedSearch) ||
+        boutique.tags.some((tag) => tag.toLowerCase().includes(normalizedSearch));
 
-      const matchesCategory =
-        !selectedCategory ||
-        selectedCategory === 'Toutes' ||
-        shop.category === selectedCategory ||
-        shop.tags.some((tag) => normalizeText(tag) === normalizeText(selectedCategory));
-
-      return matchesSearch && matchesCategory;
+      return matchesCategory && matchesSearch;
     }).sort((a, b) => {
       if (sortBy === 'newest') return Number(b.id) - Number(a.id);
       if (sortBy === 'rating') return b.ratingNum - a.ratingNum;
@@ -251,24 +288,28 @@ function ShopsListContent() {
   }, [normalizedSearch, selectedCategory, sortBy]);
 
   const handleResetFilters = () => {
-    setSelectedCategory('Toutes');
-    setSortBy('rating');
-    setSearch('');
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
+    router.push('/boutiques');
+  };
+
+  const handleSelectCategory = (catLabel: string) => {
+    if (selectedCategory === catLabel && catLabel !== 'Toutes') {
+      router.push('/boutiques');
+    } else if (catLabel === 'Bons Plans') {
+      router.push('/boutiques?filter=promos');
+    } else if (catLabel === 'Nouveautés') {
+      router.push('/boutiques?sort=newest');
+    } else if (catLabel === 'Toutes') {
+      router.push('/boutiques');
+    } else {
+      router.push(`/boutiques?category=${encodeURIComponent(catLabel)}`);
     }
   };
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen py-4 sm:py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* ================= 1. HERO BANNER SANS BANDES NOIRES + MOTION DESIGN SHIMMER ================= */}
-        <motion.div
-          initial={{ opacity: 0, y: 18, scale: 0.99 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group border border-slate-200/60"
-        >
+        {/* ================= 1. HERO BANNER SANS BANDES NOIRES + EFFET SHIMMER ================= */}
+        <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group border border-slate-200/60 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-slate-900/10">
           <img
             src="/images/boutiques/dakar_sunset_banner.png"
             alt="Les meilleures boutiques du Sénégal, réunies ici"
@@ -280,15 +321,10 @@ function ShopsListContent() {
 
           {/* Halo d'ambiance doré subtil */}
           <div className="absolute -inset-px rounded-2xl sm:rounded-3xl border-2 border-transparent group-hover:border-amber-400/40 transition-colors duration-500 pointer-events-none" />
-        </motion.div>
+        </div>
 
-        {/* ================= 2. BARRE DE RECHERCHE, FILTRE 'TOUTES' & TRI (SANS SCROLLBAR) ================= */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.1, ease: 'easeOut' }}
-          className="bg-white p-3.5 sm:p-4 rounded-3xl border border-slate-200/90 shadow-xs space-y-3.5"
-        >
+        {/* ================= 2. BARRE DE RECHERCHE, FILTRES & TRI ================= */}
+        <div className="bg-white p-3.5 sm:p-4 rounded-3xl border border-slate-200/90 shadow-xs space-y-3.5">
           {/* Ligne 1 : Recherche & Tri */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             {/* Champ de recherche avec micro-interaction */}
@@ -303,16 +339,14 @@ function ShopsListContent() {
                 className="w-full bg-[#f8fafc] text-xs pl-11 pr-10 py-2.5 rounded-full border border-slate-200/80 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-400/20 focus:outline-none transition-all font-medium text-slate-800 placeholder:text-slate-400"
               />
               {search && (
-                <motion.button
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  whileHover={{ rotate: 90 }}
+                <button
+                  type="button"
                   onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 transition hover:rotate-90 cursor-pointer"
                   aria-label="Effacer la recherche"
                 >
                   <X className="w-3.5 h-3.5" />
-                </motion.button>
+                </button>
               )}
             </div>
 
@@ -335,43 +369,38 @@ function ShopsListContent() {
           {/* Séparateur subtil et propre */}
           <div className="h-px bg-slate-100 w-full" />
 
-          {/* Ligne 2 : FILTRES CATÉGORIES AVEC 'TOUTES' EN PREMIER & ZÉRO SCROLLBAR */}
+          {/* Ligne 2 : FILTRES AVEC 'BONS PLANS' ET 'NOUVEAUTÉS' DYNAMIQUES */}
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1">
             {CATEGORIES_LIST.map((cat) => {
               const isActive = selectedCategory === cat.label;
               const count = categoryCounts[cat.label] || 0;
+              const isPromoTab = cat.label === 'Bons Plans';
+              const isNewTab = cat.label === 'Nouveautés';
+
+              let activeStyles = 'text-slate-950 font-black bg-gradient-to-r from-amber-400 to-amber-300 shadow-xs border border-amber-500/30 ring-2 ring-amber-400/20';
+              if (isPromoTab) {
+                activeStyles = 'text-white font-black bg-gradient-to-r from-rose-600 to-amber-500 shadow-xs border border-rose-600 ring-2 ring-rose-400/30';
+              } else if (isNewTab) {
+                activeStyles = 'text-slate-950 font-black bg-gradient-to-r from-amber-400 to-amber-300 shadow-xs border border-amber-500/30 ring-2 ring-amber-400/20';
+              }
 
               return (
                 <button
                   key={cat.label}
                   type="button"
-                  onClick={() => {
-                    if (selectedCategory === cat.label && cat.label !== 'Toutes') {
-                      setSelectedCategory('Toutes');
-                    } else {
-                      setSelectedCategory(cat.label);
-                    }
-                  }}
-                  className={`relative text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap transition-colors duration-200 flex items-center gap-1.5 select-none shrink-0 ${
+                  onClick={() => handleSelectCategory(cat.label)}
+                  className={`relative text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 select-none shrink-0 cursor-pointer ${
                     isActive
-                      ? 'text-slate-950 font-black'
+                      ? activeStyles
                       : 'text-slate-600 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/80'
                   }`}
                 >
-                  {/* Pilule dorée fluide avec spring physics */}
-                  {isActive && (
-                    <motion.span
-                      layoutId="boutiqueCategoryPill"
-                      className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-300 rounded-full shadow-xs z-0 border border-amber-500/30"
-                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                    />
-                  )}
-                  <span className="relative z-10 text-sm leading-none">{cat.icon}</span>
-                  <span className="relative z-10">{cat.label}</span>
+                  <span className="text-sm leading-none">{cat.icon}</span>
+                  <span>{cat.label}</span>
                   <span
-                    className={`relative z-10 text-[10px] font-black px-1.5 py-0.5 rounded-full transition-colors ${
+                    className={`text-[10px] font-black px-1.5 py-0.5 rounded-full transition-colors ${
                       isActive
-                        ? 'bg-slate-950/15 text-slate-950'
+                        ? isPromoTab ? 'bg-white/20 text-white' : 'bg-slate-950/15 text-slate-950'
                         : 'bg-slate-200/80 text-slate-500'
                     }`}
                   >
@@ -381,15 +410,75 @@ function ShopsListContent() {
               );
             })}
           </div>
-        </motion.div>
+        </div>
 
-        {/* ================= 3. TITRE DE SECTION AVEC COMPTEUR DYNAMIQUE ================= */}
+        {/* ================= 3. BANNIÈRE DÉDIÉE SI BONS PLANS OU NOUVEAUTÉS ================= */}
+        {selectedCategory === 'Bons Plans' && (
+          <div className="bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white p-4 sm:p-5 rounded-3xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+                <span>🔥</span>
+                <span>Ventes Flash & Bons Plans Dakar</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black leading-tight">
+                Profitez de réductions jusqu’à -50% dans les boutiques de Dakar
+              </h3>
+              <p className="text-xs text-rose-100 font-medium">
+                Offres exclusives valables sur Malick Buss avec livraison express 24h.
+              </p>
+            </div>
+            <span className="shrink-0 bg-white text-rose-600 font-extrabold text-xs px-4 py-2 rounded-full shadow-md">
+              {filteredBoutiques.length} boutiques en promo
+            </span>
+          </div>
+        )}
+
+        {selectedCategory === 'Nouveautés' && (
+          <div className="bg-gradient-to-r from-[#0c1a35] via-[#162a52] to-amber-500/80 text-white p-4 sm:p-5 rounded-3xl shadow-lg border border-amber-400/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 bg-amber-400/20 text-amber-300 border border-amber-400/30 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+                <span>✨</span>
+                <span>Nouveautés Dakar</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black leading-tight">
+                Les dernières boutiques et collections arrivées sur la marketplace
+              </h3>
+              <p className="text-xs text-slate-300 font-medium">
+                Découvrez les nouveaux arrivages et les commerces récemment certifiés.
+              </p>
+            </div>
+            <span className="shrink-0 bg-amber-400 text-slate-950 font-black text-xs px-4 py-2 rounded-full shadow-md">
+              {filteredBoutiques.length} nouvelles boutiques
+            </span>
+          </div>
+        )}
+
+        {/* ================= 4. TITRE DE SECTION AVEC COMPTEUR DYNAMIQUE ================= */}
         <div className="flex items-center justify-between pt-1 px-1">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <h2 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
-                <Store className="w-5 h-5 text-amber-500 stroke-[2.2px]" />
-                <span>Boutiques vérifiées à Dakar</span>
+                {selectedCategory === 'Bons Plans' ? (
+                  <>
+                    <Flame className="w-5 h-5 text-rose-500 stroke-[2.2px]" />
+                    <span>🔥 Bons Plans & Réductions Dakar</span>
+                  </>
+                ) : selectedCategory === 'Nouveautés' ? (
+                  <>
+                    <Sparkles className="w-5 h-5 text-amber-500 stroke-[2.2px]" />
+                    <span>✨ Dernières Nouveautés à Dakar</span>
+                  </>
+                ) : selectedCategory === 'Artisanat' ? (
+                  <>
+                    <Crown className="w-5 h-5 text-amber-500 stroke-[2.2px]" />
+                    <span>🇸🇳 Artisanat & Créations Sénégalaises</span>
+                  </>
+                ) : (
+                  <>
+                    <Store className="w-5 h-5 text-amber-500 stroke-[2.2px]" />
+                    <span>Boutiques vérifiées à Dakar</span>
+                  </>
+                )}
               </h2>
               <span className="text-xs font-extrabold bg-amber-400/20 text-amber-800 px-2.5 py-0.5 rounded-full border border-amber-400/40">
                 {filteredBoutiques.length} {filteredBoutiques.length > 1 ? 'disponibles' : 'disponible'}
@@ -402,16 +491,14 @@ function ShopsListContent() {
 
           {/* Bouton reset / voir tout */}
           {selectedCategory !== 'Toutes' || search ? (
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+            <button
               type="button"
               onClick={handleResetFilters}
-              className="text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 transition select-none shadow-xs"
+              className="text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 transition select-none shadow-xs active:scale-95 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Afficher toutes les boutiques ({BOUTIQUES_DATA.length})</span>
-            </motion.button>
+              <span>Afficher tout ({BOUTIQUES_DATA.length})</span>
+            </button>
           ) : (
             <div className="text-xs font-bold text-slate-400 hidden sm:flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
@@ -420,161 +507,141 @@ function ShopsListContent() {
           )}
         </div>
 
-        {/* ================= 4. GRILLE DES BOUTIQUES (ENTRÉE STAGGER + CARTE ULTRA LUXE) ================= */}
+        {/* ================= 5. GRILLE DES BOUTIQUES ================= */}
         {filteredBoutiques.length > 0 ? (
-          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
-              {filteredBoutiques.map((shop, index) => (
-                <motion.div
-                  key={shop.id}
-                  layout
-                  initial={{ opacity: 0, y: 25, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.92 }}
-                  transition={{
-                    duration: 0.45,
-                    delay: index * 0.06,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                  whileHover={{
-                    y: -6,
-                    boxShadow:
-                      '0 20px 30px -10px rgba(12, 21, 39, 0.12), 0 0 20px -5px rgba(245, 158, 11, 0.15)',
-                    borderColor: 'rgba(245, 158, 11, 0.45)',
-                    transition: { duration: 0.25, ease: 'easeOut' },
-                  }}
-                  className="bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-xs transition-colors duration-300 flex flex-col justify-between group cursor-pointer"
-                >
-                  <div>
-                    {/* Couverture Panoramique avec Zoom fluide au survol */}
-                    <div className="relative h-44 w-full overflow-hidden bg-slate-900">
-                      <img
-                        src={shop.coverImage}
-                        alt={shop.name}
-                        className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
-                      />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredBoutiques.map((shop) => (
+              <div
+                key={shop.id}
+                className="bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-xs hover:shadow-xl hover:-translate-y-1.5 hover:border-amber-400/50 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
+              >
+                <div>
+                  {/* Couverture Panoramique avec Zoom fluide au survol */}
+                  <div className="relative h-44 w-full overflow-hidden bg-slate-900">
+                    <img
+                      src={shop.coverImage}
+                      alt={shop.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    />
 
-                      {/* Gradient protecteur élégant */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/20 pointer-events-none" />
+                    {/* Gradient protecteur élégant */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/20 pointer-events-none" />
 
-                      {/* Badge Boutique Vérifiée avec aura émeraude */}
+                    {/* Badge Boutique Vérifiée / Promo / Nouveauté */}
+                    {shop.isPromo && shop.promoBadge ? (
+                      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-gradient-to-r from-rose-600 to-amber-500 text-white text-[11px] font-black px-3 py-1 rounded-full shadow-md shadow-rose-950/40 backdrop-blur-xs">
+                        <Flame className="w-3.5 h-3.5 stroke-[2.5px] fill-amber-300" />
+                        <span>{shop.promoBadge}</span>
+                      </div>
+                    ) : shop.newBadge ? (
+                      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-300 text-slate-950 text-[11px] font-black px-3 py-1 rounded-full shadow-md backdrop-blur-xs">
+                        <Sparkles className="w-3.5 h-3.5 stroke-[2.5px]" />
+                        <span>{shop.newBadge}</span>
+                      </div>
+                    ) : (
                       <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-[#059669] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md shadow-emerald-900/30 backdrop-blur-xs">
                         <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5px]" />
                         <span>Boutique vérifiée</span>
                       </div>
+                    )}
 
-                      {/* Badges Localisation & Articles */}
-                      <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
-                        <span className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/10">
-                          <MapPin className="w-3 h-3 text-amber-400" />
-                          <span>{shop.location}</span>
-                        </span>
-                        <span className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/10">
-                          {shop.productsCount}
-                        </span>
-                      </div>
-
-                      {/* Monogramme Circulaire avec micro-rotation au survol */}
-                      <motion.div
-                        whileHover={{ scale: 1.1, rotate: 6 }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                        className="absolute -bottom-6 left-5 z-20 w-12 h-12 rounded-full bg-slate-950 text-white border-2 border-white flex flex-col items-center justify-center shadow-lg group-hover:border-amber-400 transition-colors"
-                      >
-                        <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 -mb-0.5" />
-                        <span className="font-black text-xs tracking-tight leading-none">
-                          {shop.monogram}
-                        </span>
-                      </motion.div>
-
-                      {/* Badge de distinction en bas à droite de l'image */}
-                      <div className="absolute bottom-2.5 right-3 z-10 text-[10px] font-bold text-amber-300 bg-black/60 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-amber-400/30">
-                        {shop.badge}
-                      </div>
+                    {/* Badges Localisation & Articles */}
+                    <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+                      <span className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/10">
+                        <MapPin className="w-3 h-3 text-amber-400" />
+                        <span>{shop.location}</span>
+                      </span>
+                      <span className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/10">
+                        {shop.productsCount}
+                      </span>
                     </div>
 
-                    {/* Informations de la Boutique */}
-                    <div className="pt-8 px-5 pb-3 space-y-2">
-                      {/* Titre & Note */}
-                      <div className="flex items-center justify-between gap-2">
-                        <Link
-                          href={`/boutiques/${shop.slug}/produits`}
-                          className="font-extrabold text-base text-slate-900 group-hover:text-amber-600 transition flex items-center gap-1.5 truncate"
-                        >
-                          <span className="truncate">{shop.name}</span>
-                          <CheckCircle2 className="w-4 h-4 text-amber-500 fill-amber-400 shrink-0" />
-                        </Link>
+                    {/* Monogramme Circulaire */}
+                    <div className="absolute -bottom-6 left-5 z-20 w-12 h-12 rounded-full bg-slate-950 text-white border-2 border-white flex flex-col items-center justify-center shadow-lg group-hover:border-amber-400 transition-colors">
+                      <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 -mb-0.5" />
+                      <span className="font-black text-xs tracking-tight leading-none">
+                        {shop.monogram}
+                      </span>
+                    </div>
 
-                        <div className="flex items-center gap-1 text-xs font-black text-slate-950 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 shrink-0">
-                          <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
-                          <span>{shop.rating}</span>
-                          <span className="text-[10px] font-semibold text-slate-400">
-                            {shop.reviews}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Quartier / Adresse */}
-                      <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500">
-                        <MapPin className="w-3 h-3 text-slate-400" />
-                        <span>{shop.district}</span>
-                      </div>
-
-                      {/* Sous-titre descriptif */}
-                      <p className="text-xs text-slate-600 line-clamp-2 font-medium leading-relaxed">
-                        {shop.subtitle}
-                      </p>
+                    {/* Badge de distinction en bas à droite de l'image */}
+                    <div className="absolute bottom-2.5 right-3 z-10 text-[10px] font-bold text-amber-300 bg-black/60 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-amber-400/30">
+                      {shop.badge}
                     </div>
                   </div>
 
-                  {/* Tags & Boutons d'actions */}
-                  <div className="px-5 pb-5 pt-3 space-y-3 border-t border-slate-100">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {shop.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 group-hover:bg-amber-50 group-hover:text-amber-800 transition-colors"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {/* Bouton WhatsApp direct */}
-                      <a
-                        href={`https://wa.me/${shop.whatsapp}?text=${encodeURIComponent(
-                          `Bonjour ${shop.name}, j'ai vu votre boutique sur Malick Buss et je souhaite commander !`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center justify-center gap-1.5 w-10 h-10 rounded-2xl bg-emerald-50 hover:bg-emerald-500 text-emerald-600 hover:text-white border border-emerald-200/80 transition-all duration-200 shrink-0"
-                        title="Contacter sur WhatsApp"
-                      >
-                        <MessageCircle className="w-4 h-4 stroke-[2.2px]" />
-                      </a>
-
-                      {/* Bouton Voir la boutique / Acheter en 2 clics */}
+                  {/* Informations de la Boutique */}
+                  <div className="pt-8 px-5 pb-3 space-y-2">
+                    {/* Titre & Note */}
+                    <div className="flex items-center justify-between gap-2">
                       <Link
                         href={`/boutiques/${shop.slug}/produits`}
-                        className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0c1527] hover:bg-amber-400 text-white hover:text-slate-950 font-extrabold text-xs py-2.5 px-4 rounded-2xl transition-all duration-200 shadow-xs group/btn"
+                        className="font-extrabold text-base text-slate-900 group-hover:text-amber-600 transition flex items-center gap-1.5 truncate"
                       >
-                        <span>Visiter les produits</span>
-                        <ArrowRight className="w-3.5 h-3.5 stroke-[2.5px] group-hover/btn:translate-x-1 transition-transform" />
+                        <span className="truncate">{shop.name}</span>
+                        <CheckCircle2 className="w-4 h-4 text-amber-500 fill-amber-400 shrink-0" />
                       </Link>
+
+                      <div className="flex items-center gap-1 text-xs font-black text-slate-950 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 shrink-0">
+                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
+                        <span>{shop.rating}</span>
+                        <span className="text-[10px] font-semibold text-slate-400">
+                          {shop.reviews}
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Quartier / Adresse */}
+                    <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500">
+                      <MapPin className="w-3 h-3 text-slate-400" />
+                      <span>{shop.district}</span>
+                    </div>
+
+                    {/* Sous-titre descriptif */}
+                    <p className="text-xs text-slate-600 line-clamp-2 font-medium leading-relaxed">
+                      {shop.subtitle}
+                    </p>
+
+                    {/* Offre Promo Spéciale en avant */}
+                    {shop.discountText && (
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-100">
+                        <Flame className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                        <span className="truncate">{shop.discountText}</span>
+                      </div>
+                    )}
                   </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+                </div>
+
+                {/* Tags & Boutons d'actions */}
+                <div className="px-5 pb-5 pt-3 space-y-3 border-t border-slate-100">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {shop.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 group-hover:bg-amber-50 group-hover:text-amber-800 transition-colors"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div>
+                    {/* Bouton Visiter les produits / Pleine largeur */}
+                    <Link
+                      href={`/boutiques/${shop.slug}/produits`}
+                      className="w-full inline-flex items-center justify-center gap-2 bg-[#0c1527] hover:bg-amber-400 text-white hover:text-slate-950 font-extrabold text-xs py-3 px-4 rounded-2xl transition-all duration-200 shadow-xs group/btn"
+                    >
+                      <span>Visiter les produits</span>
+                      <ArrowRight className="w-3.5 h-3.5 stroke-[2.5px] group-hover/btn:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           /* ================= ÉTAT VIDE ÉLÉGANT AVEC BOUTON DE RÉINITIALISATION ================= */
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl p-10 text-center border border-slate-200/90 shadow-xs max-w-md mx-auto space-y-4 my-8"
-          >
+          <div className="bg-white rounded-3xl p-10 text-center border border-slate-200/90 shadow-xs max-w-md mx-auto space-y-4 my-8">
             <div className="w-16 h-16 mx-auto rounded-full bg-amber-50 text-amber-500 flex items-center justify-center">
               <Store className="w-8 h-8 stroke-[1.8px]" />
             </div>
@@ -589,12 +656,12 @@ function ShopsListContent() {
             <button
               type="button"
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold text-xs px-5 py-2.5 rounded-full transition shadow-xs"
+              className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold text-xs px-5 py-2.5 rounded-full transition shadow-xs cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Voir toutes les boutiques ({BOUTIQUES_DATA.length})</span>
             </button>
-          </motion.div>
+          </div>
         )}
       </div>
     </div>
@@ -614,4 +681,3 @@ export default function ShopsListPage() {
     </Suspense>
   );
 }
-

@@ -17,19 +17,25 @@ export interface StoredOrder {
   status: OrderStatus;
   deliveryOption: DeliveryOption;
   paymentOption: PaymentOption;
-  paymentStatus: 'PENDING';
+  paymentStatus: 'PENDING' | 'SUCCESS' | 'FAILED';
   items: CartItem[];
   subtotal: number;
   shipping: number;
   total: number;
+  customerName?: string;
+  customerPhone?: string;
+  shippingAddress?: string;
+  confirmedReceivedAt?: string;
+  receivedRating?: number;
+  receivedFeedback?: string;
 }
 
 const CART_KEY = 'malick-buss-cart';
 const ORDERS_KEY = 'malick-buss-orders';
 
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  CONFIRMED: ['PREPARING', 'CANCELLED'],
-  PREPARING: ['SHIPPED', 'CANCELLED'],
+  CONFIRMED: ['PREPARING', 'CANCELLED', 'DELIVERED'],
+  PREPARING: ['SHIPPED', 'CANCELLED', 'DELIVERED'],
   SHIPPED: ['DELIVERED'],
   DELIVERED: [],
   CANCELLED: [],
@@ -80,10 +86,12 @@ export function getCartItems(): CartItem[] {
 export function saveCartItems(items: CartItem[]): void {
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(CART_KEY, JSON.stringify(items));
+    window.dispatchEvent(new Event('cart-updated'));
+    window.dispatchEvent(new CustomEvent('cart-updated', { detail: items }));
   }
 }
 
-export function addCartItem(item: CartItem): void {
+export function addCartItem(item: CartItem, openDrawer: boolean = false): void {
   const items = getCartItems();
   const existing = items.find((cartItem) => cartItem.id === item.id);
   const nextItems = existing
@@ -93,6 +101,9 @@ export function addCartItem(item: CartItem): void {
     : [...items, item];
 
   saveCartItems(nextItems);
+  if (openDrawer && typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('open-cart-drawer'));
+  }
 }
 
 export function getOrders(): StoredOrder[] {
@@ -108,6 +119,11 @@ export function createOrder(
   items: CartItem[],
   deliveryOption: DeliveryOption,
   paymentOption: PaymentOption,
+  customerInfo?: {
+    name?: string;
+    phone?: string;
+    address?: string;
+  }
 ): StoredOrder {
   if (typeof window === 'undefined') throw new Error('La commande doit être créée dans le navigateur.');
   if (!Array.isArray(items) || items.length === 0) throw new Error('Le panier est vide.');
@@ -142,6 +158,9 @@ export function createOrder(
     subtotal,
     shipping,
     total: subtotal + shipping,
+    customerName: customerInfo?.name,
+    customerPhone: customerInfo?.phone,
+    shippingAddress: customerInfo?.address,
   };
 
   window.localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...orders]));
@@ -159,5 +178,33 @@ export function updateOrderStatus(orderId: string, nextStatus: OrderStatus): Sto
     ORDERS_KEY,
     JSON.stringify(orders.map((order) => order.id === orderId ? updatedOrder : order)),
   );
+  return updatedOrder;
+}
+
+export function confirmOrderReceipt(
+  orderId: string,
+  rating: number = 5,
+  feedback: string = 'Colis reçu en main propre conforme.'
+): StoredOrder | undefined {
+  const orders = getOrders();
+  const currentOrder = orders.find((order) => order.id === orderId);
+  if (!currentOrder) return undefined;
+
+  const updatedOrder: StoredOrder = {
+    ...currentOrder,
+    status: 'DELIVERED',
+    confirmedReceivedAt: new Date().toISOString(),
+    receivedRating: rating,
+    receivedFeedback: feedback,
+  };
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(
+      ORDERS_KEY,
+      JSON.stringify(orders.map((order) => (order.id === orderId ? updatedOrder : order)))
+    );
+    window.dispatchEvent(new CustomEvent('malick_order_received', { detail: updatedOrder }));
+  }
+
   return updatedOrder;
 }
