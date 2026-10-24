@@ -18,9 +18,14 @@ import {
   ExternalLink,
   ChevronRight,
   Package,
+  CheckCircle2,
+  Star,
+  X,
+  ThumbsUp,
 } from 'lucide-react';
 import { formatFCFA } from '../../../services/api';
-import { getOrder, getOrders, StoredOrder } from '../../../services/order-flow';
+import { getOrder, getOrders, confirmOrderReceipt, StoredOrder } from '../../../services/order-flow';
+import { resolveShopContact } from '../../../services/vendorProfileStore';
 
 interface TimelineStep {
   id: number;
@@ -57,6 +62,22 @@ function OrderTrackingContent() {
   const searchParams = useSearchParams();
   const [searchOrderId, setSearchOrderId] = useState(searchParams.get('id') || '');
   const [order, setOrder] = useState<StoredOrder>(DEMO_FALLBACK_ORDER);
+
+  // Client reception confirmation states
+  const [showReceiveModal, setShowReceiveModal] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [feedbackNote, setFeedbackNote] = useState('Colis bien reçu en main propre, articles conformes et en excellent état.');
+  const [receptionConfirmedSuccess, setReceptionConfirmedSuccess] = useState(false);
+
+  const handleConfirmReceipt = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const updated = confirmOrderReceipt(order.id, rating, feedbackNote);
+    if (updated) {
+      setOrder(updated);
+    }
+    setShowReceiveModal(false);
+    setReceptionConfirmedSuccess(true);
+  };
 
   useEffect(() => {
     const idFromUrl = searchParams.get('id');
@@ -285,6 +306,61 @@ function OrderTrackingContent() {
           </div>
         </motion.div>
 
+
+        {/* 2.5. Bloc de Confirmation de Réception Client (Validation) */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          className="space-y-2"
+        >
+          {order.status !== 'DELIVERED' ? (
+            <div className="bg-gradient-to-br from-slate-900 to-[#071328] border-2 border-emerald-500/40 rounded-3xl p-5 text-white shadow-lg space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-6 h-6 stroke-[2.2px]" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm text-white">Validation de réception par le client</h3>
+                  <p className="text-[11px] text-emerald-300 font-semibold">Le colis vous a-t-il été remis par le livreur ?</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Dès que vous avez votre colis entre les mains, confirmez la bonne réception ici. Cette validation sécurisée permet de débloquer le paiement pour le commerçant.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setShowReceiveModal(true)}
+                className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-98 text-slate-950 font-black text-xs py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 transition"
+              >
+                <Check className="w-4 h-4 stroke-[3px]" />
+                <span>J&apos;ai bien reçu ma commande ✓</span>
+              </button>
+            </div>
+          ) : (
+            <div className="bg-emerald-50 border border-emerald-200/80 rounded-3xl p-4 md:p-5 flex items-center gap-3.5 shadow-2xs">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Check className="w-6 h-6 stroke-[3px]" />
+              </div>
+              <div className="text-xs space-y-0.5">
+                <p className="font-black text-emerald-950 text-sm">Réception validée par le client 🎉</p>
+                <p className="text-emerald-700 font-medium">
+                  {order.confirmedReceivedAt
+                    ? `Confirmée reçue le ${new Date(order.confirmedReceivedAt).toLocaleString('fr-FR')}`
+                    : 'Colis remis en main propre et réception confirmée avec succès.'}
+                </p>
+                {order.receivedFeedback && (
+                  <p className="text-[11px] text-slate-600 italic mt-1">
+                    &quot;{order.receivedFeedback}&quot; {order.receivedRating ? `• Note : ${'⭐'.repeat(order.receivedRating)}` : ''}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </motion.div>
+
         {/* 3. Section Détails de la commande (Maquette) */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -354,28 +430,33 @@ function OrderTrackingContent() {
               </div>
             </div>
 
-            {/* Boutons d'action direct avec le livreur / support */}
-            <div className="pt-1 flex gap-2">
-              <a
-                href={`https://wa.me/221771719013?text=${encodeURIComponent(
-                  `Bonjour, je souhaite des nouvelles de ma commande #${order.id}.`
-                )}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 py-3 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>WhatsApp livreur</span>
-              </a>
+            {/* Boutons d'action direct avec la boutique vendeuse */}
+            {(() => {
+              const shopContact = resolveShopContact(orderItem.shop);
+              return (
+                <div className="pt-1 flex gap-2">
+                  <a
+                    href={`https://wa.me/${shopContact.phone}?text=${encodeURIComponent(
+                      `Bonjour ${shopContact.name}, je souhaite des nouvelles de ma commande #${order.id} passée sur votre boutique Malick Buss.`
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 py-3 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>WhatsApp Boutique ({shopContact.name})</span>
+                  </a>
 
-              <a
-                href="tel:+221771719013"
-                className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-bold text-xs flex items-center justify-center gap-2 transition"
-              >
-                <Phone className="w-4 h-4" />
-                <span>Appeler</span>
-              </a>
-            </div>
+                  <a
+                    href={`tel:+${shopContact.phone}`}
+                    className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-bold text-xs flex items-center justify-center gap-2 transition"
+                  >
+                    <Phone className="w-4 h-4" />
+                    <span>Appeler</span>
+                  </a>
+                </div>
+              );
+            })()}
           </div>
         </motion.div>
 
@@ -391,6 +472,91 @@ function OrderTrackingContent() {
         </div>
 
       </div>
+
+      {/* Modal interactif de confirmation de réception */}
+      {showReceiveModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95 text-slate-900 relative">
+            <button
+              type="button"
+              onClick={() => setShowReceiveModal(false)}
+              className="absolute right-4 top-4 p-2 text-slate-400 hover:text-slate-700 rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center space-y-1">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl">
+                🎁
+              </div>
+              <h3 className="text-lg font-black text-slate-900">
+                Confirmer la réception
+              </h3>
+              <p className="text-xs text-slate-500">
+                Commande #{order.id}
+              </p>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1.5 text-center">
+                  Votre note sur la livraison :
+                </label>
+                <div className="flex justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      className="p-1 transition hover:scale-110"
+                    >
+                      <Star
+                        className={`w-6 h-6 ${
+                          star <= rating
+                            ? 'text-amber-400 fill-amber-400'
+                            : 'text-slate-200 fill-slate-200'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">
+                  Commentaire / Avis pour le livreur et le vendeur :
+                </label>
+                <textarea
+                  value={feedbackNote}
+                  onChange={(e) => setFeedbackNote(e.target.value)}
+                  rows={3}
+                  className="w-full border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-emerald-600 resize-none"
+                  placeholder="Ex: Colis reçu en bon état, livreur rapide..."
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={handleConfirmReceipt}
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition active:scale-98"
+              >
+                <Check className="w-4 h-4 stroke-[3px]" />
+                <span>Valider définitivement la réception</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowReceiveModal(false)}
+                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

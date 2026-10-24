@@ -29,8 +29,8 @@ export function VendorBottomNavigation({
 
   return (
     <>
-      {/* ================= 1. VUE MOBILE (< md) ================= */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-100 py-2 px-3 flex justify-around items-center max-w-md mx-auto shadow-[0_-4px_20px_rgba(0,0,0,0.06)] select-none">
+      {/* ================= 1. VUE MOBILE & TABLET (< lg) ================= */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom))] px-3 flex justify-around items-center max-w-lg mx-auto shadow-[0_-4px_20px_rgba(0,0,0,0.06)] select-none">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab ? activeTab === item.key : pathname === item.href;

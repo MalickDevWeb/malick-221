@@ -21,6 +21,7 @@ import {
 import { VendorPortalShell } from '../../../../components/layout/VendorPortalShell';
 import { addVendorProduct } from '../../../../services/productStore';
 import { uploadToCloudinary } from '../../../../services/cloudinaryService';
+import { createVendorProduct, VENDOR_ACCESS_TOKEN_KEY, VENDOR_SHOP_ID_KEY, VendorApiError } from '../../../../services/vendorApi';
 
 const SAMPLE_PRESETS = [
   {
@@ -72,6 +73,8 @@ export default function AddProductPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [published, setPublished] = useState(false);
+  const [awaitingModeration, setAwaitingModeration] = useState(false);
+  const [submissionError, setSubmissionError] = useState('');
 
   const clearError = (field: string) => {
     if (errors[field]) {
@@ -150,38 +153,68 @@ export default function AddProductPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validate()) {
       return;
     }
 
+    const token = sessionStorage.getItem(VENDOR_ACCESS_TOKEN_KEY);
+    const shopId = sessionStorage.getItem(VENDOR_SHOP_ID_KEY);
+    if (!token || !shopId) {
+      router.push('/vendeur/connexion');
+      return;
+    }
+
     setSubmitting(true);
+    setSubmissionError('');
 
-    const newProd = addVendorProduct({
-      title: title.trim(),
-      category,
-      price: parseFloat(price),
-      discountPrice: discountPrice ? parseFloat(discountPrice) : null,
-      stock: parseInt(stock, 10),
-      condition,
-      description: description.trim() || undefined,
-      image: images[0],
-      additionalImages: images.slice(1),
-      shopName: 'Style & Mode Dakar',
-    });
+    try {
+      const created = await createVendorProduct(token, {
+        shopId,
+        title: title.trim(),
+        category,
+        basePrice: parseFloat(price),
+        ...(discountPrice ? { discountPrice: parseFloat(discountPrice) } : {}),
+        stockQuantity: parseInt(stock, 10),
+        condition,
+        ...(description.trim() ? { description: description.trim() } : {}),
+        imageUrl: images[0],
+        additionalImageUrls: images.slice(1),
+      });
 
-    setPublished(true);
-    setTimeout(() => {
-      router.push('/vendeur/produits');
-    }, 900);
+      addVendorProduct({
+        id: created.id,
+        title: created.title,
+        category: created.category,
+        price: Number(created.basePrice),
+        discountPrice: created.discountPrice === null ? null : Number(created.discountPrice),
+        stock: created.stockQuantity,
+        status: created.isPublished ? (created.stockQuantity <= 0 ? 'Rupture' : created.stockQuantity <= 5 ? 'Stock Faible' : 'Actif') : 'En attente de validation',
+        condition: created.condition,
+        description: created.description ?? undefined,
+        image: created.imageUrl ?? images[0],
+        additionalImages: created.additionalImageUrls,
+        shopId,
+      });
+
+      setAwaitingModeration(!created.isPublished);
+      setPublished(true);
+      setTimeout(() => router.push('/vendeur/produits'), 900);
+    } catch (cause) {
+      setSubmissionError(cause instanceof VendorApiError
+        ? cause.message
+        : 'Impossible d’enregistrer le produit. Vérifie la connexion à la plateforme.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <VendorPortalShell
       title="Publier un Nouveau Produit"
-      subtitle="Téléversez vos photos sur Cloudinary, renseignez le prix et diffusez immédiatement votre article."
+      subtitle="Les produits des boutiques certifiées sont publiés automatiquement. Les autres attendent la validation du Super Admin."
       breadcrumbs={[
         { label: 'Mes Produits', href: '/vendeur/produits' },
         { label: 'Nouveau Produit' },
@@ -189,14 +222,16 @@ export default function AddProductPage() {
       actionElement={
         <Link
           href="/vendeur/produits"
-          className="text-slate-600 hover:text-slate-900 font-bold text-xs flex items-center gap-1.5 px-3 py-2 rounded-full border border-slate-200 hover:bg-slate-100 transition"
+          className="text-slate-600 hover:text-slate-900 font-bold text-xs flex items-center gap-1.5 px-3 py-2 rounded-full border border-slate-200 hover:bg-slate-100 transition whitespace-nowrap shrink-0"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Retour au catalogue</span>
+          <span className="hidden sm:inline">Retour au catalogue</span>
+          <span className="sm:hidden">Retour</span>
         </Link>
       }
     >
       <form onSubmit={handleSubmit} noValidate className="max-w-4xl mx-auto space-y-6">
+        {submissionError && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">{submissionError}</p>}
         {/* ================= 1. SECTION PHOTOS & CLOUDINARY ================= */}
         <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
@@ -481,11 +516,11 @@ export default function AddProductPage() {
             ) : published ? (
               <>
                 <Check className="w-4 h-4 stroke-[3px]" />
-                <span>Article publié avec succès !</span>
+                <span>{awaitingModeration ? 'Produit soumis pour validation' : 'Article publié avec succès !'}</span>
               </>
             ) : (
               <>
-                <span>Publier sur ma boutique</span>
+                <span>Enregistrer le produit</span>
                 <Sparkles className="w-4 h-4" />
               </>
             )}

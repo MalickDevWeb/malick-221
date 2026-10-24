@@ -138,10 +138,11 @@ export default function VendorPayoutsPage() {
       actionElement={
         <button
           onClick={() => setModalOpen(true)}
-          className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-4 py-2 rounded-full transition shadow-xs flex items-center gap-1.5 active:scale-95"
+          className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-3 sm:px-4 py-2 rounded-full transition shadow-xs flex items-center gap-1.5 active:scale-95 whitespace-nowrap shrink-0"
         >
           <Plus className="w-4 h-4 stroke-[2.5px]" />
-          <span>Nouveau Retrait</span>
+          <span className="hidden sm:inline">Nouveau Retrait</span>
+          <span className="sm:hidden">Retrait</span>
         </button>
       }
     >

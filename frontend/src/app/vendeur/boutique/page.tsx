@@ -25,12 +25,13 @@ import {
   Upload,
 } from 'lucide-react';
 import { VendorPortalShell } from '../../../components/layout/VendorPortalShell';
-import { getVendorProfile, saveVendorProfile, VendorProfile } from '../../../services/vendorProfileStore';
+import { DEFAULT_PROFILE, getVendorProfile, saveVendorProfile, VendorProfile } from '../../../services/vendorProfileStore';
 import { getVendorProducts } from '../../../services/productStore';
 import { uploadImageToCloudinary } from '../../../services/cloudinaryService';
 
 export default function VendorShopProfilePage() {
-  const [profile, setProfile] = useState<VendorProfile>(getVendorProfile());
+  const [mounted, setMounted] = useState(false);
+  const [profile, setProfile] = useState<VendorProfile>(DEFAULT_PROFILE);
   const [copied, setCopied] = useState(false);
   const [prodCount, setProdCount] = useState(0);
   const [editModal, setEditModal] = useState(false);
@@ -42,16 +43,17 @@ export default function VendorShopProfilePage() {
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Form states
-  const [shopName, setShopName] = useState(profile.shopName);
-  const [description, setDescription] = useState(profile.description);
-  const [address, setAddress] = useState(profile.address);
-  const [phone, setPhone] = useState(profile.phone);
-  const [openingHours, setOpeningHours] = useState(profile.openingHours);
-  const [deliveryZones, setDeliveryZones] = useState(profile.deliveryZones);
-  const [paymentMethods, setPaymentMethods] = useState(profile.paymentMethods);
-  const [returnPolicy, setReturnPolicy] = useState(profile.returnPolicy);
+  const [shopName, setShopName] = useState(DEFAULT_PROFILE.shopName);
+  const [description, setDescription] = useState(DEFAULT_PROFILE.description);
+  const [address, setAddress] = useState(DEFAULT_PROFILE.address);
+  const [phone, setPhone] = useState(DEFAULT_PROFILE.phone);
+  const [openingHours, setOpeningHours] = useState(DEFAULT_PROFILE.openingHours);
+  const [deliveryZones, setDeliveryZones] = useState(DEFAULT_PROFILE.deliveryZones);
+  const [paymentMethods, setPaymentMethods] = useState(DEFAULT_PROFILE.paymentMethods);
+  const [returnPolicy, setReturnPolicy] = useState(DEFAULT_PROFILE.returnPolicy);
 
   useEffect(() => {
+    setMounted(true);
     const sync = () => {
       const p = getVendorProfile();
       setProfile(p);

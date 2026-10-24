@@ -8,6 +8,7 @@ import {
   Truck,
   Headphones,
   CreditCard,
+  Banknote,
   Mail,
   MapPin,
   Phone,
@@ -368,37 +369,87 @@ export function DesktopFooter() {
               <span>PAIEMENTS AGRÉÉS AU SÉNÉGAL</span>
             </h4>
 
-            {/* 3 Cartes de paiement Sénégal : Wave, Orange Money, Cash */}
-            <div className="grid grid-cols-3 gap-2">
-              {/* Wave */}
-              <div className="p-2.5 rounded-xl bg-[#0077b6] text-white border border-sky-400/30 text-center shadow-sm">
-                <span className="font-serif italic font-black text-xs block leading-tight tracking-wider">
-                  wwε
-                </span>
-                <span className="text-[9px] font-semibold text-sky-100 block mt-0.5">
-                  Frais 1%
+            {/* Cartes de paiement Sénégal officielles & magnifiques : Wave, Orange Money, Cash, Free & Cartes */}
+            <div className="grid grid-cols-2 gap-2">
+              {/* 1. Wave Mobile Money */}
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#1DA1F2] to-[#0A85EA] text-white border border-sky-300/40 shadow-sm hover:border-white/60 transition-all group">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4" viewBox="0 0 32 32" fill="none">
+                      <circle cx="16" cy="16" r="14" fill="#1DA1F2" />
+                      <path d="M16 7C13.5 7 11.5 9 11.5 11.5v6c0 2.5 2 4.5 4.5 4.5s4.5-2 4.5-4.5v-6C20.5 9 18.5 7 16 7z" fill="#0A2540" />
+                      <path d="M16 12.5c-1.4 0-2.5 1.1-2.5 2.5v2.5c0 1.4 1.1 2.5 2.5 2.5s2.5-1.1 2.5-2.5V15c0-1.4-1.1-2.5-2.5-2.5z" fill="#FFFFFF" />
+                      <path d="M16 11.5l-1.2 1.5h2.4L16 11.5z" fill="#FBBF24" />
+                      <circle cx="14" cy="22.5" r="1.2" fill="#FBBF24" />
+                      <circle cx="18" cy="22.5" r="1.2" fill="#FBBF24" />
+                    </svg>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="font-extrabold text-xs tracking-tight text-white">Wave</span>
+                    <span className="text-[8px] font-black uppercase bg-white/20 px-1 py-0.2 rounded text-white leading-none">
+                      0%
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[9px] font-semibold text-sky-100 block truncate">
+                  Instantané • 0 Frais
                 </span>
               </div>
 
-              {/* Orange Money */}
-              <div className="p-2.5 rounded-xl bg-[#18181b] text-white border border-orange-500/30 text-center shadow-sm">
-                <span className="font-black text-xs text-orange-500 block leading-tight">
-                  ↗K
-                </span>
-                <span className="text-[9px] font-semibold text-slate-300 block mt-0.5">
-                  OM Money
+              {/* 2. Orange Money */}
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#1c1917] to-[#0c0a09] text-white border border-[#FF7900]/50 shadow-sm hover:border-[#FF7900] transition-all group">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-md bg-[#FF7900] flex items-center justify-center shrink-0 shadow-xs">
+                    <span className="font-black text-[10px] text-white tracking-tighter">OM</span>
+                  </div>
+                  <span className="font-extrabold text-xs text-white tracking-tight truncate">
+                    Orange Money
+                  </span>
+                </div>
+                <span className="text-[9px] font-semibold text-amber-200/90 block truncate">
+                  Max it • Sécurisé
                 </span>
               </div>
 
-              {/* Cash à la livraison */}
-              <div className="p-2.5 rounded-xl bg-[#064e3b] text-white border border-emerald-400/30 text-center shadow-sm">
-                <span className="font-black text-[10px] text-emerald-300 block leading-tight uppercase">
-                  CASH
-                </span>
-                <span className="text-[9px] font-semibold text-emerald-100 block mt-0.5">
-                  À la livraison
+              {/* 3. Cash à la livraison */}
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#064e3b] to-[#022c22] text-white border border-emerald-400/50 shadow-sm hover:border-emerald-300 transition-all group">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-md bg-emerald-500/30 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-400/30">
+                    <Banknote className="w-3.5 h-3.5 stroke-[2.2px]" />
+                  </div>
+                  <span className="font-extrabold text-xs text-emerald-200 tracking-tight">
+                    CASH
+                  </span>
+                </div>
+                <span className="text-[9px] font-semibold text-emerald-100/90 block truncate">
+                  À la livraison • 0 Avance
                 </span>
               </div>
+
+              {/* 4. Free Money & Cartes Bancaires */}
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#18181b] to-[#09090b] text-white border border-slate-700 hover:border-slate-500 transition-all group">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-md bg-red-600 flex items-center justify-center shrink-0 shadow-xs">
+                    <span className="font-serif italic font-black text-[10px] text-white">free</span>
+                  </div>
+                  <div className="flex items-center -space-x-1">
+                    <div className="w-3 h-3 rounded-full bg-[#EB001B]" />
+                    <div className="w-3 h-3 rounded-full bg-[#F79E1B] opacity-80" />
+                  </div>
+                </div>
+                <span className="text-[9px] font-semibold text-slate-300 block truncate">
+                  Free & Cartes Bancaires
+                </span>
+              </div>
+            </div>
+
+            {/* Sceau de réassurance BCEAO */}
+            <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[10px] text-slate-300 font-medium">
+              <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Paiements 100% sécurisés</span>
+              </span>
+              <span className="text-slate-400 font-semibold">• Agréé BCEAO</span>
             </div>
 
             {/* Encart Vendeur Prestige Or */}

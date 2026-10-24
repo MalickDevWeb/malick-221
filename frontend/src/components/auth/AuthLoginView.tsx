@@ -29,9 +29,25 @@ import {
   Check,
   MessageCircle,
   Clock,
+  Edit3,
 } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
-import { registerNewVendorShop } from '../../services/vendorProfileStore';
+import { saveVendorProfile } from '../../services/vendorProfileStore';
+import {
+  createVendorShop,
+  getVendorShops,
+  loginVendor,
+  registerVendor,
+  VendorApiError,
+  VENDOR_ACCESS_TOKEN_KEY,
+  VENDOR_SHOP_ID_KEY,
+} from '../../services/vendorApi';
+import {
+  getPlatformSettings,
+  generateValidationRequestMessage,
+  buildWhatsAppUrl,
+  PlatformSettings,
+} from '../../services/platformSettingsStore';
 
 const VENDOR_CATEGORIES = [
   'Mode & Prêt-à-porter',
@@ -103,11 +119,15 @@ export function AuthLoginView({
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   // Custom Form Validation State
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const clearError = (field: string) => {
+    if (authError) {
+      setAuthError('');
+    }
     if (errors[field]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -130,8 +150,49 @@ export function AuthLoginView({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingValidationModal, setPendingValidationModal] = useState(false);
 
+  // Dynamic non-figé validation modal state
+  const [platformSettings, setPlatformSettings] = useState<PlatformSettings>(getPlatformSettings());
+  const [editableShopName, setEditableShopName] = useState('');
+  const [editableFullName, setEditableFullName] = useState('');
+  const [editablePhone, setEditablePhone] = useState('');
+  const [editableMessage, setEditableMessage] = useState('');
+  const [isEditingInfo, setIsEditingInfo] = useState(false);
+
+  React.useEffect(() => {
+    const handleSettingsUpdate = () => {
+      setPlatformSettings(getPlatformSettings());
+    };
+    window.addEventListener('malick_settings_updated', handleSettingsUpdate);
+    return () => window.removeEventListener('malick_settings_updated', handleSettingsUpdate);
+  }, []);
+
   const isVendorSignup = mode === 'SIGNUP' && role === 'VENDEUR';
   const isPasswordsMatching = confirmPassword ? password === confirmPassword : true;
+
+  const validatePhoneNumber = (phoneNumber: string): string | null => {
+    const trimmed = phoneNumber.trim();
+    if (!trimmed) {
+      return 'Le numéro WhatsApp est requis.';
+    }
+    const digits = trimmed.replace(/\D/g, '');
+    if (!trimmed.startsWith('+') && !digits.startsWith('221')) {
+      if (digits.length !== 9) {
+        return 'Un numéro sénégalais comporte 9 chiffres (ex: 77 123 45 67).';
+      }
+      if (!/^(70|75|76|77|78|33)/.test(digits)) {
+        return 'L’indicatif doit commencer par 70, 75, 76, 77, 78 ou 33.';
+      }
+    } else {
+      if (digits.startsWith('221')) {
+        if (digits.length !== 12) {
+          return 'Numéro avec indicatif incomplet (ex: +221 77 123 45 67).';
+        }
+      } else if (digits.length < 8 || digits.length > 15) {
+        return 'Le numéro international doit comporter entre 8 et 15 chiffres.';
+      }
+    }
+    return null;
+  };
 
   const validateStep1 = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -149,16 +210,14 @@ export function AuthLoginView({
     if (!fullName.trim()) {
       newErrors.fullName = 'Veuillez indiquer le nom & prénom du gérant.';
     }
-    const cleanPhone = phone.replace(/[\s\-\+]/g, '');
-    if (!phone.trim()) {
-      newErrors.phone = 'Le numéro WhatsApp commercial est requis.';
-    } else if (cleanPhone.length < 7) {
-      newErrors.phone = 'Numéro de téléphone incomplet (min. 7 chiffres).';
+    const phoneError = validatePhoneNumber(phone);
+    if (phoneError) {
+      newErrors.phone = phoneError;
     }
     if (!password) {
       newErrors.password = 'Veuillez créer un mot de passe sécurisé.';
-    } else if (password.length < 6) {
-      newErrors.password = 'Le mot de passe doit comporter au moins 6 caractères.';
+    } else if (password.length < 8) {
+      newErrors.password = 'Le mot de passe doit comporter au moins 8 caractères.';
     }
     if (!confirmPassword) {
       newErrors.confirmPassword = 'Veuillez confirmer votre mot de passe.';
@@ -174,11 +233,9 @@ export function AuthLoginView({
     if (!fullName.trim()) {
       newErrors.fullName = 'Veuillez indiquer votre nom complet.';
     }
-    const cleanPhone = phone.replace(/[\s\-\+]/g, '');
-    if (!phone.trim()) {
-      newErrors.phone = 'Le numéro WhatsApp est requis.';
-    } else if (cleanPhone.length < 7) {
-      newErrors.phone = 'Numéro de téléphone incomplet (min. 7 chiffres).';
+    const phoneError = validatePhoneNumber(phone);
+    if (phoneError) {
+      newErrors.phone = phoneError;
     }
     if (!password) {
       newErrors.password = 'Veuillez créer un mot de passe.';
@@ -263,7 +320,7 @@ export function AuthLoginView({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (isVendorSignup) {
@@ -285,40 +342,98 @@ export function AuthLoginView({
     }
 
     setErrors({});
+    setAuthError('');
     setLoading(true);
 
-    setTimeout(() => {
-      if (mode === 'SIGNUP') {
-        if (role === 'VENDEUR') {
-          try {
-            registerNewVendorShop({
-              name: fullName || 'Boutiquier',
-              shopName: shopName || 'Ma Boutique',
-              phone: phone,
-              category: category,
-              district: district,
-              description: description,
-              avatarUrl: logoPreview || '',
-            });
-            localStorage.setItem('malick_user_role', 'VENDEUR');
-          } catch (err) {
-            console.error('Failed to register vendor shop', err);
-          }
+    if (role === 'VENDEUR') {
+      try {
+        if (mode === 'SIGNUP') {
+          const digitsOnly = phone.replace(/\D/g, '');
+          const normalizedPhone = digitsOnly.length === 9
+            ? `+221${digitsOnly}`
+            : (digitsOnly.startsWith('221') && digitsOnly.length === 12
+              ? `+${digitsOnly}`
+              : phone.trim());
+
+          const auth = await registerVendor({
+            fullName: fullName.trim(),
+            phoneNumber: normalizedPhone,
+            password,
+          });
+          sessionStorage.setItem(VENDOR_ACCESS_TOKEN_KEY, auth.accessToken);
+          localStorage.setItem('malick-vendor-pending-shop-name', shopName.trim());
+          const shop = await createVendorShop(auth.accessToken, shopName.trim(), description.trim());
+          sessionStorage.setItem(VENDOR_SHOP_ID_KEY, shop.id);
+          localStorage.removeItem('malick-vendor-pending-shop-name');
+          localStorage.setItem('malick_user_role', 'VENDEUR');
+
+          saveVendorProfile({
+            id: auth.user.id,
+            name: fullName.trim(),
+            shopName: shop.name,
+            shopSlug: shop.slug,
+            phone,
+            category,
+            district,
+            description,
+            avatarUrl: logoPreview || '',
+            isVerified: false,
+            badge: 'En attente de validation',
+          });
+
           setLoading(false);
+          setEditableShopName(shopName.trim());
+          setEditableFullName(fullName.trim());
+          setEditablePhone(phone);
+          setEditableMessage(
+            generateValidationRequestMessage({
+              shopName: shopName.trim(),
+              vendorName: fullName.trim(),
+              vendorPhone: phone,
+              category,
+              district,
+              adminName: platformSettings.superAdminName,
+            })
+          );
           setPendingValidationModal(true);
           return;
         }
 
+        const auth = await loginVendor(identifier.trim(), password);
+        if (auth.user.role !== 'VENDOR') {
+          throw new VendorApiError(403, 'Ce compte n’est pas un compte vendeur.');
+        }
+        sessionStorage.setItem(VENDOR_ACCESS_TOKEN_KEY, auth.accessToken);
+        const shops = await getVendorShops(auth.accessToken);
+        let shop = shops[0];
+        if (!shop) {
+          const pendingShopName = localStorage.getItem('malick-vendor-pending-shop-name');
+          if (pendingShopName) {
+            shop = await createVendorShop(auth.accessToken, pendingShopName);
+            localStorage.removeItem('malick-vendor-pending-shop-name');
+          }
+        }
+        if (!shop) throw new VendorApiError(404, 'Aucune boutique associée à ce compte vendeur.');
+        sessionStorage.setItem(VENDOR_SHOP_ID_KEY, shop.id);
+        localStorage.setItem('malick_user_role', 'VENDEUR');
+        router.push('/vendeur/dashboard');
+      } catch (cause) {
+        setAuthError(cause instanceof VendorApiError
+          ? cause.message
+          : 'Connexion impossible. Vérifie la connexion à la plateforme.');
+        setLoading(false);
+      }
+      return;
+    }
+
+    setTimeout(() => {
+      if (mode === 'SIGNUP') {
         setSuccessMessage(true);
         setTimeout(() => {
           router.push('/');
         }, 800);
       } else {
-        if (role === 'VENDEUR') {
-          router.push('/vendeur/dashboard');
-        } else {
-          router.push('/');
-        }
+        router.push('/');
       }
     }, 700);
   };
@@ -529,6 +644,11 @@ export function AuthLoginView({
 
           {/* Formulaire Dynamique (Connexion ou Inscription) avec Validation Personnalisée */}
           <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-1">
+            {authError && (
+              <p role="alert" className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200">
+                {authError}
+              </p>
+            )}
             {/* ================= ENROLLEMENT VENDEUR EN 2 ÉTAPES ================= */}
             {isVendorSignup ? (
               <AnimatePresence mode="wait" custom={stepDirection}>
@@ -1214,56 +1334,184 @@ export function AuthLoginView({
 
       {/* ================= MODAL ATTENTE VALIDATION SUPER ADMIN ================= */}
       {pendingValidationModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#071328] border border-amber-400/40 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 animate-in zoom-in-95 text-white">
-            <div className="text-center space-y-2">
-              <div className="w-16 h-16 rounded-2xl bg-amber-400/15 border border-amber-400/40 text-amber-400 flex items-center justify-center mx-auto text-3xl shadow-inner">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#071328] border border-amber-400/40 rounded-3xl p-5 sm:p-7 max-w-lg w-full shadow-2xl space-y-5 animate-in zoom-in-95 text-white my-8">
+            <div className="text-center space-y-1.5">
+              <div className="w-14 h-14 rounded-2xl bg-amber-400/15 border border-amber-400/40 text-amber-400 flex items-center justify-center mx-auto text-2xl shadow-inner">
                 ⏳
               </div>
-              <h3 className="text-xl font-black text-white tracking-tight">
+              <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
                 Boutique créée avec succès !
               </h3>
-              <p className="text-xs text-amber-300 font-bold uppercase tracking-wider">
-                En attente de validation par le Super Admin
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-black border border-amber-400/30">
+                <Clock className="w-3.5 h-3.5" />
+                <span>Statut : En attente de validation</span>
+              </div>
+            </div>
+
+            {/* Informations de la boutique (Modifiables en direct / Non figé) */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3 text-xs">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
+                  Informations de la demande (Modifiables)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingInfo(!isEditingInfo)}
+                  className="text-amber-400 hover:text-amber-300 flex items-center gap-1 font-bold text-[11px] transition"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  {isEditingInfo ? 'Fermer édition' : 'Modifier'}
+                </button>
+              </div>
+
+              {isEditingInfo ? (
+                <div className="space-y-2.5 pt-1">
+                  <div>
+                    <label className="text-[10px] text-slate-400 font-semibold block mb-1">
+                      Nom de la boutique
+                    </label>
+                    <input
+                      type="text"
+                      value={editableShopName}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditableShopName(val);
+                        setEditableMessage(
+                          generateValidationRequestMessage({
+                            shopName: val,
+                            vendorName: editableFullName,
+                            vendorPhone: editablePhone,
+                            category,
+                            district,
+                            adminName: platformSettings.superAdminName,
+                          })
+                        );
+                      }}
+                      className="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 font-semibold block mb-1">
+                      Nom du gérant
+                    </label>
+                    <input
+                      type="text"
+                      value={editableFullName}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditableFullName(val);
+                        setEditableMessage(
+                          generateValidationRequestMessage({
+                            shopName: editableShopName,
+                            vendorName: val,
+                            vendorPhone: editablePhone,
+                            category,
+                            district,
+                            adminName: platformSettings.superAdminName,
+                          })
+                        );
+                      }}
+                      className="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 font-semibold block mb-1">
+                      Téléphone de contact
+                    </label>
+                    <input
+                      type="tel"
+                      value={editablePhone}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditablePhone(val);
+                        setEditableMessage(
+                          generateValidationRequestMessage({
+                            shopName: editableShopName,
+                            vendorName: editableFullName,
+                            vendorPhone: val,
+                            category,
+                            district,
+                            adminName: platformSettings.superAdminName,
+                          })
+                        );
+                      }}
+                      className="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
+                    <span className="text-slate-400">Boutique :</span>
+                    <span className="font-bold text-white">{editableShopName}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
+                    <span className="text-slate-400">Gérant :</span>
+                    <span className="font-bold text-white">{editableFullName}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
+                    <span className="text-slate-400">Téléphone :</span>
+                    <span className="font-bold text-white">{editablePhone}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-slate-400">Super Admin destinataire :</span>
+                    <span className="font-bold text-amber-300">
+                      {platformSettings.superAdminName} ({platformSettings.superAdminPhone})
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Message WhatsApp personnalisable / non-figé */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Message WhatsApp (personnalisable avant envoi) :</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditableMessage(
+                      generateValidationRequestMessage({
+                        shopName: editableShopName,
+                        vendorName: editableFullName,
+                        vendorPhone: editablePhone,
+                        category,
+                        district,
+                        adminName: platformSettings.superAdminName,
+                      })
+                    )
+                  }
+                  className="text-[10px] text-amber-400 hover:underline"
+                >
+                  Réinitialiser le texte
+                </button>
+              </div>
+              <textarea
+                value={editableMessage}
+                onChange={(e) => setEditableMessage(e.target.value)}
+                rows={4}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 leading-relaxed font-sans resize-none"
+                placeholder="Votre message au Super Admin..."
+              />
+              <p className="text-[10px] text-slate-400">
+                Vous pouvez modifier ce texte librement avant d&apos;ouvrir la discussion WhatsApp avec le Super Admin.
               </p>
             </div>
 
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-2.5 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-slate-800">
-                <span className="text-slate-400">Nom de la boutique :</span>
-                <span className="font-bold text-white">{shopName}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-800">
-                <span className="text-slate-400">Gérant responsable :</span>
-                <span className="font-bold text-white">{fullName}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-800">
-                <span className="text-slate-400">Téléphone WhatsApp :</span>
-                <span className="font-bold text-white">{phone}</span>
-              </div>
-              <div className="flex justify-between items-center py-1">
-                <span className="text-slate-400">Statut actuel :</span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-black text-[10px] border border-amber-400/30">
-                  À vérifier (KYC)
-                </span>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-300 leading-relaxed text-center font-medium">
-              Pour activer immédiatement votre vitrine, envoyez un message au Super Admin sur le canal WhatsApp officiel <strong>77 171 90 13</strong> :
-            </p>
-
-            <div className="space-y-3">
+            {/* Actions */}
+            <div className="space-y-2.5 pt-1">
               <a
-                href={`https://wa.me/221771719013?text=${encodeURIComponent(
-                  `Bonjour Super Admin Malick Buss, je viens de créer ma boutique *${shopName}* (Gérant: ${fullName}, Téléphone: ${phone}, Catégorie: ${category}, Quartier: ${district}). Pouvez-vous vérifier et valider ma boutique s'il vous plaît ?`
-                )}`}
+                href={buildWhatsAppUrl(platformSettings.superAdminPhone, editableMessage)}
                 target="_blank"
                 rel="noreferrer"
                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 px-4 rounded-full flex items-center justify-center gap-2 transition active:scale-95 shadow-lg shadow-emerald-600/30 text-xs sm:text-sm text-center"
               >
-                <MessageCircle className="w-5 h-5" />
-                <span>Envoyer message au Super Admin (77 171 90 13)</span>
+                <MessageCircle className="w-5 h-5 shrink-0" />
+                <span>Ouvrir WhatsApp avec le Super Admin ({platformSettings.superAdminPhone})</span>
               </a>
 
               <button

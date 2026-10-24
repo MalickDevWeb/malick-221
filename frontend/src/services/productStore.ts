@@ -10,7 +10,7 @@ export interface VendorProduct {
   price: number;
   discountPrice?: number | null;
   stock: number;
-  status: 'Actif' | 'Stock Faible' | 'Rupture' | 'Désactivé';
+  status: 'Actif' | 'Stock Faible' | 'Rupture' | 'Désactivé' | 'En attente de validation';
   image: string;
   additionalImages?: string[];
   description?: string;
@@ -164,14 +164,14 @@ export function getVendorProductById(id: string): VendorProduct | undefined {
 }
 
 export function addVendorProduct(
-  data: Omit<VendorProduct, 'id' | 'createdAt' | 'updatedAt' | 'status'>
+  data: Omit<VendorProduct, 'createdAt' | 'updatedAt'> & { id?: string }
 ): VendorProduct {
   const products = getVendorProducts();
 
   const newProduct: VendorProduct = {
     ...data,
-    id: `prod-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-    status: calculateStatus(data.stock),
+    id: data.id ?? `prod-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+    status: data.status ?? calculateStatus(data.stock),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -192,14 +192,17 @@ export function updateVendorProduct(
   const existing = products[index];
   const nextStock = updates.stock !== undefined ? updates.stock : existing.stock;
   const isCurrentlyDisabled = updates.status === 'Désactivé' || (updates.status === undefined && existing.status === 'Désactivé');
+  const remainsPending = updates.status === undefined && existing.status === 'En attente de validation';
 
   const updatedProduct: VendorProduct = {
     ...existing,
     ...updates,
     stock: nextStock,
-    status: updates.status && updates.status !== 'Actif' && updates.status !== 'Stock Faible' && updates.status !== 'Rupture'
-      ? updates.status
-      : calculateStatus(nextStock, isCurrentlyDisabled && updates.status !== 'Actif'),
+    status: remainsPending
+      ? existing.status
+      : updates.status && updates.status !== 'Actif' && updates.status !== 'Stock Faible' && updates.status !== 'Rupture'
+        ? updates.status
+        : calculateStatus(nextStock, isCurrentlyDisabled && updates.status !== 'Actif'),
     updatedAt: new Date().toISOString(),
   };
 

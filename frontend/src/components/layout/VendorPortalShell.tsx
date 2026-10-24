@@ -13,7 +13,7 @@ import {
 import { VendorDesktopSidebar } from './VendorDesktopSidebar';
 import { VendorBottomNavigation } from './VendorBottomNavigation';
 import { BrandLogo } from '../ui/BrandLogo';
-import { getVendorProfile, VendorProfile } from '../../services/vendorProfileStore';
+import { DEFAULT_PROFILE, getVendorProfile, VendorProfile } from '../../services/vendorProfileStore';
 import { getVendorNotifications } from '../../services/notificationStore';
 
 interface VendorPortalShellProps {
@@ -31,10 +31,12 @@ export function VendorPortalShell({
   actionElement,
   children,
 }: VendorPortalShellProps) {
-  const [profile, setProfile] = useState<VendorProfile>(getVendorProfile());
+  const [mounted, setMounted] = useState(false);
+  const [profile, setProfile] = useState<VendorProfile>(DEFAULT_PROFILE);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
 
   useEffect(() => {
+    setMounted(true);
     const syncProfile = () => setProfile(getVendorProfile());
     const syncNotifs = () => {
       const notifs = getVendorNotifications();
@@ -58,19 +60,22 @@ export function VendorPortalShell({
 
       {/* 2. CONTENU PRINCIPAL */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header Desktop (lg+) */}
-        <header className="sticky top-0 z-30 bg-white border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-3">
-            {/* Mobile Back / Logo (visible only < lg) */}
-            <div className="flex lg:hidden items-center gap-2">
-              <Link href="/vendeur/dashboard" className="p-1 -ml-1 text-slate-700">
-                <ArrowLeft className="w-5 h-5" />
+        {/* Top Header Desktop (lg+) & Mobile */}
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3.5 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-2 shadow-2xs">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            {/* Mobile Back Button (visible only < lg) */}
+            <div className="flex lg:hidden items-center shrink-0">
+              <Link
+                href="/vendeur/dashboard"
+                className="p-1.5 -ml-1 text-slate-700 hover:text-amber-600 bg-slate-100/80 active:bg-slate-200 rounded-xl transition"
+                title="Retour au tableau de bord"
+              >
+                <ArrowLeft className="w-4 h-4 stroke-[2.5px]" />
               </Link>
-              <BrandLogo size="sm" variant="dark" />
             </div>
 
             {/* Breadcrumbs & Title */}
-            <div>
+            <div className="min-w-0 flex-1">
               {breadcrumbs && breadcrumbs.length > 0 && (
                 <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-400 font-medium mb-0.5">
                   <Link href="/vendeur/dashboard" className="hover:text-amber-600 transition">
@@ -90,17 +95,17 @@ export function VendorPortalShell({
                   ))}
                 </div>
               )}
-              <h1 className="text-base sm:text-xl font-black text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-sm sm:text-lg lg:text-xl font-black text-slate-900 tracking-tight leading-tight truncate">
                 {title}
               </h1>
               {subtitle && (
-                <p className="hidden sm:block text-xs text-slate-500 font-medium">{subtitle}</p>
+                <p className="hidden md:block text-xs text-slate-500 font-medium truncate">{subtitle}</p>
               )}
             </div>
           </div>
 
           {/* Quick Actions & Profile on the right */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {actionElement}
 
             {/* Notifications Button */}
@@ -124,7 +129,7 @@ export function VendorPortalShell({
               className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:border-amber-400 text-slate-700 hover:text-amber-700 text-xs font-semibold transition shadow-2xs"
             >
               <Store className="w-3.5 h-3.5 text-amber-500" />
-              <span>{profile.shopName || 'Ma boutique'}</span>
+              <span suppressHydrationWarning>{mounted ? (profile.shopName || 'Ma boutique') : 'Ma boutique'}</span>
               <ExternalLink className="w-3 h-3 text-slate-400" />
             </Link>
 
@@ -133,22 +138,22 @@ export function VendorPortalShell({
               href="/vendeur/profil"
               className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 bg-slate-100 hover:bg-slate-200 rounded-full transition"
             >
-              <div className="w-7 h-7 rounded-full bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold overflow-hidden border border-amber-400/40">
-                {profile.avatarUrl ? (
+              <div className="w-7 h-7 rounded-full bg-slate-900 text-amber-400 flex items-center justify-center text-xs font-bold overflow-hidden border border-amber-400/40" suppressHydrationWarning>
+                {mounted && profile.avatarUrl ? (
                   <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
                 ) : (
-                  profile.name.substring(0, 2).toUpperCase()
+                  <span>{mounted ? profile.name.substring(0, 2).toUpperCase() : 'MB'}</span>
                 )}
               </div>
-              <span className="text-xs font-bold text-slate-800 hidden xl:inline">
-                {profile.name}
+              <span className="text-xs font-bold text-slate-800 hidden xl:inline" suppressHydrationWarning>
+                {mounted ? profile.name : 'Vendeur'}
               </span>
             </Link>
           </div>
         </header>
 
         {/* Page Content Body */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-24 lg:pb-12">
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-28 lg:pb-12">
           {children}
         </main>
       </div>

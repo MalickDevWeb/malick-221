@@ -520,10 +520,11 @@ export default function EditProductPage() {
       actionElement={
         <Link
           href="/vendeur/produits"
-          className="text-slate-600 hover:text-slate-900 font-bold text-xs flex items-center gap-1.5 px-3 py-2 rounded-full border border-slate-200 hover:bg-slate-100 transition"
+          className="text-slate-600 hover:text-slate-900 font-bold text-xs flex items-center gap-1.5 px-3 py-2 rounded-full border border-slate-200 hover:bg-slate-100 transition whitespace-nowrap shrink-0"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Retour au catalogue</span>
+          <span className="hidden sm:inline">Retour au catalogue</span>
+          <span className="sm:hidden">Retour</span>
         </Link>
       }
     >

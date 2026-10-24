@@ -30,9 +30,11 @@ import {
   updateVendorProduct,
   VendorProduct,
 } from '../../../services/productStore';
+import { DEFAULT_PROFILE, getVendorProfile, VendorProfile } from '../../../services/vendorProfileStore';
 import { getCloudinaryConfig, saveCloudinaryConfig } from '../../../services/cloudinaryService';
 
 export default function VendorProductsPage() {
+  const [profile, setProfile] = useState<VendorProfile>(DEFAULT_PROFILE);
   const [filter, setFilter] = useState('Tous');
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState<VendorProduct[]>([]);
@@ -47,6 +49,7 @@ export default function VendorProductsPage() {
   };
 
   useEffect(() => {
+    setProfile(getVendorProfile());
     loadProducts();
     setCloudConfig(getCloudinaryConfig());
 
@@ -90,6 +93,7 @@ export default function VendorProductsPage() {
       if (filter === 'Stock Faible') return p.stock > 0 && p.stock <= 5;
       if (filter === 'Rupture') return p.stock === 0;
       if (filter === 'Désactivé') return p.status === 'Désactivé';
+      if (filter === 'À valider') return p.status === 'En attente de validation';
       return p.category === filter;
     })
     .filter((p) => {
@@ -100,8 +104,8 @@ export default function VendorProductsPage() {
       );
     });
 
-  const lowStockCount = products.filter((p) => p.stock > 0 && p.stock <= 5 && p.status !== 'Désactivé').length;
-  const outOfStockCount = products.filter((p) => p.stock === 0 && p.status !== 'Désactivé').length;
+  const lowStockCount = products.filter((p) => p.stock > 0 && p.stock <= 5 && p.status !== 'Désactivé' && p.status !== 'En attente de validation').length;
+  const outOfStockCount = products.filter((p) => p.stock === 0 && p.status !== 'Désactivé' && p.status !== 'En attente de validation').length;
 
   return (
     <VendorPortalShell
@@ -124,10 +128,11 @@ export default function VendorProductsPage() {
           {/* Bouton Ajouter un produit */}
           <Link
             href="/vendeur/produits/ajouter"
-            className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-4 py-2 rounded-full transition shadow-xs flex items-center gap-1.5 active:scale-95"
+            className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-3 sm:px-4 py-2 rounded-full transition shadow-xs flex items-center gap-1.5 active:scale-95 whitespace-nowrap shrink-0"
           >
             <Plus className="w-4 h-4 stroke-[2.8px]" />
-            <span>Ajouter un produit</span>
+            <span className="hidden sm:inline">Ajouter un produit</span>
+            <span className="sm:hidden">Ajouter</span>
           </Link>
         </div>
       }
@@ -179,7 +184,7 @@ export default function VendorProductsPage() {
 
             {/* Filtres par catégories et stock */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-              {['Tous', 'Vêtements', 'Chaussures', 'Accessoires', 'Stock Faible', 'Rupture', 'Désactivé'].map((tab) => (
+              {['Tous', 'À valider', 'Vêtements', 'Chaussures', 'Accessoires', 'Stock Faible', 'Rupture', 'Désactivé'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setFilter(tab)}
@@ -305,6 +310,8 @@ export default function VendorProductsPage() {
                             ? 'bg-amber-50 text-amber-700 border-amber-200'
                             : item.status === 'Rupture'
                             ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              : item.status === 'En attente de validation'
+                              ? 'bg-amber-50 text-amber-800 border-amber-200'
                             : 'bg-slate-100 text-slate-600 border-slate-300'
                         }`}
                       >
@@ -316,7 +323,7 @@ export default function VendorProductsPage() {
                   {/* Actions du bas */}
                   <div className="px-4 py-2.5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between">
                     <Link
-                      href={`/boutiques/style-and-mode/produits`}
+                      href={`/boutiques/${profile.shopSlug || 'style-and-mode'}/produits`}
                       target="_blank"
                       className="text-[11px] font-semibold text-slate-600 hover:text-amber-600 transition flex items-center gap-1"
                     >

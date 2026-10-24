@@ -159,13 +159,24 @@ export default function ClientOrdersPage() {
                   </span>
                   <span className="font-black text-sm text-slate-900">{formatFCFA(ord.total)}</span>
                 </div>
-                <Link
-                  href={`/suivre-commande?id=${ord.id}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/60"
-                >
-                  <span>Suivre la commande</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
+                <div className="flex items-center gap-2">
+                  {ord.status !== 'DELIVERED' && ord.status !== 'CANCELLED' && (
+                    <Link
+                      href={`/suivre-commande?id=${ord.id}`}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-xl border border-emerald-200 shadow-2xs"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Confirmer réception</span>
+                    </Link>
+                  )}
+                  <Link
+                    href={`/suivre-commande?id=${ord.id}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200/60"
+                  >
+                    <span>Suivre</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

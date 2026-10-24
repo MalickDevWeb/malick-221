@@ -33,7 +33,7 @@ export interface VendorProfile {
 
 const STORAGE_KEY = 'malick_buss_vendor_profile';
 
-const DEFAULT_PROFILE: VendorProfile = {
+export const DEFAULT_PROFILE: VendorProfile = {
   id: 'vendor-001',
   name: 'Malick Diop',
   email: 'malick.diop@malickbuss.sn',
@@ -173,5 +173,55 @@ export function registerNewVendorShop(params: {
   }
 
   return newProfile;
+}
+
+/**
+ * Résout le contact WhatsApp exact et le nom d'une boutique (dynamique ou catalogue)
+ */
+export function resolveShopContact(shopNameOrSlug?: string): { name: string; phone: string } {
+  const defaultShop = { name: 'Boutique Malick Buss', phone: '221771234567' };
+  if (!shopNameOrSlug) return defaultShop;
+
+  const clean = shopNameOrSlug.trim().toLowerCase();
+
+  // 1. Boutique du profil vendeur actif (créé ou modifié en direct)
+  if (typeof window !== 'undefined') {
+    try {
+      const activeVendor = getVendorProfile();
+      if (
+        activeVendor &&
+        (activeVendor.shopName.toLowerCase() === clean ||
+         activeVendor.shopSlug.toLowerCase() === clean)
+      ) {
+        const rawDigits = (activeVendor.phone || '').replace(/[^0-9]/g, '');
+        const phone = rawDigits.startsWith('221') ? rawDigits : `221${rawDigits || '771234567'}`;
+        return {
+          name: activeVendor.shopName,
+          phone,
+        };
+      }
+    } catch {}
+  }
+
+  // 2. Annuaire officiel des boutiques de la marketplace
+  const CATALOG: Record<string, { name: string; phone: string }> = {
+    'style & mode': { name: 'Style & Mode', phone: '221771234567' },
+    'style-and-mode': { name: 'Style & Mode', phone: '221771234567' },
+    'beauty world': { name: 'Beauty World', phone: '221778901234' },
+    'beauty-world': { name: 'Beauty World', phone: '221778901234' },
+    'techzone': { name: 'TechZone', phone: '221765432109' },
+    'kids world': { name: 'Kids World', phone: '221781112233' },
+    'kids-world': { name: 'Kids World', phone: '221781112233' },
+    'maison chic': { name: 'Maison Chic', phone: '221774445566' },
+    'maison-chic': { name: 'Maison Chic', phone: '221774445566' },
+    'sport max': { name: 'Sport Max', phone: '221769998877' },
+    'sport-max': { name: 'Sport Max', phone: '221769998877' },
+  };
+
+  if (CATALOG[clean]) {
+    return CATALOG[clean];
+  }
+
+  return { name: shopNameOrSlug, phone: '221771234567' };
 }
 

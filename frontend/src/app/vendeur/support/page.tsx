@@ -135,10 +135,11 @@ export default function VendorSupportPage() {
           href="https://wa.me/221771719013?text=Bonjour%20Support%20Malick%20Buss%2C%20je%20suis%20g%C3%A9rant%20de%20boutique"
           target="_blank"
           rel="noreferrer"
-          className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-4 py-2 rounded-full transition shadow-xs flex items-center gap-1.5 active:scale-95"
+          className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-3 sm:px-4 py-2 rounded-full transition shadow-xs flex items-center gap-1.5 active:scale-95 whitespace-nowrap shrink-0"
         >
           <MessageCircle className="w-4 h-4" />
-          <span>WhatsApp Direct</span>
+          <span className="hidden sm:inline">WhatsApp Direct</span>
+          <span className="sm:hidden">WhatsApp</span>
         </a>
       }
     >

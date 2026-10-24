@@ -37,16 +37,18 @@ import {
 import { formatFCFA } from '../../../services/api';
 import { BrandLogo } from '../../../components/ui/BrandLogo';
 import { VendorBottomNavigation } from '../../../components/layout/VendorBottomNavigation';
-import { getVendorProfile, VendorProfile } from '../../../services/vendorProfileStore';
+import { DEFAULT_PROFILE, getVendorProfile, VendorProfile } from '../../../services/vendorProfileStore';
 import { getVendorProducts } from '../../../services/productStore';
 import { getVendorNotifications } from '../../../services/notificationStore';
 
 export default function VendorDashboardPage() {
-  const [profile, setProfile] = useState<VendorProfile>(getVendorProfile());
+  const [mounted, setMounted] = useState(false);
+  const [profile, setProfile] = useState<VendorProfile>(DEFAULT_PROFILE);
   const [prodCount, setProdCount] = useState(0);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
 
   useEffect(() => {
+    setMounted(true);
     const syncAll = () => {
       setProfile(getVendorProfile());
       setProdCount(getVendorProducts().length);
@@ -156,15 +158,17 @@ export default function VendorDashboardPage() {
           {/* Capsule Boutique Actuelle */}
           <div className="bg-[#0c1a35] border border-slate-700/80 rounded-2xl p-3.5 space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-950 border border-amber-400/30 flex items-center justify-center text-amber-400 font-black text-xs shadow-inner flex-shrink-0 overflow-hidden">
-                {profile.avatarUrl ? (
+              <div className="w-10 h-10 rounded-xl bg-slate-950 border border-amber-400/30 flex items-center justify-center text-amber-400 font-black text-xs shadow-inner flex-shrink-0 overflow-hidden" suppressHydrationWarning>
+                {mounted && profile.avatarUrl ? (
                   <img src={profile.avatarUrl} alt={profile.shopName} className="w-full h-full object-cover" />
                 ) : (
-                  profile.shopName.substring(0, 2).toUpperCase()
+                  <span>{mounted ? profile.shopName.substring(0, 2).toUpperCase() : 'MB'}</span>
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-xs text-white truncate">{profile.shopName}</h3>
+                <h3 className="font-bold text-xs text-white truncate" suppressHydrationWarning>
+                  {mounted ? profile.shopName : 'Ma Boutique'}
+                </h3>
                 {profile.isVerified ? (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -237,16 +241,16 @@ export default function VendorDashboardPage() {
           </Link>
 
           <Link href="/vendeur/profil" className="flex items-center gap-3 pt-2 hover:opacity-85 transition">
-            <div className="w-9 h-9 rounded-full bg-slate-800 text-amber-400 border border-slate-700 flex items-center justify-center font-bold text-xs overflow-hidden">
-              {profile.avatarUrl ? (
+            <div className="w-9 h-9 rounded-full bg-slate-800 text-amber-400 border border-slate-700 flex items-center justify-center font-bold text-xs overflow-hidden" suppressHydrationWarning>
+              {mounted && profile.avatarUrl ? (
                 <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
               ) : (
-                profile.name.substring(0, 2).toUpperCase()
+                <span>{mounted ? profile.name.substring(0, 2).toUpperCase() : 'MD'}</span>
               )}
             </div>
             <div className="min-w-0 text-left">
-              <p className="text-xs font-bold text-white truncate">{profile.name}</p>
-              <p className="text-[10px] text-slate-400">{profile.badge} 👑</p>
+              <p className="text-xs font-bold text-white truncate" suppressHydrationWarning>{mounted ? profile.name : 'Malick Diop'}</p>
+              <p className="text-[10px] text-slate-400" suppressHydrationWarning>{mounted ? profile.badge : 'Vendeur Vérifié Or'} 👑</p>
             </div>
           </Link>
         </div>
@@ -262,18 +266,20 @@ export default function VendorDashboardPage() {
               <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
                 Tableau de bord
               </h1>
-              {profile.isVerified ? (
-                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
-                  Boutique Ouverte 🟢
-                </span>
-              ) : (
-                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
-                  En attente de validation 🟡
-                </span>
-              )}
+              <span suppressHydrationWarning>
+                {profile.isVerified ? (
+                  <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
+                    Boutique Ouverte 🟢
+                  </span>
+                ) : (
+                  <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
+                    En attente de validation 🟡
+                  </span>
+                )}
+              </span>
             </div>
-            <p className="hidden md:block text-xs text-slate-500 font-medium">
-              Bonjour {profile.name.split(' ')[0]} 👋, voici le résumé de l&apos;activité de votre boutique aujourd&apos;hui.
+            <p className="hidden md:block text-xs text-slate-500 font-medium" suppressHydrationWarning>
+              Bonjour {mounted ? profile.name.split(' ')[0] : 'Malick'} 👋, voici le résumé de l&apos;activité de votre boutique aujourd&apos;hui.
             </p>
           </div>
 
@@ -312,15 +318,15 @@ export default function VendorDashboardPage() {
               href="/vendeur/profil"
               className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 bg-slate-100 hover:bg-slate-200 rounded-full transition"
             >
-              <div className="w-7 h-7 rounded-full bg-slate-950 text-amber-400 flex items-center justify-center text-xs font-bold overflow-hidden border border-amber-400/30">
-                {profile.avatarUrl ? (
+              <div className="w-7 h-7 rounded-full bg-slate-950 text-amber-400 flex items-center justify-center text-xs font-bold overflow-hidden border border-amber-400/30" suppressHydrationWarning>
+                {mounted && profile.avatarUrl ? (
                   <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
                 ) : (
-                  profile.name.substring(0, 2).toUpperCase()
+                  <span>{mounted ? profile.name.substring(0, 2).toUpperCase() : 'MD'}</span>
                 )}
               </div>
-              <span className="text-xs font-bold text-slate-800 hidden md:inline">
-                {profile.shopName} ▾
+              <span className="text-xs font-bold text-slate-800 hidden md:inline" suppressHydrationWarning>
+                {mounted ? profile.shopName : 'Ma Boutique'} ▾
               </span>
             </Link>
           </div>
@@ -609,30 +615,76 @@ export default function VendorDashboardPage() {
                 </div>
               </div>
 
-              {/* Tableau des Commandes Récentes */}
-              <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
+              {/* Tableau / Liste des Commandes Récentes */}
+              <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
                     <h3 className="text-sm font-black text-slate-900 tracking-tight flex items-center gap-2">
-                      <ShoppingBag className="w-4 h-4 text-emerald-600 stroke-[2.2px]" />
-                      <span>Commandes récentes</span>
+                      <ShoppingBag className="w-4 h-4 text-emerald-600 stroke-[2.2px] shrink-0" />
+                      <span className="truncate">Commandes récentes</span>
                     </h3>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 truncate">
                       Vos dernières ventes effectuées sur Malick Buss
                     </p>
                   </div>
                   <Link
                     href="/vendeur/commandes"
-                    className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1"
+                    className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1 shrink-0 whitespace-nowrap"
                   >
                     <span>Toutes les commandes</span>
                     <span>→</span>
                   </Link>
                 </div>
 
-                {/* Table Responsive */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                {/* Vue Mobile : Cartes interactives lisibles et optimisées */}
+                <div className="sm:hidden divide-y divide-slate-100">
+                  {recentOrders.map((order) => (
+                    <Link
+                      key={order.id}
+                      href="/vendeur/commandes"
+                      className="py-3 px-1 flex items-center justify-between gap-3 hover:bg-slate-50 active:bg-slate-100 rounded-xl transition block"
+                    >
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-extrabold text-xs text-slate-900 tracking-tight">
+                            {order.id}
+                          </span>
+                          <span
+                            className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${order.statusColor}`}
+                          >
+                            {order.status}
+                          </span>
+                        </div>
+
+                        <div className="text-xs font-semibold text-slate-800 truncate">
+                          {order.client}{' '}
+                          <span className="text-slate-400 font-normal">· {order.items}</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                          <span>{order.time}</span>
+                          <span>•</span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
+                            {order.payment}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className="font-black text-xs text-slate-900 block whitespace-nowrap">
+                          {formatFCFA(order.amount)}
+                        </span>
+                        <span className="text-[10px] font-bold text-amber-600 inline-flex items-center gap-0.5 mt-0.5">
+                          Détails →
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Vue Desktop : Tableau complet avec scroll horizontal sécurisé */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-left text-xs min-w-[640px]">
                     <thead>
                       <tr className="border-b border-slate-100 text-slate-400 uppercase text-[10px] tracking-wider">
                         <th className="py-2.5 font-bold">N° Commande</th>
@@ -647,21 +699,21 @@ export default function VendorDashboardPage() {
                     <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                       {recentOrders.map((order) => (
                         <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-3 font-extrabold text-slate-900">{order.id}</td>
+                          <td className="py-3 font-extrabold text-slate-900 whitespace-nowrap">{order.id}</td>
                           <td className="py-3">
-                            <span className="font-bold text-slate-900 block">{order.client}</span>
+                            <span className="font-bold text-slate-900 block whitespace-nowrap">{order.client}</span>
                             <span className="text-[10px] text-slate-400">{order.time}</span>
                           </td>
                           <td className="py-3 text-slate-600 max-w-[160px] truncate">{order.items}</td>
-                          <td className="py-3 font-black text-slate-900">{formatFCFA(order.amount)}</td>
+                          <td className="py-3 font-black text-slate-900 whitespace-nowrap">{formatFCFA(order.amount)}</td>
                           <td className="py-3">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-bold">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-bold whitespace-nowrap">
                               {order.payment}
                             </span>
                           </td>
                           <td className="py-3">
                             <span
-                              className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${order.statusColor}`}
+                              className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${order.statusColor}`}
                             >
                               {order.status}
                             </span>
@@ -669,7 +721,7 @@ export default function VendorDashboardPage() {
                           <td className="py-3 text-right">
                             <Link
                               href="/vendeur/commandes"
-                              className="text-xs font-bold text-amber-600 hover:text-amber-700 underline"
+                              className="text-xs font-bold text-amber-600 hover:text-amber-700 underline whitespace-nowrap"
                             >
                               Détails
                             </Link>

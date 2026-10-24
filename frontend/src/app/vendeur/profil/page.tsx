@@ -26,23 +26,24 @@ import {
   Upload,
 } from 'lucide-react';
 import { VendorPortalShell } from '../../../components/layout/VendorPortalShell';
-import { getVendorProfile, saveVendorProfile, VendorProfile } from '../../../services/vendorProfileStore';
+import { DEFAULT_PROFILE, getVendorProfile, saveVendorProfile, VendorProfile } from '../../../services/vendorProfileStore';
 import { uploadImageToCloudinary } from '../../../services/cloudinaryService';
 
 export default function VendorProfilePage() {
-  const [profile, setProfile] = useState<VendorProfile>(getVendorProfile());
+  const [mounted, setMounted] = useState(false);
+  const [profile, setProfile] = useState<VendorProfile>(DEFAULT_PROFILE);
   const [activeModal, setActiveModal] = useState<'info' | 'security' | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form states for profile editing
-  const [editName, setEditName] = useState(profile.name);
-  const [editPhone, setEditPhone] = useState(profile.phone);
-  const [editEmail, setEditEmail] = useState(profile.email);
-  const [editShopName, setEditShopName] = useState(profile.shopName);
-  const [editAddress, setEditAddress] = useState(profile.address);
-  const [editDistrict, setEditDistrict] = useState(profile.district);
+  const [editName, setEditName] = useState(DEFAULT_PROFILE.name);
+  const [editPhone, setEditPhone] = useState(DEFAULT_PROFILE.phone);
+  const [editEmail, setEditEmail] = useState(DEFAULT_PROFILE.email);
+  const [editShopName, setEditShopName] = useState(DEFAULT_PROFILE.shopName);
+  const [editAddress, setEditAddress] = useState(DEFAULT_PROFILE.address);
+  const [editDistrict, setEditDistrict] = useState(DEFAULT_PROFILE.district);
 
   // Form states for security
   const [currentPassword, setCurrentPassword] = useState('');
@@ -56,6 +57,7 @@ export default function VendorProfilePage() {
   const [notifyEmail, setNotifyEmail] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const syncProfile = () => {
       const p = getVendorProfile();
       setProfile(p);

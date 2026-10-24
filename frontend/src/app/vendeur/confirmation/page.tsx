@@ -3,13 +3,9 @@
 import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ConfettiCelebration } from '../../../components/motion/ConfettiCelebration';
-
 export default function VendorProductConfirmationScreen20() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between p-6">
-      {/* Tir de confettis dorés et émeraudes */}
-      <ConfettiCelebration />
 
       <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 max-w-xs mx-auto">
         {/* Grande Icône Verte Circulaire Écran 20 avec Animation Ressort */}
