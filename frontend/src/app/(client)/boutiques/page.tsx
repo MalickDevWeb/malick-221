@@ -310,13 +310,69 @@ function ShopsListContent() {
     return () => clearInterval(timer);
   }, [AD_SLIDES.length]);
 
+  const [allBoutiques, setAllBoutiques] = useState<Boutique[]>(BOUTIQUES_DATA);
+
+  useEffect(() => {
+    async function loadBackendShops() {
+      try {
+        const res = await fetch('http://localhost:4000/shops');
+        if (res.ok) {
+          const dbShops = await res.json();
+          if (Array.isArray(dbShops) && dbShops.length > 0) {
+            const mapped: Boutique[] = dbShops.map((shop: any) => {
+              const words = shop.name.trim().split(/\s+/);
+              const monogram =
+                words.length > 1
+                  ? (words[0][0] + words[1][0]).toUpperCase()
+                  : shop.name.slice(0, 2).toUpperCase();
+
+              const phone = shop.wavePayoutNumber || shop.omPayoutNumber || '221771234567';
+              const cleanPhone = phone.replace(/[^0-9]/g, '');
+
+              return {
+                id: shop.id,
+                name: shop.name,
+                slug: shop.slug,
+                subtitle:
+                  shop.description ||
+                  'Boutique certifiée sur Malick Buss. Articles de qualité et livraison rapide à Dakar.',
+                rating: '5,0',
+                ratingNum: 5.0,
+                reviews: '(Nouveau)',
+                reviewsCount: 1,
+                tags: ['Mode', 'Nouveauté', 'Dakar'],
+                category: 'Mode',
+                monogram,
+                location: 'Dakar',
+                district: 'Dakar • Plateau',
+                coverImage: shop.bannerUrl || '/images/boutiques/cover_style_mode.jpg',
+                productsCount: `+ ${shop._count?.products || 0} articles`,
+                badge: '✨ Boutique Certifiée',
+                whatsapp: cleanPhone.startsWith('221') ? cleanPhone : `221${cleanPhone}`,
+                isNew: true,
+                newBadge: 'Nouvelle Boutique',
+              };
+            });
+
+            const existingSlugs = new Set(mapped.map((m) => m.slug));
+            const remainingDemo = BOUTIQUES_DATA.filter((b) => !existingSlugs.has(b.slug));
+            setAllBoutiques([...mapped, ...remainingDemo]);
+          }
+        }
+      } catch (e) {
+        console.warn('Impossible de charger les boutiques dynamiques:', e);
+      }
+    }
+    loadBackendShops();
+  }, []);
+
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {
-      Toutes: BOUTIQUES_DATA.length,
-      'Bons Plans': BOUTIQUES_DATA.filter((b) => b.isPromo || b.tags.includes('Promos')).length,
-      Nouveautés: BOUTIQUES_DATA.filter((b) => b.isNew || b.tags.includes('Nouveauté')).length,
+      Toutes: allBoutiques.length,
+      'Bons Plans': allBoutiques.filter((b) => b.isPromo || b.tags.includes('Promos')).length,
+      Nouveautés: allBoutiques.filter((b) => b.isNew || b.tags.includes('Nouveauté')).length,
     };
-    BOUTIQUES_DATA.forEach((b) => {
+    allBoutiques.forEach((b) => {
       counts[b.category] = (counts[b.category] || 0) + 1;
       b.tags.forEach((tag) => {
         if (tag === 'Artisanat') {
@@ -325,39 +381,41 @@ function ShopsListContent() {
       });
     });
     return counts;
-  }, []);
+  }, [allBoutiques]);
 
   const normalizedSearch = search.trim().toLowerCase();
 
   const filteredBoutiques = useMemo(() => {
-    return BOUTIQUES_DATA.filter((boutique) => {
-      let matchesCategory = true;
-      if (selectedCategory === 'Bons Plans') {
-        matchesCategory = Boolean(boutique.isPromo || boutique.tags.includes('Promos'));
-      } else if (selectedCategory === 'Nouveautés') {
-        matchesCategory = Boolean(boutique.isNew || boutique.tags.includes('Nouveauté'));
-      } else if (selectedCategory !== 'Toutes') {
-        matchesCategory =
-          boutique.category.toLowerCase() === selectedCategory.toLowerCase() ||
-          boutique.tags.some((t) => t.toLowerCase() === selectedCategory.toLowerCase());
-      }
+    return allBoutiques
+      .filter((boutique) => {
+        let matchesCategory = true;
+        if (selectedCategory === 'Bons Plans') {
+          matchesCategory = Boolean(boutique.isPromo || boutique.tags.includes('Promos'));
+        } else if (selectedCategory === 'Nouveautés') {
+          matchesCategory = Boolean(boutique.isNew || boutique.tags.includes('Nouveauté'));
+        } else if (selectedCategory !== 'Toutes') {
+          matchesCategory =
+            boutique.category.toLowerCase() === selectedCategory.toLowerCase() ||
+            boutique.tags.some((t) => t.toLowerCase() === selectedCategory.toLowerCase());
+        }
 
-      const matchesSearch =
-        !normalizedSearch ||
-        boutique.name.toLowerCase().includes(normalizedSearch) ||
-        boutique.subtitle.toLowerCase().includes(normalizedSearch) ||
-        boutique.district.toLowerCase().includes(normalizedSearch) ||
-        boutique.location.toLowerCase().includes(normalizedSearch) ||
-        boutique.tags.some((tag) => tag.toLowerCase().includes(normalizedSearch));
+        const matchesSearch =
+          !normalizedSearch ||
+          boutique.name.toLowerCase().includes(normalizedSearch) ||
+          boutique.subtitle.toLowerCase().includes(normalizedSearch) ||
+          boutique.district.toLowerCase().includes(normalizedSearch) ||
+          boutique.location.toLowerCase().includes(normalizedSearch) ||
+          boutique.tags.some((tag) => tag.toLowerCase().includes(normalizedSearch));
 
-      return matchesCategory && matchesSearch;
-    }).sort((a, b) => {
-      if (sortBy === 'newest') return Number(b.id) - Number(a.id);
-      if (sortBy === 'rating') return b.ratingNum - a.ratingNum;
-      if (sortBy === 'reviews') return b.reviewsCount - a.reviewsCount;
-      return a.name.localeCompare(b.name);
-    });
-  }, [normalizedSearch, selectedCategory, sortBy]);
+        return matchesCategory && matchesSearch;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'newest') return Number(b.id) - Number(a.id);
+        if (sortBy === 'rating') return b.ratingNum - a.ratingNum;
+        if (sortBy === 'reviews') return b.reviewsCount - a.reviewsCount;
+        return a.name.localeCompare(b.name);
+      });
+  }, [allBoutiques, normalizedSearch, selectedCategory, sortBy]);
 
   const handleResetFilters = () => {
     router.push('/boutiques');

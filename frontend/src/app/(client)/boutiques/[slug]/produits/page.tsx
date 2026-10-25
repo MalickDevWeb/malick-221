@@ -134,7 +134,47 @@ export default function ShopProductsListingPage({
     },
   };
 
+  const [remoteShop, setRemoteShop] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchShop() {
+      try {
+        const res = await fetch(`http://localhost:4000/shops/${params.slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          setRemoteShop(data);
+        }
+      } catch (e) {
+        console.warn('Erreur chargement boutique distante:', e);
+      }
+    }
+    fetchShop();
+  }, [params.slug]);
+
   const boutiqueInfo = (() => {
+    if (remoteShop) {
+      const words = remoteShop.name.trim().split(/\s+/);
+      const monogram =
+        words.length > 1
+          ? (words[0][0] + words[1][0]).toUpperCase()
+          : remoteShop.name.slice(0, 2).toUpperCase();
+      const phone = remoteShop.wavePayoutNumber || remoteShop.omPayoutNumber || '221771234567';
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+
+      return {
+        name: remoteShop.name,
+        monogram,
+        slug: remoteShop.slug,
+        badge: remoteShop.status === 'ACTIVE' ? '👑 Boutique Certifiée' : '⏳ En attente de certification',
+        isVerified: remoteShop.status === 'ACTIVE',
+        rating: '5,0',
+        reviewsCount: 1,
+        district: remoteShop.description || 'Dakar • Plateau',
+        whatsapp: cleanPhone.startsWith('221') ? cleanPhone : `221${cleanPhone}`,
+        coverImage: remoteShop.bannerUrl || '/images/boutiques/cover_style_mode.jpg',
+      };
+    }
+
     if (profile && (profile.shopSlug === params.slug || params.slug === 'style-and-mode')) {
       const rawPhone = profile.phone ? profile.phone.replace(/[^0-9]/g, '') : '221771719013';
       const cleanPhone = rawPhone.startsWith('221') ? rawPhone : `221${rawPhone}`;
@@ -154,16 +194,16 @@ export default function ShopProductsListingPage({
     }
     return (
       BOUTIQUES_INFO[params.slug] || {
-        name: 'TechZone',
-        monogram: 'TZ',
+        name: 'Boutique Malick Buss',
+        monogram: params.slug.slice(0, 2).toUpperCase(),
         slug: params.slug,
-        badge: '⚡ Top Ventes High-Tech',
-        isVerified: false,
-        rating: '4.8',
-        reviewsCount: 980,
-        district: 'Médina • Centenaire',
-        whatsapp: '221771719013',
-        coverImage: '/images/boutiques/cover_techzone.jpg',
+        badge: '⚡ Boutique Partenaire',
+        isVerified: true,
+        rating: '4.9',
+        reviewsCount: 120,
+        district: 'Dakar • Sénégal',
+        whatsapp: '221771234567',
+        coverImage: '/images/boutiques/cover_style_mode.jpg',
       }
     );
   })();
@@ -307,6 +347,24 @@ export default function ShopProductsListingPage({
     window.addEventListener('malick_products_updated', syncProducts);
     return () => window.removeEventListener('malick_products_updated', syncProducts);
   }, []);
+
+  useEffect(() => {
+    if (remoteShop?.products && Array.isArray(remoteShop.products) && remoteShop.products.length > 0) {
+      const dbProducts: ProductItem[] = remoteShop.products.map((p: any) => ({
+        id: p.id,
+        title: p.title,
+        category: p.category,
+        price: Number(p.basePrice),
+        originalPrice: p.discountPrice ? Number(p.discountPrice) : undefined,
+        rating: '5.0',
+        reviewsCount: 1,
+        image: p.imageUrl || 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=600&q=80',
+        tag: 'Nouveau ✨',
+        inStock: p.stockQuantity > 0,
+      }));
+      setProductsList(dbProducts);
+    }
+  }, [remoteShop]);
 
   const categories = ['Tous', 'Boubous & Bazin', 'Chaussures', 'Homme', 'Femme', 'Accessoires'];
 
