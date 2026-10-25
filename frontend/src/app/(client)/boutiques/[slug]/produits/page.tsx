@@ -24,7 +24,9 @@ import {
   ExternalLink,
   ChevronRight,
   Filter,
+  Crown,
 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { formatFCFA } from '../../../../../services/api';
 import { addCartItem, createOrder } from '../../../../../services/order-flow';
 import { getVendorProducts } from '../../../../../services/productStore';
@@ -69,6 +71,7 @@ export default function ShopProductsListingPage({
       reviewsCount: 1240,
       district: 'Dakar Plateau • Sandaga',
       whatsapp: '221771719013',
+      coverImage: '/images/boutiques/cover_style_mode.jpg',
     },
     'beauty-world': {
       name: 'Beauty World',
@@ -79,16 +82,19 @@ export default function ShopProductsListingPage({
       reviewsCount: 756,
       district: 'Almadies • Dakar',
       whatsapp: '221778901234',
+      coverImage: '/images/boutiques/cover_beauty_world.jpg',
     },
     'techzone': {
       name: 'TechZone',
       monogram: 'TZ',
       slug: 'techzone',
       badge: '⚡ Top Ventes High-Tech',
-      rating: '4,8',
+      isVerified: false,
+      rating: '4.8',
       reviewsCount: 980,
       district: 'Médina • Centenaire',
       whatsapp: '221765432109',
+      coverImage: '/images/boutiques/cover_techzone.jpg',
     },
     'kids-world': {
       name: 'Kids World',
@@ -99,6 +105,7 @@ export default function ShopProductsListingPage({
       reviewsCount: 523,
       district: 'Mermoz • VDN',
       whatsapp: '221781112233',
+      coverImage: '/images/boutiques/cover_kids_world.jpg',
     },
     'maison-chic': {
       name: 'Maison Chic',
@@ -109,6 +116,7 @@ export default function ShopProductsListingPage({
       reviewsCount: 421,
       district: 'Ngor • Virage',
       whatsapp: '221774445566',
+      coverImage: '/images/boutiques/cover_maison_chic.jpg',
     },
     'sport-max': {
       name: 'Sport Max',
@@ -119,6 +127,7 @@ export default function ShopProductsListingPage({
       reviewsCount: 367,
       district: 'Fann Résidence • Corniche',
       whatsapp: '221769998877',
+      coverImage: '/images/boutiques/cover_sport_max.jpg',
     },
   };
 
@@ -137,19 +146,21 @@ export default function ShopProductsListingPage({
         district: profile.district || profile.address || 'Dakar Plateau • Sandaga',
         whatsapp: cleanPhone,
         avatarUrl: profile.avatarUrl,
+        coverImage: profile.coverImage || BOUTIQUES_INFO[params.slug]?.coverImage || '/images/boutiques/cover_techzone.jpg',
       };
     }
     return (
       BOUTIQUES_INFO[params.slug] || {
-        name: 'Style & Mode',
-        monogram: 'SM',
+        name: 'TechZone',
+        monogram: 'TZ',
         slug: params.slug,
-        badge: '👑 Vendeur Officiel',
-        isVerified: true,
-        rating: '4,9',
-        reviewsCount: 1240,
-        district: 'Dakar Plateau',
+        badge: '⚡ Top Ventes High-Tech',
+        isVerified: false,
+        rating: '4.8',
+        reviewsCount: 980,
+        district: 'Médina • Centenaire',
         whatsapp: '221771719013',
+        coverImage: '/images/boutiques/cover_techzone.jpg',
       }
     );
   })();
@@ -354,122 +365,175 @@ export default function ShopProductsListingPage({
     }, 1800);
   };
 
+  const getCategoryIcon = (cat: string, isActive: boolean) => {
+    switch (cat) {
+      case 'Boubous & Bazin':
+        return <Icon icon="solar:t-shirt-bold-duotone" className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-indigo-500'}`} />;
+      case 'Chaussures':
+        return <Icon icon="solar:walking-round-bold-duotone" className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-amber-500'}`} />;
+      case 'Homme':
+        return <Icon icon="solar:user-bold-duotone" className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-sky-500'}`} />;
+      case 'Femme':
+        return <Icon icon="solar:user-heart-bold-duotone" className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-pink-500'}`} />;
+      case 'Accessoires':
+        return <Icon icon="solar:bag-bold-duotone" className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-emerald-500'}`} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f8fafc] font-sans antialiased select-none pb-16">
-      {/* ================= 1. EN-TÊTE ULTRA COMPACT & CLAIR ================= */}
-      <section className="bg-white border-b border-slate-200/90 shadow-2xs sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
-          <div className="flex items-center justify-between gap-3">
-            {/* Gauche : Bouton Retour + Identité Boutique */}
-            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-              <Link
-                href="/boutiques"
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-amber-400 hover:text-slate-950 text-slate-700 flex items-center justify-center transition shrink-0"
-                title="Retour aux boutiques"
-              >
-                <ArrowLeft className="w-4 h-4 stroke-[2.2px]" />
-              </Link>
+      {/* ================= 1. BANNIÈRE PANORAMIQUE OFFICIELLE DE LA BOUTIQUE ================= */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+        <div className="relative h-44 sm:h-56 md:h-64 lg:h-72 w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-md bg-slate-950">
+          <img
+            src={boutiqueInfo.coverImage || '/images/boutiques/cover_techzone.jpg'}
+            alt={boutiqueInfo.name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+        </div>
+      </div>
 
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#071328] text-white flex flex-col items-center justify-center shrink-0 border border-amber-400 shadow-xs overflow-hidden">
-                {boutiqueInfo.avatarUrl ? (
-                  <img src={boutiqueInfo.avatarUrl} alt={boutiqueInfo.name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-[11px] font-black text-amber-300 leading-none">
+      {/* ================= 2. CARTE D'IDENTITÉ & ACTIONS BOUTIQUE (FLOATING CARD) ================= */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-5">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+            {/* Logo de la boutique */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#071328] border-2 border-white shadow-md flex items-center justify-center p-2 shrink-0 overflow-hidden">
+              {boutiqueInfo.avatarUrl ? (
+                <img src={boutiqueInfo.avatarUrl} alt={boutiqueInfo.name} className="w-full h-full object-cover" />
+              ) : boutiqueInfo.slug === 'techzone' ? (
+                <div className="text-center font-black">
+                  <span className="text-white text-xs sm:text-base tracking-tight block">
+                    Tech<span className="text-amber-400">Zone</span>
+                  </span>
+                  <span className="w-8 h-0.5 bg-amber-400 block mx-auto mt-1 rounded-full" />
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Crown className="w-4 h-4 text-amber-400 fill-amber-400 mx-auto -mb-0.5" />
+                  <span className="text-sm sm:text-base font-black text-amber-300 leading-none">
                     {boutiqueInfo.monogram}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Infos : Nom + Badge + Localisation & Note */}
+            <div className="min-w-0 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">
+                  {boutiqueInfo.name}
+                </h1>
+                {boutiqueInfo.isVerified ? (
+                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Boutique Vérifiée</span>
+                  </span>
+                ) : (
+                  <span className="bg-amber-500/15 text-amber-800 border border-amber-400/40 text-xs font-extrabold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                    <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                    <span>En vérification</span>
                   </span>
                 )}
               </div>
 
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <h1 className="text-sm sm:text-base font-black text-slate-900 truncate">
-                    {boutiqueInfo.name}
-                  </h1>
-                  {boutiqueInfo.isVerified ? (
-                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span className="hidden sm:inline">Boutique Vérifiée</span>
-                      <span className="sm:hidden">✓</span>
-                    </span>
-                  ) : (
-                    <span className="bg-amber-50 text-amber-800 border border-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                      <span className="hidden sm:inline">En vérification</span>
-                      <span className="sm:hidden">⏳</span>
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
-                  <span className="truncate">{boutiqueInfo.district}</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-0.5 font-bold text-slate-900">
-                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                    {boutiqueInfo.rating}
-                  </span>
-                </div>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-600 font-medium">
+                <span className="flex items-center gap-1 truncate text-slate-700 font-semibold">
+                  <MapPin className="w-3.5 h-3.5 text-slate-900 shrink-0" />
+                  <span>{boutiqueInfo.district}</span>
+                </span>
+                <span className="text-slate-300 font-normal">|</span>
+                <span className="flex items-center gap-1 font-bold text-slate-900">
+                  <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
+                  <span>{boutiqueInfo.rating}</span>
+                </span>
               </div>
             </div>
-
-            {/* Droite : WhatsApp + Panier */}
-            <div className="flex items-center gap-2 shrink-0">
-              <a
-                href={`https://wa.me/${boutiqueInfo.whatsapp}?text=${encodeURIComponent(
-                  `Bonjour ${boutiqueInfo.name}, je souhaite commander sur Malick Buss !`
-                )}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-full transition shadow-xs active:scale-95"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">WhatsApp</span>
-              </a>
-
-              <Link
-                href="/panier"
-                className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3 py-1.5 rounded-full transition"
-              >
-                <ShoppingBag className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Panier</span>
-              </Link>
-            </div>
           </div>
 
-          {/* Ligne 2 : Filtres de Rayons & Recherche Rapide */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2.5 mt-2 border-t border-slate-100">
-            {/* Rayons / Catégories avec zéro scrollbar */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`text-xs font-bold px-3 py-1.5 rounded-full transition shrink-0 ${
-                    activeCategory === cat
-                      ? 'bg-[#0c1527] text-amber-400 shadow-xs'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+          {/* Boutons Actions : WhatsApp Vert + Panier Bleu Marine */}
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+            <a
+              href={`https://wa.me/${boutiqueInfo.whatsapp}?text=${encodeURIComponent(
+                `Bonjour ${boutiqueInfo.name}, je souhaite commander sur Malick Buss !`
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white font-black text-xs sm:text-sm px-6 py-2.5 rounded-full shadow-md shadow-emerald-500/20 transition cursor-pointer"
+            >
+              <MessageCircle className="w-4 h-4 fill-white stroke-none" />
+              <span>WhatsApp</span>
+            </a>
 
-            {/* Recherche compacte */}
-            <div className="relative sm:w-60 shrink-0">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Rechercher un article..."
-                className="w-full bg-[#f8fafc] text-xs pl-8 pr-3 py-1.5 rounded-full border border-slate-200 focus:border-amber-400 focus:bg-white focus:outline-none transition"
-              />
-            </div>
+            <Link
+              href="/panier"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-[#0c1527] hover:bg-[#16233b] active:scale-95 text-white font-black text-xs sm:text-sm px-6 py-2.5 rounded-full shadow-md transition cursor-pointer"
+            >
+              <ShoppingBag className="w-4 h-4 stroke-[2.2px]" />
+              <span>Panier</span>
+            </Link>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* ================= 2. CATALOGUE DES PRODUITS : CLAIR, NET & ACHAT 2 CLICS DIRECT ================= */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+      {/* ================= 3. FILTRES DE RAYONS & RECHERCHE INTERNE ================= */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          {/* Pilules de catégories */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1">
+            {categories.map((cat) => {
+              const isActive = activeCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setActiveCategory(cat)}
+                  className={`text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                    isActive
+                      ? 'bg-[#0c1527] text-white shadow-sm'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs'
+                  }`}
+                >
+                  {getCategoryIcon(cat, isActive)}
+                  <span>{cat}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Champ de recherche dans cette boutique */}
+          <div className="relative md:w-80 shrink-0">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Rechercher dans cette boutique..."
+              className="w-full bg-white text-xs pl-10 pr-4 py-2.5 rounded-full border border-slate-200/90 focus:border-amber-400 focus:outline-none transition shadow-2xs font-medium placeholder:text-slate-400"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ================= 4. SÉPARATEUR DE SECTION BOUTIQUE ================= */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-6">
+        <div className="relative flex items-center justify-center">
+          <div className="w-24 sm:w-36 h-px bg-slate-200" />
+          <div className="mx-4 flex flex-col items-center">
+            <span className="text-xs sm:text-sm font-black text-slate-800 tracking-wide">
+              Boutique {boutiqueInfo.name}
+            </span>
+            <span className="w-12 h-0.5 bg-amber-400 rounded-full mt-1" />
+          </div>
+          <div className="w-24 sm:w-36 h-px bg-slate-200" />
+        </div>
+      </div>
+
+      {/* ================= 5. CATALOGUE DES PRODUITS ================= */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between pb-3">
           <p className="text-xs font-bold text-slate-500">
             Rayon : <span className="text-slate-900 font-black">{activeCategory}</span> ({filteredProducts.length} articles)
