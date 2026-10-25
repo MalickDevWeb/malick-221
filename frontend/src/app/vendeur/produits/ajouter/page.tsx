@@ -202,10 +202,11 @@ export default function AddProductPage() {
       setAwaitingModeration(!created.isPublished);
       setPublished(true);
       setTimeout(() => router.push('/vendeur/produits'), 900);
-    } catch (cause) {
-      setSubmissionError(cause instanceof VendorApiError
+    } catch (cause: any) {
+      const msg = cause?.message && typeof cause.message === 'string'
         ? cause.message
-        : 'Impossible d’enregistrer le produit. Vérifie la connexion à la plateforme.');
+        : 'Impossible d’enregistrer le produit. Vérifie la connexion à la plateforme.';
+      setSubmissionError(msg);
     } finally {
       setSubmitting(false);
     }

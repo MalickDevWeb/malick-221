@@ -40,6 +40,8 @@ export interface CreatedVendorProduct {
 export class VendorApiError extends Error {
   constructor(public readonly status: number, message: string) {
     super(message);
+    this.name = 'VendorApiError';
+    Object.setPrototypeOf(this, VendorApiError.prototype);
   }
 }
 
