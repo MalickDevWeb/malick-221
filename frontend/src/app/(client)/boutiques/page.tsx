@@ -603,14 +603,17 @@ function ShopsListContent() {
                     <div className="flex items-center justify-between gap-2">
                       <Link
                         href={`/boutiques/${shop.slug}/produits`}
-                        className="font-extrabold text-base text-slate-900 group-hover:text-amber-600 transition flex items-center gap-1.5 truncate"
+                        className="font-extrabold text-base text-slate-900 group-hover:text-amber-600 transition flex items-center gap-2 truncate"
                       >
                         <span className="truncate">{shop.name}</span>
-                        <CheckCircle2 className="w-4 h-4 text-amber-500 fill-amber-400 shrink-0" />
+                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 shrink-0 shadow-2xs">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span>Vérifiée</span>
+                        </span>
                       </Link>
 
-                      <div className="flex items-center gap-1 text-xs font-black text-slate-950 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 shrink-0">
-                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
+                      <div className="flex items-center gap-1 text-xs font-black text-slate-950 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/60 shrink-0 shadow-2xs">
+                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                         <span>{shop.rating}</span>
                         <span className="text-[10px] font-semibold text-slate-400">
                           {shop.reviews}
@@ -639,24 +642,38 @@ function ShopsListContent() {
                   </div>
                 </div>
 
-                {/* Tags & Boutons d'actions */}
-                <div className="px-5 pb-5 pt-3 space-y-3 border-t border-slate-100">
-                  <div className="flex flex-wrap items-center gap-1.5">
+                {/* Tags & Boutons d'actions toujours alignés en bas de la carte */}
+                <div className="mt-auto px-5 pb-5 pt-3 space-y-3 border-t border-slate-100 bg-white">
+                  <div className="flex flex-wrap items-center gap-1.5 min-h-[26px]">
                     {shop.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 group-hover:bg-amber-50 group-hover:text-amber-800 transition-colors"
+                        className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
 
-                  <div>
-                    {/* Bouton Visiter les produits / Pleine largeur */}
+                  {/* Boutons d'actions : WhatsApp Direct + Visiter les produits */}
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`https://wa.me/${shop.whatsapp}?text=${encodeURIComponent(
+                        `Bonjour ${shop.name}, je vous contacte depuis la marketplace Malick Buss !`
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center justify-center p-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition-all duration-200 shadow-sm shadow-emerald-500/20 active:scale-95 shrink-0 cursor-pointer"
+                      title={`Contacter ${shop.name} directement sur WhatsApp`}
+                      aria-label={`WhatsApp ${shop.name}`}
+                    >
+                      <MessageCircle className="w-4 h-4 fill-white stroke-none" />
+                    </a>
+
                     <Link
                       href={`/boutiques/${shop.slug}/produits`}
-                      className="w-full inline-flex items-center justify-center gap-2 bg-[#0c1527] hover:bg-amber-400 text-white hover:text-slate-950 font-extrabold text-xs py-3 px-4 rounded-2xl transition-all duration-200 shadow-xs group/btn"
+                      className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0c1527] hover:bg-amber-400 text-white hover:text-slate-950 font-extrabold text-xs py-3 px-4 rounded-2xl transition-all duration-200 shadow-xs group/btn active:scale-95"
                     >
                       <span>Visiter les produits</span>
                       <ArrowRight className="w-3.5 h-3.5 stroke-[2.5px] group-hover/btn:translate-x-1 transition-transform" />
