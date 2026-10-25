@@ -474,19 +474,28 @@ export function AuthLoginView({
           </div>
         </div>
 
-        {/* Liens d'aide et sécurité à droite */}
-        <div className="flex items-center gap-3 sm:gap-5 text-xs font-semibold">
+        {/* Liens retour client, aide et sécurité à droite */}
+        <div className="flex items-center gap-2.5 sm:gap-4 text-xs font-semibold">
+          {/* Bouton direct de retour à l'accueil client */}
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-amber-400 hover:text-slate-950 border border-white/20 text-slate-200 text-xs font-bold transition shadow-xs group"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
+            <span>Accueil client</span>
+          </Link>
+
           <Link
             href="/support"
-            className="flex items-center gap-1.5 text-slate-300 hover:text-white transition"
+            className="hidden sm:flex items-center gap-1.5 text-slate-300 hover:text-white transition"
           >
             <HelpCircle className="w-4 h-4 text-slate-400" />
             <span>Aide</span>
           </Link>
 
-          <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+          <div className="hidden md:flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
             <ShieldCheck className="w-4 h-4 text-emerald-400 stroke-[2.2px]" />
-            <span className="hidden sm:inline">Espace sécurisé</span>
+            <span>Espace sécurisé</span>
           </div>
         </div>
       </header>
@@ -1329,6 +1338,17 @@ export function AuthLoginView({
               </span>
             )}
           </button>
+
+          {/* Lien retour à l'accueil client sous la carte */}
+          <div className="pt-2 text-center">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-amber-400 font-semibold transition group"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
+              <span>Retourner sur la marketplace (Accueil client)</span>
+            </Link>
+          </div>
         </motion.div>
       </main>
 
