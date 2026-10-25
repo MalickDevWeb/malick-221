@@ -21,6 +21,7 @@ import {
   Sparkles,
   Truck,
   Crown,
+  ArrowLeft,
 } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
 import { CartDrawer } from '../cart/CartDrawer';
@@ -348,10 +349,19 @@ function HeaderContent() {
           )}
 
           {/* ================= VUE MOBILE (< md) ================= */}
-          {!isBoutiqueStorefront && (
-            <div className="md:hidden pt-2 pb-2.5 space-y-2.5">
-              {/* Ligne En-tête Mobile */}
-              <div className="flex items-center justify-between">
+          <div className="md:hidden pt-2 pb-2.5 space-y-2.5">
+            {/* Ligne En-tête Mobile */}
+            <div className="flex items-center justify-between">
+              {isBoutiqueStorefront ? (
+                <Link
+                  href="/boutiques"
+                  className="inline-flex items-center gap-1.5 text-slate-800 bg-slate-100 hover:bg-slate-200 active:scale-95 px-2.5 py-1.5 rounded-full transition font-black text-xs"
+                  aria-label="Sortir de la boutique"
+                >
+                  <ArrowLeft className="w-4 h-4 stroke-[2.5px] text-slate-900" />
+                  <span>Sortir</span>
+                </Link>
+              ) : (
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                   className="text-slate-900 p-1 hover:bg-slate-100 rounded-lg transition"
@@ -359,59 +369,59 @@ function HeaderContent() {
                 >
                   <Menu className="w-6 h-6 stroke-[2px]" />
                 </button>
+              )}
 
-                <Link href="/" className="flex flex-col items-center">
-                  <BrandLogo size="md" variant="dark" />
-                </Link>
+              <Link href="/" className="flex flex-col items-center">
+                <BrandLogo size="md" variant="dark" />
+              </Link>
 
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setNotificationOpen(!notificationOpen)}
-                      className="relative text-slate-900 p-1.5 hover:bg-slate-100 rounded-lg transition cursor-pointer"
-                      aria-label="Notifications"
-                    >
-                      <Bell className="w-5 h-5 stroke-[2px]" />
-                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-white shadow-xs" />
-                    </button>
-
-                    <NotificationPopover
-                      isOpen={notificationOpen}
-                      onClose={() => setNotificationOpen(false)}
-                    />
-                  </div>
-
+              <div className="flex items-center gap-2">
+                <div className="relative">
                   <button
                     type="button"
-                    onClick={() => setCartDrawerOpen(true)}
+                    onClick={() => setNotificationOpen(!notificationOpen)}
                     className="relative text-slate-900 p-1.5 hover:bg-slate-100 rounded-lg transition cursor-pointer"
-                    aria-label="Panier"
+                    aria-label="Notifications"
                   >
-                    <ShoppingCart className="w-5 h-5 stroke-[2px]" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-amber-400 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
-                        {cartCount}
-                      </span>
-                    )}
+                    <Bell className="w-5 h-5 stroke-[2px]" />
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-white shadow-xs" />
                   </button>
-                </div>
-              </div>
 
-              {/* Barre de Recherche Pilule Mobile */}
-              <form onSubmit={handleSearch} className="relative">
-                <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 stroke-[2px]" />
-                <input
-                  type="search"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Rechercher un produit, une boutique..."
-                  aria-label="Rechercher un produit, une marque ou une boutique"
-                  className="w-full bg-[#f4f5f7] hover:bg-[#ecedf0] focus:bg-white text-xs pl-11 pr-4 py-2.5 rounded-full border border-transparent focus:border-amber-400 focus:outline-none transition-all placeholder:text-slate-400 font-medium"
-                />
-              </form>
+                  <NotificationPopover
+                    isOpen={notificationOpen}
+                    onClose={() => setNotificationOpen(false)}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setCartDrawerOpen(true)}
+                  className="relative text-slate-900 p-1.5 hover:bg-slate-100 rounded-lg transition cursor-pointer"
+                  aria-label="Panier"
+                >
+                  <ShoppingCart className="w-5 h-5 stroke-[2px]" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-amber-400 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
-          )}
+
+            {/* Barre de Recherche Pilule Mobile */}
+            <form onSubmit={handleSearch} className="relative">
+              <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 stroke-[2px]" />
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder={isBoutiqueStorefront ? "Rechercher partout sur Malick Buss..." : "Rechercher un produit, une boutique..."}
+                aria-label="Rechercher un produit, une marque ou une boutique"
+                className="w-full bg-[#f4f5f7] hover:bg-[#ecedf0] focus:bg-white text-xs pl-11 pr-4 py-2.5 rounded-full border border-transparent focus:border-amber-400 focus:outline-none transition-all placeholder:text-slate-400 font-medium"
+              />
+            </form>
+          </div>
         </div>
       </header>
 
