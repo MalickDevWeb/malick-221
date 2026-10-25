@@ -662,57 +662,38 @@ function ShopsListContent() {
         )}
 
         {/* ================= 4. TITRE DE SECTION AVEC COMPTEUR DYNAMIQUE ================= */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 px-1">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h2 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
-                {selectedCategory === 'Bons Plans' ? (
-                  <>
-                    <Flame className="w-5 h-5 text-rose-500 stroke-[2.2px]" />
-                    <span>Bons Plans & Réductions Dakar</span>
-                  </>
-                ) : selectedCategory === 'Nouveautés' ? (
-                  <>
-                    <Sparkles className="w-5 h-5 text-amber-500 stroke-[2.2px]" />
-                    <span>Dernières Nouveautés à Dakar</span>
-                  </>
-                ) : selectedCategory === 'Artisanat' ? (
-                  <>
-                    <Crown className="w-5 h-5 text-amber-500 stroke-[2.2px]" />
-                    <span>Artisanat Sénégalais</span>
-                  </>
-                ) : (
-                  <>
-                    <Store className="w-5 h-5 text-amber-500 stroke-[2.2px]" />
-                    <span>Boutiques vérifiées à Dakar</span>
-                  </>
-                )}
-              </h2>
-              <span className="text-xs font-black bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full shadow-2xs">
-                {filteredBoutiques.length} {filteredBoutiques.length > 1 ? 'boutiques' : 'boutique'}
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 font-medium">
-              Commandes directes • Paiement Wave, Orange Money ou à la livraison.
-            </p>
+        <div className="pt-2 px-1 space-y-1">
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2 tracking-tight">
+              {selectedCategory === 'Bons Plans' ? (
+                <>
+                  <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500 stroke-[2.2px]" />
+                  <span>Bons Plans & Réductions Dakar</span>
+                </>
+              ) : selectedCategory === 'Nouveautés' ? (
+                <>
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 stroke-[2.2px]" />
+                  <span>Dernières Nouveautés à Dakar</span>
+                </>
+              ) : selectedCategory === 'Artisanat' ? (
+                <>
+                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 stroke-[2.2px]" />
+                  <span>Artisanat Sénégalais</span>
+                </>
+              ) : (
+                <>
+                  <Store className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 stroke-[2.2px]" />
+                  <span>Boutiques vérifiées à Dakar</span>
+                </>
+              )}
+            </h2>
+            <span className="text-xs font-black bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full shadow-2xs">
+              {filteredBoutiques.length} {filteredBoutiques.length > 1 ? 'boutiques' : 'boutique'}
+            </span>
           </div>
-
-          {/* Bouton reset / voir tout */}
-          {selectedCategory !== 'Toutes' || search ? (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="self-start sm:self-auto text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition select-none shadow-2xs active:scale-95 cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Afficher tout ({BOUTIQUES_DATA.length})</span>
-            </button>
-          ) : (
-            <div className="text-xs font-bold text-slate-500 hidden sm:flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200/80">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Catalogue 100% vérifié</span>
-            </div>
-          )}
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            Commandes directes • Paiement Wave, Orange Money ou à la livraison.
+          </p>
         </div>
 
         {/* ================= 5. GRILLE DES BOUTIQUES ================= */}
