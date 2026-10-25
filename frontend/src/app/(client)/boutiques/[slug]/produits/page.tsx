@@ -389,12 +389,35 @@ export default function ShopProductsListingPage({
       {/* ================= 1. BANNIÈRE PANORAMIQUE OFFICIELLE DE LA BOUTIQUE ================= */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
         <div className="relative h-44 sm:h-56 md:h-64 lg:h-72 w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-md bg-slate-950">
+          {/* Bouton Retour placé directement sur la bannière */}
+          <div className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 z-20">
+            <Link
+              href="/boutiques"
+              className="inline-flex items-center gap-2 bg-white/95 hover:bg-white text-slate-900 font-extrabold text-xs sm:text-sm px-4 py-2 rounded-full shadow-lg backdrop-blur-md transition-all active:scale-95 group cursor-pointer border border-white/60"
+              title="Retour à la liste des boutiques"
+            >
+              <ArrowLeft className="w-4 h-4 stroke-[2.8px] text-slate-900 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Retour</span>
+            </Link>
+          </div>
+
+          {/* Badges Localisation & Articles en haut à droite de la bannière */}
+          <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-20 flex items-center gap-1.5">
+            <span className="bg-black/60 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 border border-white/10 shadow-sm">
+              <MapPin className="w-3 h-3 text-amber-400" />
+              <span>{boutiqueInfo.district ? boutiqueInfo.district.split('•')[0].trim() : 'Dakar'}</span>
+            </span>
+            <span className="bg-black/60 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full border border-white/10 shadow-sm">
+              +{products.length} articles
+            </span>
+          </div>
+
           <img
             src={boutiqueInfo.coverImage || '/images/boutiques/cover_techzone.jpg'}
             alt={boutiqueInfo.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
         </div>
       </div>
 
