@@ -1,9 +1,10 @@
 'use client';
 
+import React, { Suspense, useRef, useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { Suspense, useRef, useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Icon } from '@iconify/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Star,
@@ -370,53 +371,80 @@ function ShopsListContent() {
           {/* Séparateur subtil et propre */}
           <div className="h-px bg-slate-100 w-full" />
 
-          {/* Ligne 2 : FILTRES AVEC 'BONS PLANS' ET 'NOUVEAUTÉS' DYNAMIQUES */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1">
+          {/* Ligne 2 : FILTRES AVEC ANIMATION MOTION DESIGN & SLIDING LAYOUTID */}
+          <div className="relative flex items-center gap-2 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1 px-0.5">
             {CATEGORIES_LIST.map((cat) => {
               const isActive = selectedCategory === cat.label;
               const count = categoryCounts[cat.label] || 0;
               const isPromoTab = cat.label === 'Bons Plans';
               const isNewTab = cat.label === 'Nouveautés';
 
-              let activeStyles = 'text-slate-950 font-black bg-gradient-to-r from-amber-400 to-amber-300 shadow-xs border border-amber-500/30 ring-2 ring-amber-400/20';
-              if (isPromoTab) {
-                activeStyles = 'text-white font-black bg-gradient-to-r from-rose-600 to-amber-500 shadow-xs border border-rose-600 ring-2 ring-rose-400/30';
-              } else if (isNewTab) {
-                activeStyles = 'text-slate-950 font-black bg-gradient-to-r from-amber-400 to-amber-300 shadow-xs border border-amber-500/30 ring-2 ring-amber-400/20';
-              }
-
               return (
-                <button
+                <motion.button
                   key={cat.label}
                   type="button"
+                  whileHover={{ y: -1.5, scale: 1.02 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 26 }}
                   onClick={() => handleSelectCategory(cat.label)}
-                  className={`group relative text-xs font-bold px-3.5 py-2 rounded-full whitespace-nowrap transition-all duration-200 flex items-center gap-2 select-none shrink-0 cursor-pointer ${
+                  className={`group relative text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-2 select-none shrink-0 cursor-pointer transition-colors duration-200 ${
                     isActive
-                      ? activeStyles
-                      : 'text-slate-600 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/80 shadow-2xs'
+                      ? isPromoTab
+                        ? 'text-white font-black'
+                        : 'text-slate-950 font-black'
+                      : 'text-slate-600 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/90 shadow-2xs border border-transparent hover:border-slate-300/50'
                   }`}
                 >
-                  <Icon
-                    icon={cat.icon}
-                    className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-                      isActive
-                        ? isPromoTab
-                          ? 'text-white'
-                          : 'text-slate-950'
-                        : cat.iconColor
-                    }`}
-                  />
-                  <span>{cat.label}</span>
-                  <span
-                    className={`text-[10px] font-black px-1.5 py-0.5 rounded-full transition-colors ${
-                      isActive
-                        ? isPromoTab ? 'bg-white/20 text-white' : 'bg-slate-950/15 text-slate-950'
-                        : 'bg-slate-200/80 text-slate-500'
-                    }`}
-                  >
-                    {count}
+                  {/* Fond animé glissant (Motion Design Pill) */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeBoutiqueFilter"
+                      className={`absolute inset-0 rounded-full shadow-md ${
+                        isPromoTab
+                          ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 shadow-rose-600/30 border border-rose-400'
+                          : isNewTab
+                          ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 shadow-amber-500/25 border border-amber-500/30'
+                          : 'bg-gradient-to-r from-amber-400 to-amber-300 shadow-amber-500/25 border border-amber-500/30'
+                      }`}
+                      transition={{ type: 'spring', stiffness: 480, damping: 32 }}
+                    />
+                  )}
+
+                  {/* Contenu de la pilule au-dessus de l'animation */}
+                  <span className="relative z-10 flex items-center gap-2">
+                    <motion.span
+                      animate={isActive ? { scale: [1, 1.25, 1], rotate: [0, -8, 0] } : { scale: 1, rotate: 0 }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      className="shrink-0 flex items-center"
+                    >
+                      <Icon
+                        icon={cat.icon}
+                        className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+                          isActive
+                            ? isPromoTab
+                              ? 'text-white'
+                              : 'text-slate-950'
+                            : cat.iconColor
+                        }`}
+                      />
+                    </motion.span>
+
+                    <span className="tracking-tight">{cat.label}</span>
+
+                    <motion.span
+                      layout
+                      className={`text-[10px] font-black px-1.5 py-0.5 rounded-full transition-colors ${
+                        isActive
+                          ? isPromoTab
+                            ? 'bg-white/25 text-white'
+                            : 'bg-slate-950/15 text-slate-950'
+                          : 'bg-slate-200/80 text-slate-600 group-hover:bg-slate-300/80'
+                      }`}
+                    >
+                      {count}
+                    </motion.span>
                   </span>
-                </button>
+                </motion.button>
               );
             })}
           </div>

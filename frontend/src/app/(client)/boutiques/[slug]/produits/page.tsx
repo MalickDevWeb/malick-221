@@ -29,6 +29,7 @@ import {
   Store,
 } from 'lucide-react';
 import { Icon } from '@iconify/react';
+import { motion } from 'framer-motion';
 import { formatFCFA } from '../../../../../services/api';
 import { addCartItem, createOrder } from '../../../../../services/order-flow';
 import { getVendorProducts } from '../../../../../services/productStore';
@@ -507,24 +508,44 @@ export default function ShopProductsListingPage({
       {/* ================= 3. FILTRES DE RAYONS & RECHERCHE INTERNE ================= */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-          {/* Pilules de catégories */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1">
+          {/* Pilules de catégories avec Motion Design */}
+          <div className="relative flex items-center gap-2 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1 px-0.5">
             {categories.map((cat) => {
               const isActive = activeCategory === cat;
               return (
-                <button
+                <motion.button
                   key={cat}
                   type="button"
+                  whileHover={{ y: -1.5, scale: 1.02 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 26 }}
                   onClick={() => setActiveCategory(cat)}
-                  className={`text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                  className={`group relative text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-1.5 shrink-0 cursor-pointer select-none transition-colors duration-200 ${
                     isActive
-                      ? 'bg-[#0c1527] text-white shadow-sm'
-                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs'
+                      ? 'text-white font-black'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs hover:border-slate-300'
                   }`}
                 >
-                  {getCategoryIcon(cat, isActive)}
-                  <span>{cat}</span>
-                </button>
+                  {/* Fond animé glissant */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeStorefrontCategoryPill"
+                      className="absolute inset-0 rounded-full bg-[#0c1527] shadow-md border border-slate-800"
+                      transition={{ type: 'spring', stiffness: 480, damping: 32 }}
+                    />
+                  )}
+
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    <motion.span
+                      animate={isActive ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="shrink-0 flex items-center"
+                    >
+                      {getCategoryIcon(cat, isActive)}
+                    </motion.span>
+                    <span>{cat}</span>
+                  </span>
+                </motion.button>
               );
             })}
           </div>
