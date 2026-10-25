@@ -100,6 +100,8 @@ function HeaderContent() {
 
   // Vérifier si on est sur la vitrine dédiée d'une boutique spécifique
   const isBoutiqueStorefront = pathname.startsWith('/boutiques/') && pathname.includes('/produits');
+  // Masquer la barre de navigation secondaire sur la page des boutiques et vitrines pour éviter les doublons
+  const hideSecondaryNav = pathname.startsWith('/boutiques');
 
   if (hasCustomHeader) {
     return null;
@@ -252,7 +254,7 @@ function HeaderContent() {
           </div>
 
           {/* ================= BARRE DE DÉCOUVERTE ET NAVIGATION PRINCIPALE ================= */}
-          {!isBoutiqueStorefront && (
+          {!hideSecondaryNav && (
             <div className="hidden md:flex items-center justify-between border-t border-slate-100 py-2 text-xs font-semibold text-slate-700">
               <div className="relative flex items-center gap-1.5 lg:gap-2 flex-wrap">
                 {/* 1. Accueil */}

@@ -325,54 +325,10 @@ function ShopsListContent() {
           <div className="absolute -inset-px rounded-2xl sm:rounded-3xl border-2 border-transparent group-hover:border-amber-400/40 transition-colors duration-500 pointer-events-none" />
         </div>
 
-        {/* ================= 2. BARRE DE RECHERCHE, FILTRES & TRI ================= */}
-        <div className="bg-white p-3.5 sm:p-4 rounded-3xl border border-slate-200/90 shadow-xs space-y-3.5">
-          {/* Ligne 1 : Recherche & Tri */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            {/* Champ de recherche avec micro-interaction */}
-            <div className="relative flex-1 max-w-xl">
-              <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2.2px]" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Rechercher une boutique, catégorie, marque, quartier..."
-                className="w-full bg-[#f8fafc] text-xs pl-11 pr-10 py-2.5 rounded-full border border-slate-200/80 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-400/20 focus:outline-none transition-all font-medium text-slate-800 placeholder:text-slate-400"
-              />
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 transition hover:rotate-90 cursor-pointer"
-                  aria-label="Effacer la recherche"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Sélecteur de Tri */}
-            <div className="flex items-center justify-end gap-2 text-xs font-semibold text-slate-500 shrink-0">
-              <span className="whitespace-nowrap">Trier par :</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none cursor-pointer transition shadow-2xs"
-              >
-                <option value="rating">Mieux notées ★</option>
-                <option value="newest">Nouveautés ✨</option>
-                <option value="reviews">Plus d&apos;avis</option>
-                <option value="name">Alphabétique (A-Z)</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Séparateur subtil et propre */}
-          <div className="h-px bg-slate-100 w-full" />
-
-          {/* Ligne 2 : FILTRES AVEC ANIMATION MOTION DESIGN & SLIDING LAYOUTID */}
-          <div className="relative flex items-center gap-2 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1 px-0.5">
+        {/* ================= 2. BARRE UNIQUE DE FILTRES PAR RAYONS & TRI ================= */}
+        <div className="bg-white p-2.5 sm:p-3 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* FILTRES AVEC ANIMATION MOTION DESIGN & SLIDING LAYOUTID */}
+          <div className="relative flex items-center gap-2 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1 px-0.5 flex-1 min-w-0">
             {CATEGORIES_LIST.map((cat) => {
               const isActive = selectedCategory === cat.label;
               const count = categoryCounts[cat.label] || 0;
@@ -448,7 +404,40 @@ function ShopsListContent() {
               );
             })}
           </div>
+
+          {/* Séparateur vertical desktop */}
+          <div className="hidden md:block w-px h-7 bg-slate-200 shrink-0" />
+
+          {/* Sélecteur de Tri Compact */}
+          <div className="flex items-center justify-between md:justify-end gap-2 text-xs font-semibold text-slate-500 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
+            <span className="whitespace-nowrap text-slate-400 font-medium">Trier par :</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-slate-50 hover:bg-slate-100 border border-slate-200/90 rounded-full px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-amber-400 cursor-pointer transition shadow-2xs"
+            >
+              <option value="rating">Mieux notées ★</option>
+              <option value="newest">Nouveautés ✨</option>
+              <option value="reviews">Plus d&apos;avis</option>
+              <option value="name">Nom (A-Z)</option>
+            </select>
+          </div>
         </div>
+
+        {/* Tag de recherche active si recherché depuis le header */}
+        {search && (
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-full w-fit animate-in fade-in">
+            <span>Recherche active : <strong className="text-slate-900 font-bold">&quot;{search}&quot;</strong></span>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-slate-400 hover:text-slate-700 hover:rotate-90 transition p-0.5 cursor-pointer"
+              title="Effacer la recherche"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
 
         {/* ================= 3. BANNIÈRE DÉDIÉE SI BONS PLANS OU NOUVEAUTÉS ================= */}
         {selectedCategory === 'Bons Plans' && (
