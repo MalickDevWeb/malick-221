@@ -386,65 +386,9 @@ export default function ShopProductsListingPage({
 
   return (
     <div className="min-h-screen bg-[#f8fafc] font-sans antialiased select-none pb-16">
-      {/* ================= 0. FIL D'ARIANE / NAVIGATION DE RETOUR ================= */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4">
-        <div className="flex items-center justify-between text-xs font-semibold text-slate-500 py-1">
-          <nav className="flex items-center gap-1.5 sm:gap-2 flex-wrap" aria-label="Fil d'ariane">
-            <Link
-              href="/"
-              className="hover:text-amber-600 transition flex items-center gap-1 text-slate-600 font-medium"
-            >
-              <Home className="w-3.5 h-3.5" />
-              <span>Accueil</span>
-            </Link>
-            <ChevronRight className="w-3 h-3 text-slate-300" />
-            <Link
-              href="/boutiques"
-              className="hover:text-amber-600 transition flex items-center gap-1 text-slate-600 font-medium"
-            >
-              <Store className="w-3.5 h-3.5 text-amber-500" />
-              <span>Boutiques</span>
-            </Link>
-            <ChevronRight className="w-3 h-3 text-slate-300" />
-            <span className="text-slate-900 font-bold truncate max-w-[180px] sm:max-w-none">
-              {boutiqueInfo.name}
-            </span>
-          </nav>
-
-          {/* Bouton explicite pour sortir de la boutique */}
-          <Link
-            href="/boutiques"
-            className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-100 text-slate-800 hover:text-slate-950 font-bold text-xs px-3 py-1.5 rounded-full border border-slate-200/90 shadow-2xs transition active:scale-95"
-            title="Sortir de cette boutique et voir toutes les boutiques de Dakar"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 text-slate-900 stroke-[2.5px]" />
-            <span className="hidden sm:inline">Sortir de la boutique</span>
-            <span className="sm:hidden">Sortir</span>
-          </Link>
-        </div>
-      </div>
-
       {/* ================= 1. BANNIÈRE PANORAMIQUE OFFICIELLE DE LA BOUTIQUE ================= */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
         <div className="relative h-44 sm:h-56 md:h-64 lg:h-72 w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-md bg-slate-950">
-          {/* Boutons flottants en haut de la bannière */}
-          <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex items-center gap-2">
-            <Link
-              href="/boutiques"
-              className="inline-flex items-center gap-1.5 bg-black/60 hover:bg-black/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/20 shadow-md transition active:scale-95"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5px]" />
-              <span>Toutes les boutiques</span>
-            </Link>
-            <Link
-              href="/"
-              className="hidden sm:inline-flex items-center gap-1.5 bg-black/40 hover:bg-black/70 backdrop-blur-md text-slate-200 hover:text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 shadow-xs transition"
-            >
-              <Home className="w-3 h-3" />
-              <span>Accueil</span>
-            </Link>
-          </div>
-
           <img
             src={boutiqueInfo.coverImage || '/images/boutiques/cover_techzone.jpg'}
             alt={boutiqueInfo.name}
