@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Icon } from '@iconify/react';
 import {
   ArrowRight,
   ChevronRight,
@@ -446,7 +447,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                <span>🏷️</span>
+                <Icon icon="solar:tag-price-bold-duotone" className="w-5 h-5 text-amber-500 shrink-0" />
                 <span>Trouvez vos boutiques par catégorie</span>
               </h2>
               <p className="text-xs text-slate-500 font-medium">
@@ -501,7 +502,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                <span>🔥</span>
+                <Icon icon="solar:fire-bold-duotone" className="w-5 h-5 text-rose-500 shrink-0" />
                 <span>Pépites des boutiques de Dakar</span>
               </h2>
               <p className="text-xs text-slate-500 font-medium">

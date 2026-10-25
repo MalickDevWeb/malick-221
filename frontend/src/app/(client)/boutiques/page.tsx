@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Suspense, useRef, useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { Icon } from '@iconify/react';
 import {
   Search,
   Star,
@@ -183,16 +184,16 @@ const BOUTIQUES_DATA: Boutique[] = [
 ];
 
 const CATEGORIES_LIST = [
-  { label: 'Toutes', icon: '🌟' },
-  { label: 'Bons Plans', icon: '🔥' },
-  { label: 'Nouveautés', icon: '✨' },
-  { label: 'Mode', icon: '👗' },
-  { label: 'Beauté', icon: '✨' },
-  { label: 'Électronique', icon: '📱' },
-  { label: 'Maison', icon: '🛋️' },
-  { label: 'Enfants', icon: '🧸' },
-  { label: 'Sport', icon: '⚽' },
-  { label: 'Artisanat', icon: '🇸🇳' },
+  { label: 'Toutes', icon: 'solar:widget-2-bold-duotone', iconColor: 'text-amber-500' },
+  { label: 'Bons Plans', icon: 'solar:fire-bold-duotone', iconColor: 'text-rose-500' },
+  { label: 'Nouveautés', icon: 'solar:star-shine-bold-duotone', iconColor: 'text-amber-500' },
+  { label: 'Mode', icon: 'solar:t-shirt-bold-duotone', iconColor: 'text-indigo-500' },
+  { label: 'Beauté', icon: 'solar:magic-stick-3-bold-duotone', iconColor: 'text-pink-500' },
+  { label: 'Électronique', icon: 'solar:devices-bold-duotone', iconColor: 'text-sky-500' },
+  { label: 'Maison', icon: 'solar:armchair-2-bold-duotone', iconColor: 'text-emerald-500' },
+  { label: 'Enfants', icon: 'ph:baby-duotone', iconColor: 'text-purple-500' },
+  { label: 'Sport', icon: 'solar:running-round-bold-duotone', iconColor: 'text-teal-500' },
+  { label: 'Artisanat', icon: 'solar:palette-round-bold-duotone', iconColor: 'text-amber-600' },
 ];
 
 function ShopsListContent() {
@@ -389,13 +390,22 @@ function ShopsListContent() {
                   key={cat.label}
                   type="button"
                   onClick={() => handleSelectCategory(cat.label)}
-                  className={`relative text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 select-none shrink-0 cursor-pointer ${
+                  className={`group relative text-xs font-bold px-3.5 py-2 rounded-full whitespace-nowrap transition-all duration-200 flex items-center gap-2 select-none shrink-0 cursor-pointer ${
                     isActive
                       ? activeStyles
-                      : 'text-slate-600 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/80'
+                      : 'text-slate-600 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/80 shadow-2xs'
                   }`}
                 >
-                  <span className="text-sm leading-none">{cat.icon}</span>
+                  <Icon
+                    icon={cat.icon}
+                    className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+                      isActive
+                        ? isPromoTab
+                          ? 'text-white'
+                          : 'text-slate-950'
+                        : cat.iconColor
+                    }`}
+                  />
                   <span>{cat.label}</span>
                   <span
                     className={`text-[10px] font-black px-1.5 py-0.5 rounded-full transition-colors ${
@@ -417,7 +427,7 @@ function ShopsListContent() {
           <div className="bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white p-4 sm:p-5 rounded-3xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
-                <span>🔥</span>
+                <Icon icon="solar:fire-bold-duotone" className="w-4 h-4 text-white" />
                 <span>Ventes Flash & Bons Plans Dakar</span>
               </div>
               <h3 className="text-base sm:text-lg font-black leading-tight">
@@ -437,7 +447,7 @@ function ShopsListContent() {
           <div className="bg-gradient-to-r from-[#0c1a35] via-[#162a52] to-amber-500/80 text-white p-4 sm:p-5 rounded-3xl shadow-lg border border-amber-400/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-2 bg-amber-400/20 text-amber-300 border border-amber-400/30 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
-                <span>✨</span>
+                <Icon icon="solar:star-shine-bold-duotone" className="w-4 h-4 text-amber-400" />
                 <span>Nouveautés Dakar</span>
               </div>
               <h3 className="text-base sm:text-lg font-black leading-tight">

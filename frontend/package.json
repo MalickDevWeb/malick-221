@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@iconify/react": "^6.0.3",
     "@malick-buss/shared": "*",
     "@types/canvas-confetti": "^1.9.0",
     "canvas-confetti": "^1.9.4",
