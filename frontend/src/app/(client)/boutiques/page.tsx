@@ -71,7 +71,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     badge: '👑 Vendeur Officiel',
     whatsapp: '221771234567',
     isPromo: true,
-    promoBadge: '🔥 -30% Solde Dakar',
+    promoBadge: '-30% Solde Dakar',
     discountText: 'Jusqu’à -30% sur collection Bazin & Sneakers',
   },
   {
@@ -93,7 +93,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     badge: '✨ Coup de Cœur',
     whatsapp: '221778901234',
     isPromo: true,
-    promoBadge: '🔥 Vente Flash Beauté',
+    promoBadge: 'Vente Flash Beauté',
     discountText: '1 Soin bio offert pour tout achat parfum de luxe',
   },
   {
@@ -115,7 +115,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     badge: '⚡ Top Ventes High-Tech',
     whatsapp: '221765432109',
     isPromo: true,
-    promoBadge: '🔥 -25% Promo High-Tech',
+    promoBadge: '-25% Promo High-Tech',
     discountText: '-25% sur écouteurs sans fil & chargeurs rapides',
   },
   {
@@ -137,7 +137,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     badge: '🧸 Espace Famille',
     whatsapp: '221781112233',
     isNew: true,
-    newBadge: '✨ Nouvelle Boutique 2026',
+    newBadge: 'Nouvelle Boutique 2026',
   },
   {
     id: '5',
@@ -158,7 +158,7 @@ const BOUTIQUES_DATA: Boutique[] = [
     badge: '🎨 Design & Confort',
     whatsapp: '221774445566',
     isNew: true,
-    newBadge: '✨ Nouveau Déco Dakar',
+    newBadge: 'Nouveau Déco Dakar',
   },
   {
     id: '6',
@@ -179,10 +179,10 @@ const BOUTIQUES_DATA: Boutique[] = [
     badge: '⚽ Performance Pro',
     whatsapp: '221769998877',
     isPromo: true,
-    promoBadge: '🔥 -20% Flash Fitness',
+    promoBadge: '-20% Flash Fitness',
     discountText: '-20% sur les maillots officiels & running',
     isNew: true,
-    newBadge: '✨ Nouveau Sport',
+    newBadge: 'Nouveau Sport',
   },
 ];
 
@@ -662,24 +662,24 @@ function ShopsListContent() {
         )}
 
         {/* ================= 4. TITRE DE SECTION AVEC COMPTEUR DYNAMIQUE ================= */}
-        <div className="flex items-center justify-between pt-1 px-1">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 px-1">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <h2 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
                 {selectedCategory === 'Bons Plans' ? (
                   <>
                     <Flame className="w-5 h-5 text-rose-500 stroke-[2.2px]" />
-                    <span>🔥 Bons Plans & Réductions Dakar</span>
+                    <span>Bons Plans & Réductions Dakar</span>
                   </>
                 ) : selectedCategory === 'Nouveautés' ? (
                   <>
                     <Sparkles className="w-5 h-5 text-amber-500 stroke-[2.2px]" />
-                    <span>✨ Dernières Nouveautés à Dakar</span>
+                    <span>Dernières Nouveautés à Dakar</span>
                   </>
                 ) : selectedCategory === 'Artisanat' ? (
                   <>
                     <Crown className="w-5 h-5 text-amber-500 stroke-[2.2px]" />
-                    <span>🇸🇳 Artisanat & Créations Sénégalaises</span>
+                    <span>Artisanat Sénégalais</span>
                   </>
                 ) : (
                   <>
@@ -688,12 +688,12 @@ function ShopsListContent() {
                   </>
                 )}
               </h2>
-              <span className="text-xs font-extrabold bg-amber-400/20 text-amber-800 px-2.5 py-0.5 rounded-full border border-amber-400/40">
-                {filteredBoutiques.length} {filteredBoutiques.length > 1 ? 'disponibles' : 'disponible'}
+              <span className="text-xs font-black bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full shadow-2xs">
+                {filteredBoutiques.length} {filteredBoutiques.length > 1 ? 'boutiques' : 'boutique'}
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium">
-              Commandez en 2 clics avec Wave, Orange Money ou paiement à la livraison.
+              Commandes directes • Paiement Wave, Orange Money ou à la livraison.
             </p>
           </div>
 
@@ -702,14 +702,14 @@ function ShopsListContent() {
             <button
               type="button"
               onClick={handleResetFilters}
-              className="text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 transition select-none shadow-xs active:scale-95 cursor-pointer"
+              className="self-start sm:self-auto text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition select-none shadow-2xs active:scale-95 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Afficher tout ({BOUTIQUES_DATA.length})</span>
             </button>
           ) : (
-            <div className="text-xs font-bold text-slate-400 hidden sm:flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <div className="text-xs font-bold text-slate-500 hidden sm:flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200/80">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               <span>Catalogue 100% vérifié</span>
             </div>
           )}
@@ -733,27 +733,27 @@ function ShopsListContent() {
                     />
 
                     {/* Gradient protecteur élégant */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/20 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/20 pointer-events-none" />
 
-                    {/* Badge Boutique Vérifiée / Promo / Nouveauté */}
+                    {/* Badge Statut en haut à gauche (sans duplication d'icône) */}
                     {shop.isPromo && shop.promoBadge ? (
-                      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-gradient-to-r from-rose-600 to-amber-500 text-white text-[11px] font-black px-3 py-1 rounded-full shadow-md shadow-rose-950/40 backdrop-blur-xs">
+                      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-gradient-to-r from-rose-600 to-amber-500 text-white text-[11px] font-black px-3 py-1 rounded-full shadow-md backdrop-blur-xs">
                         <Flame className="w-3.5 h-3.5 stroke-[2.5px] fill-amber-300" />
-                        <span>{shop.promoBadge}</span>
+                        <span>{shop.promoBadge.replace(/^[🔥✨]\s*/, '')}</span>
                       </div>
                     ) : shop.newBadge ? (
                       <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-300 text-slate-950 text-[11px] font-black px-3 py-1 rounded-full shadow-md backdrop-blur-xs">
                         <Sparkles className="w-3.5 h-3.5 stroke-[2.5px]" />
-                        <span>{shop.newBadge}</span>
+                        <span>{shop.newBadge.replace(/^[🔥✨]\s*/, '')}</span>
                       </div>
                     ) : (
-                      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-[#059669] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md shadow-emerald-900/30 backdrop-blur-xs">
+                      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-[#059669] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md backdrop-blur-xs">
                         <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5px]" />
                         <span>Boutique vérifiée</span>
                       </div>
                     )}
 
-                    {/* Badges Localisation & Articles */}
+                    {/* Badges Localisation & Articles en haut à droite */}
                     <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
                       <span className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/10">
                         <MapPin className="w-3 h-3 text-amber-400" />
@@ -764,48 +764,54 @@ function ShopsListContent() {
                       </span>
                     </div>
 
-                    {/* Monogramme Circulaire */}
-                    <div className="absolute -bottom-6 left-5 z-20 w-12 h-12 rounded-full bg-slate-950 text-white border-2 border-white flex flex-col items-center justify-center shadow-lg group-hover:border-amber-400 transition-colors">
-                      <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 -mb-0.5" />
-                      <span className="font-black text-xs tracking-tight leading-none">
-                        {shop.monogram}
-                      </span>
-                    </div>
-
                     {/* Badge de distinction en bas à droite de l'image */}
-                    <div className="absolute bottom-2.5 right-3 z-10 text-[10px] font-bold text-amber-300 bg-black/60 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-amber-400/30">
+                    <div className="absolute bottom-2.5 right-3 z-10 text-[10px] font-bold text-amber-300 bg-black/70 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-amber-400/30">
                       {shop.badge}
                     </div>
                   </div>
 
                   {/* Informations de la Boutique */}
-                  <div className="pt-8 px-5 pb-3 space-y-2">
-                    {/* Titre & Note */}
-                    <div className="flex items-center justify-between gap-2">
-                      <Link
-                        href={`/boutiques/${shop.slug}/produits`}
-                        className="font-extrabold text-base text-slate-900 group-hover:text-amber-600 transition flex items-center gap-2 truncate"
-                      >
-                        <span className="truncate">{shop.name}</span>
-                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 shrink-0 shadow-2xs">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                          <span>Vérifiée</span>
+                  <div className="p-5 space-y-3">
+                    {/* En-tête : Monogramme + Nom & Quartier + Note */}
+                    <div className="flex items-start gap-3">
+                      {/* Monogramme logo net & jamais tronqué */}
+                      <div className="w-11 h-11 rounded-2xl bg-[#0c1527] text-white border border-slate-700/60 flex flex-col items-center justify-center shrink-0 shadow-sm group-hover:border-amber-400/70 transition-colors">
+                        <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 -mb-0.5" />
+                        <span className="font-black text-xs tracking-tight leading-none text-white">
+                          {shop.monogram}
                         </span>
-                      </Link>
+                      </div>
 
-                      <div className="flex items-center gap-1 text-xs font-black text-slate-950 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/60 shrink-0 shadow-2xs">
+                      {/* Nom & localisation */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <Link
+                            href={`/boutiques/${shop.slug}/produits`}
+                            className="font-extrabold text-base text-slate-900 group-hover:text-amber-600 transition truncate"
+                          >
+                            {shop.name}
+                          </Link>
+                          <span
+                            className="inline-flex items-center gap-0.5 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/80 shrink-0"
+                            title="Boutique vérifiée & certifiée"
+                          >
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 mt-0.5 truncate">
+                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate">{shop.district}</span>
+                        </div>
+                      </div>
+
+                      {/* Note & avis */}
+                      <div className="flex items-center gap-1 text-xs font-black text-slate-950 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200/60 shrink-0 shadow-2xs">
                         <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                         <span>{shop.rating}</span>
-                        <span className="text-[10px] font-semibold text-slate-400">
+                        <span className="text-[10px] font-semibold text-slate-400 hidden sm:inline">
                           {shop.reviews}
                         </span>
                       </div>
-                    </div>
-
-                    {/* Quartier / Adresse */}
-                    <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500">
-                      <MapPin className="w-3 h-3 text-slate-400" />
-                      <span>{shop.district}</span>
                     </div>
 
                     {/* Sous-titre descriptif */}
@@ -815,7 +821,7 @@ function ShopsListContent() {
 
                     {/* Offre Promo Spéciale en avant */}
                     {shop.discountText && (
-                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-100">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1.5 rounded-xl border border-rose-100">
                         <Flame className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                         <span className="truncate">{shop.discountText}</span>
                       </div>
@@ -826,7 +832,7 @@ function ShopsListContent() {
                 {/* Tags & Boutons d'actions toujours alignés en bas de la carte */}
                 <div className="mt-auto px-5 pb-5 pt-3 space-y-3 border-t border-slate-100 bg-white">
                   <div className="flex flex-wrap items-center gap-1.5 min-h-[26px]">
-                    {shop.tags.map((tag) => (
+                    {shop.tags.slice(0, 4).map((tag) => (
                       <span
                         key={tag}
                         className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
@@ -836,7 +842,7 @@ function ShopsListContent() {
                     ))}
                   </div>
 
-                  {/* Boutons d'actions : WhatsApp Direct + Visiter les produits */}
+                  {/* Boutons d'actions : WhatsApp Direct + Visiter la boutique */}
                   <div className="flex items-center gap-2">
                     <a
                       href={`https://wa.me/${shop.whatsapp}?text=${encodeURIComponent(
@@ -856,7 +862,7 @@ function ShopsListContent() {
                       href={`/boutiques/${shop.slug}/produits`}
                       className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0c1527] hover:bg-amber-400 text-white hover:text-slate-950 font-extrabold text-xs py-3 px-4 rounded-2xl transition-all duration-200 shadow-xs group/btn active:scale-95"
                     >
-                      <span>Visiter les produits</span>
+                      <span>Visiter la boutique</span>
                       <ArrowRight className="w-3.5 h-3.5 stroke-[2.5px] group-hover/btn:translate-x-1 transition-transform" />
                     </Link>
                   </div>
