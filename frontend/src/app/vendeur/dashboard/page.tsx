@@ -333,7 +333,7 @@ export default function VendorDashboardPage() {
         </header>
 
         {/* Contenu de la page avec grille aérée */}
-        <main className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
+        <main className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto pb-28 lg:pb-8">
           {/* Bannière d'attente de validation Super Admin & WhatsApp */}
           {!profile.isVerified && (
             <motion.div
