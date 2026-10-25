@@ -22,6 +22,8 @@ import {
   Truck,
   RotateCcw,
   Flame,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 interface Boutique {
@@ -240,6 +242,74 @@ function ShopsListContent() {
     }
   }, [filterParam, categoryParam, sortParam, queryParam]);
 
+  // Carrousel de Bannières Publicitaires & Annonces Sponsorisées
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+
+  const AD_SLIDES = useMemo(
+    () => [
+      {
+        id: 'sunset-banner',
+        type: 'image' as const,
+        image: '/images/boutiques/dakar_sunset_banner.png',
+        alt: 'Les meilleures boutiques du Sénégal, réunies ici.',
+        link: '/boutiques',
+      },
+      {
+        id: 'flash-promo',
+        type: 'promo' as const,
+        tag: '⚡ VENTES FLASH & PUBLICITÉ',
+        tagColor: 'bg-rose-500 text-white',
+        title: "Jusqu'à -50% de réduction immédiate",
+        highlight: 'sur les boutiques partenaires',
+        subtitle:
+          'Style & Mode, TechZone, Maison Chic : découvrez les meilleures offres avec livraison express 24h à Dakar.',
+        ctaText: 'Profiter des réductions →',
+        ctaLink: '/boutiques?filter=promos',
+        bgGradient: 'from-rose-950 via-[#180a22] to-[#071328]',
+        accentBadge: '🔥 Offre Limitée',
+        coverImage: '/images/boutiques/cover_style_mode.jpg',
+      },
+      {
+        id: 'star-techzone',
+        type: 'promo' as const,
+        tag: '👑 BOUTIQUE STAR DU MOIS',
+        tagColor: 'bg-amber-400 text-slate-950 font-black',
+        title: "TechZone Médina : Nouveautés High-Tech",
+        highlight: 'Garanties 1 an',
+        subtitle:
+          'Smartphones, ordinateurs portables, écouteurs sans fil et accessoires high-tech. Livraison express en 2h à Dakar.',
+        ctaText: 'Visiter la boutique TechZone →',
+        ctaLink: '/boutiques/techzone/produits',
+        bgGradient: 'from-[#071328] via-[#0c224a] to-[#061224]',
+        accentBadge: '⚡ Vendeur Officiel Certifié',
+        coverImage: '/images/boutiques/cover_techzone.jpg',
+      },
+      {
+        id: 'sponsor-vendor',
+        type: 'promo' as const,
+        tag: '📢 ESPACE ANNONCEURS & COMMERÇANTS',
+        tagColor: 'bg-emerald-500 text-white font-black',
+        title: 'Faites votre publicité sur Malick Buss',
+        highlight: '+50 000 clients à Dakar',
+        subtitle:
+          'Mettez votre boutique en tête de liste et multipliez vos ventes en ligne. 1er mois de visibilité sponsorisée offert !',
+        ctaText: 'Devenir boutique vedette →',
+        ctaLink: '/vendeur/accueil',
+        bgGradient: 'from-[#052216] via-[#0c3a27] to-[#07172b]',
+        accentBadge: '🚀 Boost Vendeur',
+        coverImage: '/images/boutiques/cover_maison_chic.jpg',
+      },
+    ],
+    []
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentAdIndex((prev) => (prev + 1) % AD_SLIDES.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [AD_SLIDES.length]);
+
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {
       Toutes: BOUTIQUES_DATA.length,
@@ -310,19 +380,130 @@ function ShopsListContent() {
   return (
     <div className="bg-[#f8f9fa] min-h-screen py-4 sm:py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* ================= 1. HERO BANNER SANS BANDES NOIRES + EFFET SHIMMER ================= */}
-        <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group border border-slate-200/60 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-slate-900/10">
-          <img
-            src="/images/boutiques/dakar_sunset_banner.png"
-            alt="Les meilleures boutiques du Sénégal, réunies ici"
-            className="w-full h-auto object-cover block"
-          />
+        {/* ================= 1. CARROUSEL DE BANNIÈRES PUBLICITAIRES & PROMOS ================= */}
+        <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 group">
+          <AnimatePresence mode="wait">
+            {AD_SLIDES[currentAdIndex].type === 'image' ? (
+              <motion.div
+                key={AD_SLIDES[currentAdIndex].id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.45 }}
+                className="relative w-full overflow-hidden bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-slate-900/10 cursor-pointer"
+                onClick={() => router.push(AD_SLIDES[currentAdIndex].link)}
+              >
+                <img
+                  src={AD_SLIDES[currentAdIndex].image}
+                  alt={AD_SLIDES[currentAdIndex].alt}
+                  className="w-full h-auto object-cover block"
+                />
+                {/* Effet Shimmer lumineux au survol */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key={AD_SLIDES[currentAdIndex].id}
+                initial={{ opacity: 0, scale: 0.99 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.01 }}
+                transition={{ duration: 0.45 }}
+                className={`relative w-full min-h-[190px] sm:min-h-[220px] md:min-h-[240px] bg-gradient-to-r ${AD_SLIDES[currentAdIndex].bgGradient} text-white p-5 sm:p-7 md:p-9 flex flex-col justify-center overflow-hidden`}
+              >
+                {/* Photo de fond stylisée en transparence */}
+                {AD_SLIDES[currentAdIndex].coverImage && (
+                  <div className="absolute inset-y-0 right-0 w-1/2 sm:w-2/5 overflow-hidden pointer-events-none">
+                    <img
+                      src={AD_SLIDES[currentAdIndex].coverImage}
+                      alt="Illustration Publicité"
+                      className="w-full h-full object-cover object-center opacity-30 sm:opacity-45"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent" />
+                  </div>
+                )}
 
-          {/* Effet Shimmer lumineux au survol */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none" />
+                {/* Contenu Texte de la Publicité */}
+                <div className="relative z-10 max-w-xl space-y-2 sm:space-y-2.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span
+                      className={`text-[10px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-xs ${AD_SLIDES[currentAdIndex].tagColor}`}
+                    >
+                      {AD_SLIDES[currentAdIndex].tag}
+                    </span>
+                    {AD_SLIDES[currentAdIndex].accentBadge && (
+                      <span className="text-[10px] sm:text-xs font-bold text-amber-300 bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/15">
+                        {AD_SLIDES[currentAdIndex].accentBadge}
+                      </span>
+                    )}
+                  </div>
 
-          {/* Halo d'ambiance doré subtil */}
-          <div className="absolute -inset-px rounded-2xl sm:rounded-3xl border-2 border-transparent group-hover:border-amber-400/40 transition-colors duration-500 pointer-events-none" />
+                  <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-white leading-tight">
+                    {AD_SLIDES[currentAdIndex].title}{' '}
+                    {AD_SLIDES[currentAdIndex].highlight && (
+                      <span className="text-amber-400 block sm:inline">
+                        {AD_SLIDES[currentAdIndex].highlight}
+                      </span>
+                    )}
+                  </h2>
+
+                  <p className="text-xs sm:text-sm text-slate-200 line-clamp-2 font-medium leading-relaxed max-w-lg">
+                    {AD_SLIDES[currentAdIndex].subtitle}
+                  </p>
+
+                  <div className="pt-1.5">
+                    <Link
+                      href={AD_SLIDES[currentAdIndex].ctaLink}
+                      className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 rounded-full shadow-md transition-all active:scale-95 group/btn"
+                    >
+                      <span>{AD_SLIDES[currentAdIndex].ctaText}</span>
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Flèches de navigation Suivant / Précédent */}
+          <button
+            type="button"
+            onClick={() =>
+              setCurrentAdIndex(
+                (prev) => (prev - 1 + AD_SLIDES.length) % AD_SLIDES.length
+              )
+            }
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20 cursor-pointer shadow-md"
+            aria-label="Publicité précédente"
+          >
+            <ChevronLeft className="w-4 h-4 stroke-[2.5px]" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              setCurrentAdIndex((prev) => (prev + 1) % AD_SLIDES.length)
+            }
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20 cursor-pointer shadow-md"
+            aria-label="Publicité suivante"
+          >
+            <ChevronRight className="w-4 h-4 stroke-[2.5px]" />
+          </button>
+
+          {/* Indicateurs de pagination (Pills animées) */}
+          <div className="absolute bottom-2.5 right-4 z-20 flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+            {AD_SLIDES.map((slide, idx) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => setCurrentAdIndex(idx)}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${
+                  currentAdIndex === idx
+                    ? 'w-6 h-1.5 bg-amber-400'
+                    : 'w-1.5 h-1.5 bg-white/50 hover:bg-white'
+                }`}
+                aria-label={`Aller au slide publicitaire ${idx + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* ================= 2. BARRE UNIQUE DE FILTRES PAR RAYONS & TRI ================= */}
