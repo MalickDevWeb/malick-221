@@ -31,16 +31,16 @@ export class CreateVendorProductDto {
   @Length(1, 80)
   category!: string;
 
-  @ApiPropertyOptional({ format: 'url' })
+  @ApiPropertyOptional({ description: 'URL ou data URI de l’image' })
   @IsOptional()
-  @IsUrl({ require_protocol: true })
+  @IsString()
   imageUrl?: string;
 
   @ApiPropertyOptional({ type: [String], maxItems: 4 })
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(4)
-  @IsUrl({ require_protocol: true }, { each: true })
+  @IsString({ each: true })
   additionalImageUrls?: string[];
 
   @ApiPropertyOptional({ maxLength: 2000 })

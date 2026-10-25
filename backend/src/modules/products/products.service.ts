@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ProductCondition, ShopStatus } from '@prisma/client';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateVendorProductDto } from './create-vendor-product.dto';
 
@@ -32,7 +33,7 @@ export class ProductsService {
       data: {
         shopId: shop.id,
         title: input.title.trim(),
-        slug: `${slugBase}-${crypto.randomUUID().slice(0, 8)}`,
+        slug: `${slugBase}-${randomUUID().slice(0, 8)}`,
         description: input.description?.trim() || null,
         category: input.category.trim(),
         imageUrl: input.imageUrl ?? null,

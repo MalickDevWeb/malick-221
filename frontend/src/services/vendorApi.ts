@@ -53,6 +53,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
     if (message.includes('phoneNumber must match') || message.includes('regular expression')) {
       message = 'Le numéro de téléphone est invalide. Veuillez renseigner un numéro valide (ex: 77 123 45 67 ou +221 77 123 45 67).';
+    } else if (response.status === 413 || message.toLowerCase().includes('entity too large')) {
+      message = 'Les photos ou données envoyées sont trop volumineuses. Veuillez choisir une photo plus légère.';
     }
     throw new VendorApiError(response.status, message);
   }

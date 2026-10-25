@@ -48,9 +48,66 @@ export function readFileAsDataUrl(file: File | Blob): Promise<string> {
 }
 
 /**
+ * Compresse et redimensionne une image côté client pour éviter d'envoyer des Mo inutiles
+ * et garantir une publication instantanée même avec des photos de smartphone haute résolution.
+ */
+export function compressImage(file: File | Blob, maxWidth = 1200, quality = 0.8): Promise<string> {
+  return new Promise((resolve) => {
+    // Si ce n'est pas une image ou si l'environnement n'a pas de DOM (SSR), fallback direct
+    if (typeof window === 'undefined' || (file.type && !file.type.startsWith('image/'))) {
+      readFileAsDataUrl(file).then(resolve).catch(() => resolve(''));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        // Calcul du redimensionnement en conservant le ratio
+        if (width > maxWidth || height > maxWidth) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxWidth) / height);
+            height = maxWidth;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(e.target?.result as string);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        // Exporte en image/jpeg avec qualité 0.8 (réduit 10 Mo en ~150 Ko)
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedDataUrl);
+      };
+      img.onerror = () => {
+        resolve(e.target?.result as string);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => {
+      readFileAsDataUrl(file).then(resolve).catch(() => resolve(''));
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
  * Téléverse une image vers Cloudinary
  * Si Cloudinary n'est pas joignable ou les clés ne sont pas activées,
- * retourne gracieusement l'image sous format Base64 optimisé sans faire crasher l'app.
+ * compresse et retourne gracieusement l'image sous format Base64 optimisé sans faire crasher l'app.
  */
 export async function uploadToCloudinary(
   file: File | Blob,
@@ -88,9 +145,9 @@ export async function uploadToCloudinary(
     }
   }
 
-  // Fallback immédiat et ultra-rapide
+  // Fallback immédiat et ultra-rapide avec compression automatique
   onProgress?.(50);
-  const localUrl = await readFileAsDataUrl(file);
+  const localUrl = await compressImage(file);
   onProgress?.(100);
 
   return {
