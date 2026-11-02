@@ -129,3 +129,4 @@ Sur Vercel, nous déployons deux projets indépendants à partir du même dépô
    Ouvrez `https://<votre-api-render>.onrender.com/docs` ➔ La documentation OpenAPI s'affiche.
 3. **Test Vitrine Vercel** :
    Ouvrez `https://<votre-front-vercel>.vercel.app/` ➔ Le catalogue et les boutiques chargent correctement sans erreur CORS.
+

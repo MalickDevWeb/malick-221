@@ -13,6 +13,26 @@ jobs:
   validate:
     name: Build and test
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: malick_buss_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d malick_buss_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/malick_buss_ci?schema=public
+      JWT_ACCESS_SECRET: ci-only-access-secret-with-more-than-thirty-two-characters
+      SEED_TEST_PASSWORD: ci-only-test-password
+      PORT: "6302"
+      API_BASE_URL: http://localhost:6302
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,8 +61,30 @@ jobs:
       - name: Run backend unit tests
         run: npm test --workspace=backend
 
+      - name: Apply migrations to disposable CI database
+        run: npx prisma migrate deploy --schema backend/prisma/schema.prisma
+
+      - name: Seed disposable CI database
+        run: npm run seed:test --workspace=backend
+
       - name: Build backend
         run: npm run build:backend
+
+      - name: Start backend for API tests
+        run: |
+          npm run start:prod --workspace=backend > /tmp/malick-buss-api.log 2>&1 &
+          echo $! > /tmp/malick-buss-api.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:6302/health/ready >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/malick-buss-api.log
+          exit 1
+
+      - name: Run backend API integration tests
+        run: npm run test:api --workspace=backend
 
       - name: Build storefront
         run: npm run build:frontend
@@ -91,14 +133,9 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
   sonarcloud:
-    name: SonarQube / SonarCloud Quality Gate
+    name: SonarCloud Quality Gate
     needs: [validate, security]
-    if: >-
-      ${{
-        secrets.SONAR_TOKEN != '' &&
-        (github.event_name != 'pull_request' ||
-         github.event.pull_request.head.repo.full_name == github.repository)
-      }}
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -116,20 +153,30 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Generate backend test coverage
+      - name: Generate backend unit test coverage
         run: |
           mkdir -p backend/coverage
-          npm run test:coverage --workspace=backend || true
+          npm run test:coverage --workspace=backend
 
-      - name: Analyze with SonarQube / SonarCloud and wait for Quality Gate
+      - name: Verify Sonar configuration
+        env:
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          test -n "$SONAR_ORGANIZATION" || { echo "::error::Set SONAR_ORGANIZATION in GitHub variables."; exit 1; }
+          test -n "$SONAR_PROJECT_KEY" || { echo "::error::Set SONAR_PROJECT_KEY in GitHub variables."; exit 1; }
+          test -n "$SONAR_TOKEN" || { echo "::error::Set SONAR_TOKEN in GitHub secrets."; exit 1; }
+
+      - name: Analyze with SonarCloud and wait for Quality Gate
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
+          SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
             ${{ vars.SONAR_ORGANIZATION != '' && format('-Dsonar.organization={0}', vars.SONAR_ORGANIZATION) || '' }}
-            ${{ vars.SONAR_PROJECT_KEY != '' && format('-Dsonar.projectKey={0}', vars.SONAR_PROJECT_KEY) || '-Dsonar.projectKey=malick-buss' }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
             -Dsonar.qualitygate.wait=true
 
   deploy-staging:
@@ -142,7 +189,7 @@ jobs:
         github.ref == 'refs/heads/develop' &&
         needs.validate.result == 'success' &&
         needs.security.result == 'success' &&
-        (needs.sonarcloud.result == 'success' || needs.sonarcloud.result == 'skipped')
+        needs.sonarcloud.result == 'success'
       }}
     runs-on: ubuntu-latest
     environment: staging
@@ -191,26 +238,43 @@ jobs:
               { label: 'Admin', id: required('RENDER_ADMIN_SERVICE_ID') }
             ];
             const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-            for (const target of targets) {
-              core.info(`Requesting staging ${target.label} deployment.`);
-              const response = await fetch(
-                `https://api.render.com/v1/services/${encodeURIComponent(target.id)}/deploys`,
-                {
-                  method: 'POST',
-                  headers,
-                  body: JSON.stringify({
-                    clearCache: 'do_not_clear',
-                    commitId: context.sha
-                  })
-                }
-              );
+            const requestDeploy = async (target) => {
+              const deployUrl = `https://api.render.com/v1/services/${encodeURIComponent(target.id)}/deploys`;
+              const response = await fetch(deployUrl, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ clearCache: 'do_not_clear', commitId: context.sha })
+              });
               if (!response.ok) {
                 throw new Error(`Render deploy request for ${target.label} failed with HTTP ${response.status}.`);
               }
-              const payload = await response.json();
-              const deployId = payload.id || payload.deploy?.id;
+              const responseBody = await response.text();
+              const payload = responseBody ? JSON.parse(responseBody) : null;
+              let deployId = payload?.id || payload?.deploy?.id;
+              const deadline = Date.now() + 60_000;
+              while (!deployId && Date.now() < deadline) {
+                const query = new URLSearchParams({
+                  createdAfter: new Date(Date.now() - 5 * 60_000).toISOString(),
+                  limit: '100'
+                });
+                const listResponse = await fetch(`${deployUrl}?${query}`, { headers });
+                if (!listResponse.ok) {
+                  throw new Error(`Could not find queued Render deployment for ${target.label}: HTTP ${listResponse.status}.`);
+                }
+                const deploys = await listResponse.json();
+                const matching = deploys
+                  .map((item) => item.deploy || item)
+                  .find((deploy) => deploy.commit?.id === context.sha && deploy.trigger === 'api');
+                deployId = matching?.id;
+                if (!deployId) await pause(5_000);
+              }
               if (!deployId) throw new Error(`Render did not return a deployment ID for ${target.label}.`);
+              return deployId;
+            };
+
+            for (const target of targets) {
+              core.info(`Requesting staging ${target.label} deployment.`);
+              const deployId = await requestDeploy(target);
 
               const deadline = Date.now() + 30 * 60 * 1000;
               let live = false;
@@ -372,26 +436,43 @@ jobs:
               { label: 'Admin', id: required('RENDER_ADMIN_SERVICE_ID') }
             ];
             const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-            for (const target of targets) {
-              core.info(`Requesting production ${target.label} deployment.`);
-              const response = await fetch(
-                `https://api.render.com/v1/services/${encodeURIComponent(target.id)}/deploys`,
-                {
-                  method: 'POST',
-                  headers,
-                  body: JSON.stringify({
-                    clearCache: 'do_not_clear',
-                    commitId: context.sha
-                  })
-                }
-              );
+            const requestDeploy = async (target) => {
+              const deployUrl = `https://api.render.com/v1/services/${encodeURIComponent(target.id)}/deploys`;
+              const response = await fetch(deployUrl, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ clearCache: 'do_not_clear', commitId: context.sha })
+              });
               if (!response.ok) {
                 throw new Error(`Render deploy request for ${target.label} failed with HTTP ${response.status}.`);
               }
-              const payload = await response.json();
-              const deployId = payload.id || payload.deploy?.id;
+              const responseBody = await response.text();
+              const payload = responseBody ? JSON.parse(responseBody) : null;
+              let deployId = payload?.id || payload?.deploy?.id;
+              const deadline = Date.now() + 60_000;
+              while (!deployId && Date.now() < deadline) {
+                const query = new URLSearchParams({
+                  createdAfter: new Date(Date.now() - 5 * 60_000).toISOString(),
+                  limit: '100'
+                });
+                const listResponse = await fetch(`${deployUrl}?${query}`, { headers });
+                if (!listResponse.ok) {
+                  throw new Error(`Could not find queued Render deployment for ${target.label}: HTTP ${listResponse.status}.`);
+                }
+                const deploys = await listResponse.json();
+                const matching = deploys
+                  .map((item) => item.deploy || item)
+                  .find((deploy) => deploy.commit?.id === context.sha && deploy.trigger === 'api');
+                deployId = matching?.id;
+                if (!deployId) await pause(5_000);
+              }
               if (!deployId) throw new Error(`Render did not return a deployment ID for ${target.label}.`);
+              return deployId;
+            };
+
+            for (const target of targets) {
+              core.info(`Requesting production ${target.label} deployment.`);
+              const deployId = await requestDeploy(target);
 
               const deadline = Date.now() + 30 * 60 * 1000;
               let live = false;

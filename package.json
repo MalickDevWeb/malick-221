@@ -21,7 +21,10 @@
     "test:coverage": "npm run test:coverage --workspace=backend",
     "sonar:up": "docker compose -f docker-compose.sonar.yml up -d",
     "sonar:down": "docker compose -f docker-compose.sonar.yml down",
-    "sonar:logs": "docker compose -f docker-compose.sonar.yml logs -f sonarqube"
+    "sonar:logs": "docker compose -f docker-compose.sonar.yml logs -f sonarqube",
+    "doc:doctor": "node_modules/pmt_domentation/scripts/doctor.sh",
+    "doc:build": "cd docs && latexmk -pdf -synctex=1 -interaction=nonstopmode -halt-on-error -outdir=build main.tex && cp build/main.pdf main.pdf 2>/dev/null || true",
+    "doc:clean": "cd docs && rm -rf build main.pdf"
   },
   "keywords": [
     "marketplace",
@@ -32,6 +35,8 @@
     "multi-vendor"
   ],
   "author": "Malick Buss",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "pmt_domentation": "^1.0.1"
+  }
 }
-
