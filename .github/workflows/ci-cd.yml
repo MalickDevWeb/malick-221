@@ -169,7 +169,7 @@ jobs:
           test -n "$SONAR_TOKEN" || { echo "::error::Set SONAR_TOKEN in GitHub secrets."; exit 1; }
 
       - name: Analyze with SonarCloud and wait for Quality Gate
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
