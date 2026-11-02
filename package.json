@@ -37,7 +37,7 @@
   "author": "Malick Buss",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@next/swc-linux-x64-gnu": "14.2.33",
+    "@next/swc-linux-x64-gnu": "16.4.3",
     "pmt_domentation": "^1.0.1",
     "vercel": "^65.9.0"
   }
