@@ -5,6 +5,7 @@ import { Header } from './Header';
 import { BottomNavigation } from './BottomNavigation';
 import { DesktopFooter } from './DesktopFooter';
 import { SmoothScroll } from '../motion/SmoothScroll';
+import { InAppSupportWidget } from '../support/InAppSupportWidget';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -49,6 +50,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Footer Dédié pour Ordinateur de Bureau (Desktop) */}
       <DesktopFooter />
+
+      {/* Widget flottant d'assistance In-App WhatsApp / Aide */}
+      <InAppSupportWidget />
 
       {/* Barre de Navigation Inférieure Mobile (Masquée sur Desktop) */}
       <BottomNavigation />

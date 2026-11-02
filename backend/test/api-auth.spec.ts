@@ -13,6 +13,15 @@ test('authentification, rôles et routes publiques', async () => {
   let registeredUserId: string | undefined;
 
   try {
+    const liveHealth = await apiRequest('GET', '/health/live');
+    assert.equal(liveHealth.status, 200);
+    assert.equal(liveHealth.data.status, 'ok');
+
+    const readyHealth = await apiRequest('GET', '/health/ready');
+    assert.equal(readyHealth.status, 200);
+    assert.equal(readyHealth.data.database, 'ok');
+    assert.equal((await apiRequest('GET', '/docs')).status, 200);
+
     for (const [method, path] of [
       ['GET', '/shops'],
       ['GET', '/shops/qa-boutique-test'],

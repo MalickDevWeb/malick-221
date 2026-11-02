@@ -23,3 +23,4 @@ capture "backend/src/main.ts" 8 42 "docs/assets/captures/code-security-cors.png"
 capture "backend/src/api/health/health.controller.ts" 1 18 "docs/assets/captures/code-health-probes.png" "ts" "health.controller.ts — Sondes de Santé Liveness & Readiness"
 capture "backend/src/modules/products/products.service.ts" 24 49 "docs/assets/captures/code-products-service.png" "ts" "products.service.ts — Publication Sécurisée des Produits"
 capture "backend/src/infrastructure/orders/prisma-orders.repository.ts" 370 395 "docs/assets/captures/code-vendor-balance.png" "ts" "prisma-orders.repository.ts — Calcul des Soldes & Retraits Vendeur"
+
