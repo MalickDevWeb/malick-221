@@ -654,8 +654,8 @@ gantt
 
 Le pipeline GitHub Actions déploie le monorepo sur deux environnements Render isolés :
 
-- les pull requests exécutent build, tests backend, audit npm, CodeQL et SonarCloud lorsque configuré ;
-- chaque push validé sur `develop` déploie les trois services staging, applique les migrations sur la base staging, puis vérifie la santé HTTP ;
+- les pull requests exécutent les builds des trois applications, les tests unitaires et API sur PostgreSQL temporaire, l'audit npm, CodeQL et le Quality Gate SonarCloud ;
+- chaque push validé sur `develop` déploie les trois services staging, applique les migrations sur la base staging, puis vérifie les endpoints de santé ;
 - `main` déploie automatiquement seulement si les contrôles requis passent et si le même arbre Git a déjà été déployé et vérifié en staging.
 
 Les services, le flux de promotion, les variables/secrets nécessaires, les migrations et les limites opérationnelles sont décrits dans [le guide CI/CD Render](./docs/deployment/cicd-render.md).  

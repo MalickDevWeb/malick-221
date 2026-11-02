@@ -12,14 +12,18 @@
 \usepackage{listings}
 \usepackage{enumitem}
 \usepackage{amsmath}
+\usepackage{microtype}
 
 \geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+\setlength{\headheight}{16pt}
+\addtolength{\topmargin}{-3pt}
 
 \definecolor{primary}{RGB}{15, 23, 42}
 \definecolor{accent}{RGB}{245, 158, 11}
 \definecolor{secondary}{RGB}{16, 185, 129}
-\definecolor{darkgray}{RGB}{51, 65, 85}
-\definecolor{lightgray}{RGB}{241, 245, 249}
+\definecolor{darkgray}{RGB}{71, 85, 105}
+\definecolor{lightgray}{RGB}{248, 250, 252}
+\definecolor{bordergray}{RGB}{226, 232, 240}
 
 \hypersetup{
     colorlinks=true,
@@ -27,26 +31,26 @@
     filecolor=primary,      
     urlcolor=accent,
     citecolor=secondary,
-    pdfauthor={Malick Buss Engineering},
+    pdfauthor={Direction Technique Malick Buss},
     pdftitle={Malick Buss - Dossier d'Architecture et Manuel d'Exploitation Enterprise}
 }
 
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\textcolor{darkgray}{\textbf{Malick Buss} — Dossier d'Architecture Technique}}
+\fancyhead[L]{\textcolor{darkgray}{\textbf{Malick Buss} — Dossier d'Architecture \& Manuel d'Exploitation}}
 \fancyhead[R]{\textcolor{darkgray}{Version 1.0.0}}
-\fancyfoot[L]{\textcolor{darkgray}{Confidentiel — Usage Interne}}
+\fancyfoot[L]{\textcolor{darkgray}{Confidentiel — Usage Interne \& Direction}}
 \fancyfoot[R]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
 
 \lstset{
     backgroundcolor=\color{lightgray},
-    basicstyle=\ttfamily\footnotesize,
+    basicstyle=\ttfamily\scriptsize,
     breaklines=true,
     captionpos=b,
     frame=single,
-    rulecolor=\color{darkgray},
+    rulecolor=\color{bordergray},
     numbers=left,
     numberstyle=\tiny\color{darkgray},
     showstringspaces=false
@@ -54,27 +58,30 @@
 
 \begin{document}
 
+% ==================== PAGE DE GARDE ====================
 \begin{titlepage}
     \centering
     \vspace*{1.5cm}
     
-    {\Huge \bfseries \textcolor{primary}{MALICK BUSS SÉNÉGAL}}\\[0.5cm]
-    {\LARGE \textcolor{accent}{\textbf{Marketplace E-Commerce Multi-Boutiques}}}\\[1.5cm]
+    {\Huge \bfseries \textcolor{primary}{MALICK BUSS SÉNÉGAL}}\\[0.4cm]
+    {\LARGE \textcolor{accent}{\textbf{Plateforme Marketplace Multi-Boutiques Mobile-First}}}\\[1.2cm]
     
     \rule{\linewidth}{1.5pt}\\[0.4cm]
-    {\huge \bfseries Dossier d'Architecture Technique, Spécifications Opérationnelles \& Guide de Déploiement Hybride}\\[0.2cm]
-    \rule{\linewidth}{1.5pt}\\[2cm]
+    {\huge \bfseries Dossier d'Architecture Technique, Référentiel Opérationnel des Use Cases \& Guide de Déploiement Hybride}\\[0.2cm]
+    \rule{\linewidth}{1.5pt}\\[1.8cm]
     
-    \begin{minipage}{0.45\textwidth}
+    \begin{minipage}{0.48\textwidth}
         \begin{flushleft} \large
-            \textbf{Auteurs :}\\
-            Équipe Ingénierie \& DevOps\\
+            \textbf{Auteurs :} \\
+            Direction Technique \& Ingénierie\\
+            Équipe DevOps \& Architecture Cloud\\
             Malick Buss Tech Core
         \end{flushleft}
     \end{minipage}
-    \begin{minipage}{0.45\textwidth}
+    \begin{minipage}{0.48\textwidth}
         \begin{flushright} \large
             \textbf{Statut :} Production Ready\\
+            \textbf{Classification :} Confidentiel Entreprise\\
             \textbf{Version :} 1.0.0\\
             \textbf{Date :} \today
         \end{flushright}
@@ -82,135 +89,228 @@
     
     \vfill
     
-    {\large \textbf{Plateforme Mobile-First • Transactions FCFA (Wave / Orange Money) • CI/CD \& SonarQube}}\\[0.5cm]
-    {\small Dakar, République du Sénégal}
+    {\large \textbf{Souveraineté Monétaire FCFA • Intégrations Wave \& Orange Money • CI/CD \& SonarQube}}\\[0.4cm]
+    {\small Siège Opérationnel : Dakar, République du Sénégal}
 \end{titlepage}
 
-\tableofcontents
-\newpage
+% ==================== FICHE SIGNALÉTIQUE ====================
+\chapter*{Fiche Signalétique du Projet}
+\addcontentsline{toc}{chapter}{Fiche Signalétique du Projet}
 
-\chapter{Contexte Stratégique \& Vision Produit}
-
-\section{Vision Globale \& Piliers Fondamentaux}
-\textbf{Malick Buss} est une marketplace multi-boutiques mobile-first conçue spécifiquement pour répondre aux exigences structurelles du commerce digital au Sénégal (Dakar et régions de l'intérieur) et dans l'UEMOA.
-
-La plateforme articule sa proposition de valeur autour de 4 piliers fondamentaux :
-\begin{enumerate}[label=\textbf{\arabic*.}]
-    \item \textbf{Garantie de Confiance \& Authenticité Produits :} Éradication de la contrefaçon et des photos trompeuses grâce à l'obligation de capture vidéo et photo en direct (\textit{Direct Camera Live Capture}).
-    \item \textbf{Étanchéité Financière \& Traçabilité :} Calcul automatique et transparent d'une commission marketplace de 10\% par vente validée, avec isolation stricte des sous-commandes et journalisation comptable inviolable (\textit{Commission Ledger}).
-    \item \textbf{Intégrations Locales en FCFA :} Support natif des solutions de paiement plébiscitées (Wave, Orange Money) et encadrement strict du Paiement à la Livraison (\textit{Cash On Delivery}).
-    \item \textbf{Synergie WhatsApp Sécurisée :} Exploitation de WhatsApp pour la réassurance et l'assistance client, sans compromission des flux financiers de la marketplace.
-\end{enumerate}
-
-\section{Acteurs \& Modèle des Rôles (RBAC)}
-\begin{itemize}
-    \item \textbf{Acheteur (CLIENT) :} Recherche géolocalisée, constitution d'un panier multi-boutiques unique, suivi d'expédition temps réel et réclamations sous 7 jours.
-    \item \textbf{Vendeur / Marchand (VENDOR) :} Gestion autonome de la boutique, publication d'articles certifiés, traitement d'états des commandes et demande de retrait de solde vers Wave/Orange Money.
-    \item \textbf{Super Administrateur (SUPER\_ADMIN) :} Pouvoirs de gouvernance régalienne, modération de catalogue, vérification KYC des marchands, arbitrage des litiges et exécution des décaissements financiers.
-\end{itemize}
-
-\chapter{Architecture Logicielle \& Modèle de Données}
-
-\section{Organisation du Monorepo}
-Le projet est architecturé sous la forme d'un monorepo modulaire garantissant la réutilisabilité du code et le typage strict de bout en bout :
-\begin{itemize}
-    \item \textbf{\texttt{shared/}} : Bibliothèque partagée de types TypeScript, DTOs communs, utilitaires monétaires (\texttt{formatFCFA}) et formatage téléphonique international (\texttt{formatPhoneForWhatsApp}).
-    \item \textbf{\texttt{backend/}} : API REST Core développée avec NestJS, validation DTO, authentification JWT, ORM Prisma et persistance PostgreSQL 16.
-    \item \textbf{\texttt{frontend/}} : Application Web client et portail marchand développée en Next.js 14 App Router, optimisée pour les connexions mobiles 3G/4G.
-    \item \textbf{\texttt{back-office/}} : Console de supervision et d'administration Super Admin (Next.js 14, Tailwind CSS, tableaux de bord de modération et gouvernance).
-\end{itemize}
-
-\section{Modèle de Données Relationnel (PostgreSQL \& Prisma)}
-La base de données relationnelle est orchestrée autour d'un schéma robuste :
-\begin{itemize}
-    \item \textbf{Utilisateurs \& Sécurité :} \texttt{users}, \texttt{roles}, \texttt{refresh\_tokens}, \texttt{audit\_logs}.
-    \item \textbf{Boutiques \& KYC :} \texttt{shops} avec statuts (\texttt{PENDING\_VERIFICATION}, \texttt{ACTIVE}, \texttt{SUSPENDED}, \texttt{REJECTED}), coordonnées certifiées et toggle \texttt{requireLiveCapture}.
-    \item \textbf{Catalogue Produits :} \texttt{products} avec gestion de stock, prix de base, prix remisé, conditions (\texttt{NEUF}, \texttt{TRES\_BON\_ETAT}) et URLs Cloudinary.
-    \item \textbf{Commandes \& Sous-Commandes :} \texttt{orders} parentes éclatées en \texttt{sub\_orders} par marchand, permettant des cycles de vie indépendants (\texttt{PENDING\_PAYMENT}, \texttt{TO\_ACCEPT}, \texttt{ACCEPTED}, \texttt{PREPARING}, \texttt{SHIPPED}, \texttt{DELIVERED}, \texttt{COMPLETED}).
-    \item \textbf{Grand Livre Financier :} \texttt{commission\_ledgers} et \texttt{withdrawal\_requests} pour la comptabilisation irréversible des gains et décaissements.
-\end{itemize}
-
-\chapter{Cartographie des Use Cases du Super Admin}
-
-\section{Synthèse des 8 Domaines Opérationnels}
 \begin{table}[h!]
 \centering
 \small
-\begin{tabular}{@{}llp{8.5cm}@{}}
+\begin{tabular}{@{}ll@{}}
 \toprule
-\textbf{Domaine} & \textbf{Désignation} & \textbf{Responsabilités \& Actions Clés} \\
+\textbf{Paramètre} & \textbf{Spécification} \\
 \midrule
-\textbf{Domaine 1} & Pilotage \& KPI & Chiffre d'affaires global, volume des transactions, commissions perçues. \\
-\textbf{Domaine 2} & Onboarding \& KYC & Validation des dossiers marchands, activation et politique caméra directe. \\
-\textbf{Domaine 3} & Relations Vendeurs & Annuaire unifié, contact direct WhatsApp wa.me/221..., suspension/réactivation. \\
-\textbf{Domaine 4} & Modération Catalogue & Dépublication des articles non conformes, vérification anti-contrefaçon. \\
-\textbf{Domaine 5} & Supervision Commandes & Suivi des sous-commandes, arbitrage des réclamations clients, remboursements. \\
-\textbf{Domaine 6} & Gestion Financière & Validation des retraits marchands (seuil 5 000 FCFA), audit des virements Wave/OM. \\
-\textbf{Domaine 7} & Sécurité \& RBAC & Gestion des privilèges, désactivation de comptes suspects, journal d'audit. \\
-\textbf{Domaine 8} & Gouvernance & Paramétrage du taux de commission (10\%), frais de livraison (3 000 FCFA). \\
+\textbf{Nom du Projet} & Marketplace Multi-Boutiques Malick Buss \\
+\textbf{Zone Géographique} & Sénégal (Dakar \& 13 régions de l'intérieur), zone UEMOA \\
+\textbf{Monnaie de Référence} & Franc CFA (XOF / FCFA), précision entière \& décimale stricte \\
+\textbf{Architecture Logicielle} & Monorepo TypeScript modulaire (\texttt{shared}, \texttt{backend}, \texttt{frontend}, \texttt{back-office}) \\
+\textbf{Backend Framework} & NestJS 10, Clean Architecture, DDD, CQRS, Prisma ORM 5.8 \\
+\textbf{Base de Données} & PostgreSQL 16 Managée + Cache haute vélocité Redis 7 \\
+\textbf{Frontends} & Next.js 14 App Router, React 18, Tailwind CSS, Framer Motion \\
+\textbf{Intégrations Mobiles} & Wave Senegal API, Orange Money Webhook, Passerelle WhatsApp (+221) \\
+\textbf{CDN \& Médias} & Cloudinary Media API avec obligation de capture caméra directe \\
+\textbf{Hébergement Cible} & Hybride : Backend sur Render (Frankfurt), Frontends sur Vercel (Edge CDN) \\
+\textbf{Contrôle Qualité} & SonarQube / SonarCloud Quality Gate bloquant en CI/CD GitHub Actions \\
 \bottomrule
 \end{tabular}
-\caption{Matrice des responsabilités opérationnelles du Super Administrateur}
 \end{table}
 
-\chapter{Sécurité, Qualité de Code \& SonarQube}
+\newpage
+\tableofcontents
+\listoffigures
+\listoftables
+\newpage
 
-\section{Mesures de Sécurité Avancées}
+% ==================== CHAPITRE 1 ====================
+\chapter{Contexte Stratégique, Vision \& Modèle Économique}
+
+\section{Contexte du Marché \& Problématique}
+Le commerce informel et de détail au Sénégal représente plus de 70\% des échanges marchands urbains. Si l'adoption du smartphone et des portefeuilles mobiles (\textit{Wave, Orange Money}) est massive, la vente en ligne via les réseaux sociaux traditionnels souffre de trois maux majeurs :
+\begin{enumerate}
+    \item \textbf{L'asymétrie de confiance :} Photos trompeuses issues de banques d'images tierces et articles non conformes à la livraison.
+    \item \textbf{L'opacité logistique :} Litiges fréquents sur les frais et les délais d'acheminement entre Dakar et les régions.
+    \item \textbf{L'absence de traçabilité comptable :} Gestion manuelle des encaissements sans isolation des responsabilités entre boutiques.
+\end{enumerate}
+
+\section{Les Quatre Piliers Fondamentaux de Malick Buss}
+\begin{enumerate}[label=\textbf{\arabic*.}]
+    \item \textbf{Confiance \& Authenticité Certifiée :} Tout produit publié sur la marketplace est soumis à une politique stricte d'authentification visuelle. Le Super Admin active au besoin le flag \texttt{requireLiveCapture}, interdisant l'importation depuis la galerie du téléphone pour exiger la prise de vue directe par la caméra.
+    \item \textbf{Souveraineté \& Rapprochement Financier en FCFA :} Encaissement centralisé en FCFA, prélèvement automatique de la commission marketplace de 10\%, et reversement direct vers le compte mobile du marchand dès validation de la commande.
+    \item \textbf{Étanchéité Multi-Vendeurs :} Un panier unique côté acheteur est automatiquement ventilé en sous-commandes indépendantes (\textit{SubOrders}), avec calcul des frais de port spécifiques par boutique.
+    \item \textbf{Synergie WhatsApp :} Utilisation de liens wa.me pour la réassurance et le suivi client, sans jamais autoriser de fuite de transaction hors du circuit de paiement sécurisé.
+\end{enumerate}
+
+\section{Modèle des Rôles \& Permissions (RBAC)}
 \begin{itemize}
-    \item \textbf{Chiffrement des Mots de Passe :} Dérivation de clé cryptographique via l'algorithme \texttt{scrypt} avec sel cryptographique de 16 octets et comparaison en temps constant (\texttt{timingSafeEqual}) pour prévenir les attaques temporelles.
-    \item \textbf{En-têtes HTTP de Sécurité :} Injection systématique des en-têtes \texttt{X-Content-Type-Options: nosniff}, \texttt{X-Frame-Options: SAMEORIGIN}, \texttt{Referrer-Policy: strict-origin-when-cross-origin} et suppression de l'en-tête discriminant \texttt{X-Powered-By}.
-    \item \textbf{Protection CORS Dynamique :} Filtrage strict des requêtes cross-origin avec support automatique des domaines de preview et de production Vercel (\texttt{*.vercel.app}) et des domaines officiels Malick Buss.
+    \item \textbf{CLIENT :} Consultation géolocalisée, paiement Wave/OM ou Cash on Delivery, réclamation sous 7 jours.
+    \item \textbf{VENDOR :} Gestion de stock, traitement des sous-commandes, demandes de retraits dès 5 000 FCFA.
+    \item \textbf{SUPER\_ADMIN :} Pleins pouvoirs de gouvernance, arbitrage des litiges, validation KYC et modération.
 \end{itemize}
 
-\section{Contrôle Qualité \& SonarQube Quality Gate}
-Le fichier de configuration \texttt{sonar-project.properties} assure une couverture complète :
-\begin{lstlisting}[language=bash, caption=Configuration SonarQube de l'entreprise]
-sonar.projectKey=malick-buss
-sonar.projectName=Malick Buss Marketplace
-sonar.sources=backend/src,frontend/src,back-office/src,shared/src
-sonar.tests=backend/test
-sonar.javascript.lcov.reportPaths=backend/coverage/lcov.info
-\end{lstlisting}
+% ==================== CHAPITRE 2 ====================
+\chapter{Architecture Logicielle Monorepo \& Stack Technique}
+
+\section{Structure du Monorepo}
+Le projet est unifié sous un monorepo TypeScript hautement performant :
+\begin{itemize}
+    \item \textbf{\texttt{shared/}} : Noyau partagé fournissant le formatage monétaire \texttt{formatFCFA}, la normalisation des numéros sénégalais (+221) et les interfaces d'échange.
+    \item \textbf{\texttt{backend/}} : Moteur applicatif NestJS organisé selon les principes de la \textit{Clean Architecture}.
+    \item \textbf{\texttt{frontend/}} : Vitrine publique acheteurs et espace marchand mobile-first Next.js 14.
+    \item \textbf{\texttt{back-office/}} : Console Super Admin isolée sur le port 3001, dédiée à la gouvernance.
+\end{itemize}
+
+\section{Sécurité HTTP \& Protection CORS}
+Pour autoriser les déploiements hybrides sur Vercel tout en protégeant l'API NestJS contre les attaques cross-site, le backend implémente un filtre dynamique de requêtes :
 
 \begin{figure}[h!]
 \centering
-\IfFileExists{assets/architecture/architecture-cloud-cicd.jpg}{
-    \includegraphics[width=0.92\linewidth]{assets/architecture/architecture-cloud-cicd.jpg}
-}{
-    \fbox{Illustration architecture-cloud-cicd.jpg}
-}
-\caption{Architecture Globale Cloud, CI/CD et Quality Gate SonarQube}
+\includegraphics[width=0.95\linewidth]{assets/captures/code-security-cors.png}
+\caption{Code Source : En-têtes HTTP de Sécurité \& Résolution Dynamique CORS}
 \end{figure}
 
-\chapter{DevOps, Déploiement Hybride \& CI/CD}
-
-\section{Stratégie Hybride : Render \& Vercel}
-L'architecture de production dissocie la charge de travail pour une résilience maximale :
+\section{Résilience \& Sondes de Santé HTTP}
+L'orchestrateur de conteneurs (Render ou Kubernetes) supervise l'application grâce à deux sondes :
 \begin{itemize}
-    \item \textbf{Render (Backend Core) :} Hébergement du service API NestJS et de la base managée PostgreSQL 16. La commande de pré-déploiement exécute automatiquement \texttt{npx prisma migrate deploy}.
-    \item \textbf{Vercel (Frontends Edge) :} Déploiement de l'application cliente et de la console d'administration sur le réseau mondial Vercel Edge avec purge de cache instantanée.
+    \item \texttt{GET /health/live} : Vérifie la réactivité du moteur Node.js.
+    \item \texttt{GET /health/ready} : Teste la connectivité avec PostgreSQL via \texttt{SELECT 1} avant d'injecter du trafic.
 \end{itemize}
 
 \begin{figure}[h!]
 \centering
-\IfFileExists{assets/architecture/schema-structurel-flux-operationnel.jpg}{
-    \includegraphics[width=0.92\linewidth]{assets/architecture/schema-structurel-flux-operationnel.jpg}
-}{
-    \fbox{Illustration schema-structurel-flux-operationnel.jpg}
-}
+\includegraphics[width=0.92\linewidth]{assets/captures/code-health-probes.png}
+\caption{Code Source : Implémentation des Sondes de Santé Liveness \& Readiness}
+\end{figure}
+
+% ==================== CHAPITRE 3 ====================
+\chapter{Modèle de Données Relationnel \& Logique Métier}
+
+\section{Schéma Relationnel PostgreSQL \& Prisma}
+La cohérence des données financières repose sur le schéma Prisma unifié :
+\begin{itemize}
+    \item \textbf{User \& Auth :} Stockage sécurisé des identités avec dérivation \texttt{scrypt} et hachage en temps constant.
+    \item \textbf{Shop \& KYC :} Enregistrement du statut KYC (\texttt{PENDING\_VERIFICATION}, \texttt{ACTIVE}, \texttt{SUSPENDED}, \texttt{REJECTED}), du gérant, de l'adresse et de la politique caméra directe.
+    \item \textbf{Product :} Catalogage multi-boutiques avec gestion des stocks réservés lors du checkout.
+    \item \textbf{SubOrder \& CommissionLedger :} Isolation comptable garantissant qu'aucune commission n'est prélevée sur les frais d'expédition.
+\end{itemize}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.95\linewidth]{assets/captures/code-products-service.png}
+\caption{Code Source : Service de Publication \& Politique de Visibilité Catalogue}
+\end{figure}
+
+\section{Calcul des Soldes \& Décaissements Vendeurs}
+Le moteur financier calcule le solde disponible en soustrayant les demandes en cours du total des sous-commandes validées :
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.95\linewidth]{assets/captures/code-vendor-balance.png}
+\caption{Code Source : Agrégation Sécurisée du Solde Vendeur et Retraits}
+\end{figure}
+
+% ==================== CHAPITRE 4 ====================
+\chapter{Référentiel des Cas d'Usage du Super Admin (Use Cases)}
+
+\section{Cartographie Complète des 8 Domaines}
+
+\subsection{Domaine 1 : Pilotage Stratégique \& Dashboard}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{@{}llp{8cm}@{}}
+\toprule
+\textbf{ID} & \textbf{Cas d'Usage} & \textbf{Description \& Impact Opérationnel} \\
+\midrule
+UC-1.1 & CA Journalier & Analyse du volume d'affaires total encaissé (FCFA). \\
+UC-1.2 & Pipeline Boutiques & Ratio boutiques actives vs dossiers en cours de vérification. \\
+UC-1.3 & Volume Commandes & Surveillance des flux transactionnels et détection d'anomalies. \\
+UC-1.4 & Revue Commissions & Contrôle du prélèvement net de 10\% marketplace. \\
+UC-1.5 & Activité Récente & Flux en temps réel des commandes passées à Dakar et régions. \\
+\bottomrule
+\end{tabular}
+\caption{Use Cases Domaine 1 — Pilotage \& Indicateurs Clés}
+\end{table}
+
+\subsection{Domaine 2 : Onboarding \& Vérification des Boutiques (KYC)}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{@{}llp{8cm}@{}}
+\toprule
+\textbf{ID} & \textbf{Cas d'Usage} & \textbf{Description \& Impact Opérationnel} \\
+\midrule
+UC-2.1 & Examen KYC & Contrôle d'identité, registre de commerce et localisation physique. \\
+UC-2.2 & Approbation Active & Passage à ACTIVE : la boutique devient visible sur le catalogue. \\
+UC-2.3 & Notification WhatsApp & Envoi en 1 clic d'un message d'accueil pré-formaté au gérant. \\
+UC-2.4 & Politique Caméra Directe & Activation de \texttt{requireLiveCapture} (blocage import galerie). \\
+UC-2.5 & Suspension Temporaire & Masquage immédiat des produits en cas de litige ou rupture. \\
+UC-2.6 & Rejet Définitif & Clôture de compte pour fausse déclaration ou tentative de fraude. \\
+\bottomrule
+\end{tabular}
+\caption{Use Cases Domaine 2 — Onboarding \& Vérification Marchands}
+\end{table}
+
+\subsection{Domaines 3 à 8 : Gestion, Modération \& Finances}
+\begin{itemize}
+    \item \textbf{Domaine 3 (Relations Vendeurs) :} Annuaire centralisé, déclenchement wa.me direct, réactivation après régularisation.
+    \item \textbf{Domaine 4 (Modération Catalogue) :} Dépublication immédiate d'articles non conformes avec motif dans l'audit.
+    \item \textbf{Domaine 5 (Supervision Commandes) :} Contrôle des paiements mobiles, suivi multi-paniers, arbitrage réclamations 7 jours.
+    \item \textbf{Domaine 6 (Finances \& Retraits) :} Grand livre des commissions (10\%), validation des virements Wave/OM dès 5 000 FCFA.
+    \item \textbf{Domaine 7 (Sécurité \& RBAC) :} Gestion des privilèges, révocation d'accès suspects, journalisation immuable.
+    \item \textbf{Domaine 8 (Gouvernance) :} Réglage du taux de commission global et des frais forfaitaires de livraison (3 000 FCFA).
+\end{itemize}
+
+% ==================== CHAPITRE 5 ====================
+\chapter{Sécurité Applicative, Audit \& SonarQube CI/CD}
+
+\section{Posture de Sécurité}
+\begin{itemize}
+    \item \textbf{Cryptographie :} Algorithme de dérivation de clé \texttt{scrypt} avec vérification en temps constant (\texttt{timingSafeEqual}).
+    \item \textbf{Payload Limiting :} Restrictions de taille de charge utile à 5 MB (prévention des dénis de service DoS).
+    \item \textbf{Traçabilité Immuable :} Table \texttt{withdrawal\_audit\_logs} enregistrant toute action administrative avec horodatage strict.
+\end{itemize}
+
+\section{Quality Gate SonarQube en Déploiement Continu}
+L'architecture de sécurité impose un Quality Gate infranchissable dans GitHub Actions :
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.92\linewidth]{assets/architecture/architecture-cloud-cicd.jpg}
+\caption{Architecture Globale Cloud, CI/CD \& Bouclier Quality Gate SonarQube}
+\end{figure}
+
+% ==================== CHAPITRE 6 ====================
+\chapter{Déploiement Hybride \& Écosystème Sénégal}
+
+\section{Topologie de Déploiement Hybride}
+Pour concilier vitesse d'affichage mobile et résilience transactionnelle :
+\begin{itemize}
+    \item \textbf{Backend sur Render (Frankfurt) :} Runtime Node.js NestJS avec base PostgreSQL 16 managée.
+    \item \textbf{Frontends sur Vercel (Edge Network) :} Déploiement optimisé de la vitrine client et du back-office d'administration.
+\end{itemize}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.92\linewidth]{assets/architecture/schema-structurel-flux-operationnel.jpg}
 \caption{Schéma Structurel du Flux Opérationnel en 5 Phases}
 \end{figure}
 
-\section{Sondes de Santé HTTP}
-L'API expose deux points de contrôle cruciaux pour les orchestrateurs cloud :
+\section{Paiements Mobiles Locaux (Wave \& Orange Money)}
+L'API implémente les flux de paiement mobile standardisés au Sénégal :
 \begin{itemize}
-    \item \texttt{GET /health/live} : Vérifie que le processus Node.js est actif et traite les requêtes.
-    \item \texttt{GET /health/ready} : Exécute une requête \texttt{SELECT 1} sur PostgreSQL pour confirmer la disponibilité de la couche de données avant d'orienter le trafic client.
+    \item \textbf{Wave :} Génération de lien de paiement direct et validation par Webhook cryptographique.
+    \item \textbf{Orange Money :} Intégration du parcours USSD / Web OTP avec accusé de réception synchrone.
+    \item \textbf{Cash On Delivery (COD) :} Encadrement de la collecte physique à la livraison par les livreurs partenaires.
 \end{itemize}
 
-\chapter{Conclusion \& Manuel d'Exploitation}
+% ==================== CHAPITRE 7 ====================
+\chapter{Manuel d'Exploitation \& Guide des Commandes}
 
-\section{Commandes Usuelles pour l'Équipe}
+\section{Commandes Opérationnelles du Monorepo}
 \begin{table}[h!]
 \centering
 \small
@@ -218,23 +318,24 @@ L'API expose deux points de contrôle cruciaux pour les orchestrateurs cloud :
 \toprule
 \textbf{Commande npm} & \textbf{Effet / Action Opérationnelle} \\
 \midrule
-\texttt{npm run build:shared} & Compilation de la librairie partagée TypeScript. \\
-\texttt{npm run build:backend} & Compilation NestJS de l'API de production. \\
-\texttt{npm run build:frontend} & Génération statique des 42 pages de la vitrine client. \\
-\texttt{npm run build:admin} & Génération statique de la console Super Admin. \\
+\texttt{npm run build:shared} & Compilation de la bibliothèque partagée TypeScript. \\
+\texttt{npm run build:backend} & Compilation NestJS du bundle API de production. \\
+\texttt{npm run build:frontend} & Génération statique des 42 pages de l'application cliente. \\
+\texttt{npm run build:admin} & Génération de la console Super Admin Next.js. \\
 \texttt{npm run test --workspace=backend} & Exécution des 8 tests unitaires de logique financière. \\
-\texttt{npm run test:api --workspace=backend} & Exécution des 4 suites de tests d'intégration API. \\
-\texttt{npm run test:coverage} & Génération du rapport de couverture LCOV pour SonarQube. \\
-\texttt{npm run sonar:up} & Démarrage du serveur SonarQube Community en local via Docker. \\
+\texttt{npm run test:api --workspace=backend} & Validation des 4 suites de tests d'intégration API. \\
+\texttt{npm run test:coverage} & Rapport de couverture LCOV pour SonarQube. \\
+\texttt{npm run sonar:up} & Démarrage du serveur SonarQube local via Docker. \\
+\texttt{npm run doc:doctor} & Vérification de l'outillage de documentation d'entreprise. \\
 \texttt{npm run doc:build} & Compilation du présent rapport technique en PDF haute fidélité. \\
 \bottomrule
 \end{tabular}
-\caption{Répertoire des commandes opérationnelles du projet}
+\caption{Répertoire des commandes d'exploitation et de maintenance}
 \end{table}
 
 \vfill
 \begin{center}
-    \small \textcolor{darkgray}{Document validé conforme par l'équipe d'architecture Malick Buss — Tous droits réservés © 2026.}
+    \textbf{Document officiel validé pour mise en production — Malick Buss Sénégal © 2026.}
 \end{center}
 
 \end{document}

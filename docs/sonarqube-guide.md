@@ -41,10 +41,10 @@ Ce guide détaille la mise en place, la configuration et l'utilisation de **Sona
    - Importation du rapport de couverture LCOV (`backend/coverage/lcov.info`).
 
 2. **`.github/workflows/ci-cd.yml`** :
-   - Job `sonarcloud` exécuté à chaque Pull Request et Push sur `develop` et `main`.
+   - Job SonarCloud exécuté sur les pushes et les pull requests internes vers `develop` et `main` (les PR issues de forks sont exclues car elles ne reçoivent pas les secrets GitHub).
    - Génération préalable de la couverture de tests avec Node 20.
-   - Attente synchrone du Quality Gate (`-Dsonar.qualitygate.wait=true`).
-   - Les étapes `deploy-staging` et `deploy-production` dépendent directement de la validation du Quality Gate.
+   - Vérification obligatoire des variables `SONAR_ORGANIZATION`, `SONAR_PROJECT_KEY` et du secret `SONAR_TOKEN`.
+   - Attente synchrone du Quality Gate (`-Dsonar.qualitygate.wait=true`); les déploiements staging et production sont bloqués sans résultat réussi.
 
 3. **`docker-compose.sonar.yml`** :
    - Stack Docker prête à l'emploi avec conteneur `sonarqube:community` et base dédiée PostgreSQL 16.
@@ -147,4 +147,3 @@ Le Quality Gate définit les conditions minimales pour autoriser une mise en pro
 | `npm run sonar:up` | Démarre SonarQube et sa base PostgreSQL locale |
 | `npm run sonar:logs` | Affiche les logs en direct du conteneur SonarQube |
 | `npm run sonar:down` | Arrête la stack SonarQube locale |
-
