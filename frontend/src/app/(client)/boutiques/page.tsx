@@ -435,25 +435,27 @@ function ShopsListContent() {
     }
   };
 
+  const activeAd = AD_SLIDES[currentAdIndex];
+
   return (
     <div className="bg-[#f8f9fa] min-h-screen py-4 sm:py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* ================= 1. CARROUSEL DE BANNIÈRES PUBLICITAIRES & PROMOS ================= */}
         <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 group">
           <AnimatePresence mode="wait">
-            {AD_SLIDES[currentAdIndex].type === 'image' ? (
+            {activeAd.type === 'image' ? (
               <motion.div
-                key={AD_SLIDES[currentAdIndex].id}
+                key={activeAd.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.45 }}
                 className="relative w-full overflow-hidden bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-slate-900/10 cursor-pointer"
-                onClick={() => router.push(AD_SLIDES[currentAdIndex].link)}
+                onClick={() => router.push(activeAd.link)}
               >
                 <img
-                  src={AD_SLIDES[currentAdIndex].image}
-                  alt={AD_SLIDES[currentAdIndex].alt}
+                  src={activeAd.image}
+                  alt={activeAd.alt}
                   className="w-full h-auto object-cover block"
                 />
                 {/* Effet Shimmer lumineux au survol */}
@@ -461,18 +463,18 @@ function ShopsListContent() {
               </motion.div>
             ) : (
               <motion.div
-                key={AD_SLIDES[currentAdIndex].id}
+                key={activeAd.id}
                 initial={{ opacity: 0, scale: 0.99 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.01 }}
                 transition={{ duration: 0.45 }}
-                className={`relative w-full min-h-[190px] sm:min-h-[220px] md:min-h-[240px] bg-gradient-to-r ${AD_SLIDES[currentAdIndex].bgGradient} text-white p-5 sm:p-7 md:p-9 flex flex-col justify-center overflow-hidden`}
+                className={`relative w-full min-h-[190px] sm:min-h-[220px] md:min-h-[240px] bg-gradient-to-r ${activeAd.bgGradient} text-white p-5 sm:p-7 md:p-9 flex flex-col justify-center overflow-hidden`}
               >
                 {/* Photo de fond stylisée en transparence */}
-                {AD_SLIDES[currentAdIndex].coverImage && (
+                {activeAd.coverImage && (
                   <div className="absolute inset-y-0 right-0 w-1/2 sm:w-2/5 overflow-hidden pointer-events-none">
                     <img
-                      src={AD_SLIDES[currentAdIndex].coverImage}
+                      src={activeAd.coverImage}
                       alt="Illustration Publicité"
                       className="w-full h-full object-cover object-center opacity-30 sm:opacity-45"
                     />
@@ -484,36 +486,36 @@ function ShopsListContent() {
                 <div className="relative z-10 max-w-xl space-y-2 sm:space-y-2.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className={`text-[10px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-xs ${AD_SLIDES[currentAdIndex].tagColor}`}
+                      className={`text-[10px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-xs ${activeAd.tagColor}`}
                     >
-                      {AD_SLIDES[currentAdIndex].tag}
+                      {activeAd.tag}
                     </span>
-                    {AD_SLIDES[currentAdIndex].accentBadge && (
+                    {activeAd.accentBadge && (
                       <span className="text-[10px] sm:text-xs font-bold text-amber-300 bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/15">
-                        {AD_SLIDES[currentAdIndex].accentBadge}
+                        {activeAd.accentBadge}
                       </span>
                     )}
                   </div>
 
                   <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-white leading-tight">
-                    {AD_SLIDES[currentAdIndex].title}{' '}
-                    {AD_SLIDES[currentAdIndex].highlight && (
+                    {activeAd.title}{' '}
+                    {activeAd.highlight && (
                       <span className="text-amber-400 block sm:inline">
-                        {AD_SLIDES[currentAdIndex].highlight}
+                        {activeAd.highlight}
                       </span>
                     )}
                   </h2>
 
                   <p className="text-xs sm:text-sm text-slate-200 line-clamp-2 font-medium leading-relaxed max-w-lg">
-                    {AD_SLIDES[currentAdIndex].subtitle}
+                    {activeAd.subtitle}
                   </p>
 
                   <div className="pt-1.5">
                     <Link
-                      href={AD_SLIDES[currentAdIndex].ctaLink}
+                      href={activeAd.ctaLink}
                       className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 rounded-full shadow-md transition-all active:scale-95 group/btn"
                     >
-                      <span>{AD_SLIDES[currentAdIndex].ctaText}</span>
+                      <span>{activeAd.ctaText}</span>
                     </Link>
                   </div>
                 </div>

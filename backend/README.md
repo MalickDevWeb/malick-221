@@ -34,6 +34,8 @@ npm run build --workspace=backend
 
 The initial PostgreSQL migration is versioned under `prisma/migrations`. The checkout locks product rows in deterministic order, persists stock reservations/movements, sub-orders, commission snapshots, and outbox events in one transaction. Unpaid reservation expiry is processed with `FOR UPDATE SKIP LOCKED`, allowing multiple API instances to run the worker safely.
 
+The API exposes `GET /health/live` as a process liveness check and `GET /health/ready` as a readiness check that executes `SELECT 1` against PostgreSQL. Readiness returns a server error if the database is unreachable, so load balancers and deployment smoke tests can keep an unhealthy instance out of service.
+
 `DEFAULT_COMMISSION_PERCENTAGE`, `DEFAULT_SHIPPING_FEE_PER_SHOP`, and `STOCK_RESERVATION_MINUTES` configure the initial pricing policy. Commission applies to item totals only; delivery is excluded. Future versioned commission rules should replace this adapter without changing checkout planning.
 
 ## Production launch rules

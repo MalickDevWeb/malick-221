@@ -1,18 +1,22 @@
 services:
+  # Staging API. Configure DATABASE_URL to a dedicated staging database in Render.
   - type: web
-    name: malick-buss-api
-    env: node
+    name: malick-buss-api-staging
+    runtime: node
     plan: starter
     region: frankfurt
-    rootDir: backend
-    buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npm run start:prod
-    healthCheckPath: /docs
+    rootDir: .
+    branch: develop
+    autoDeployTrigger: "off"
+    buildCommand: npm ci --include=dev && npm run build:shared && npm run prisma:generate --workspace=backend && npm run build:backend
+    preDeployCommand: npx prisma migrate deploy --schema backend/prisma/schema.prisma
+    startCommand: npm run start:prod --workspace=backend
+    healthCheckPath: /health/ready
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 4000
+        value: "10000"
       - key: DATABASE_URL
         sync: false
       - key: REDIS_URL
@@ -34,4 +38,134 @@ services:
       - key: STOCK_RESERVATION_MINUTES
         value: "15"
       - key: SUPER_ADMIN_PASSWORD
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+  - type: web
+    name: malick-buss-storefront-staging
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: .
+    branch: develop
+    autoDeployTrigger: "off"
+    buildCommand: npm ci --include=dev && npm run build:shared && npm run build:frontend
+    startCommand: npm run start --workspace=frontend
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+
+  - type: web
+    name: malick-buss-admin-staging
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: .
+    branch: develop
+    autoDeployTrigger: "off"
+    buildCommand: npm ci --include=dev && npm run build:shared && npm run build:admin
+    startCommand: npm run start --workspace=back-office
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+
+  # Production API. DATABASE_URL must point to a dedicated production database,
+  # never the staging database.
+  - type: web
+    name: malick-buss-api
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: .
+    branch: main
+    autoDeployTrigger: "off"
+    buildCommand: npm ci --include=dev && npm run build:shared && npm run prisma:generate --workspace=backend && npm run build:backend
+    preDeployCommand: npx prisma migrate deploy --schema backend/prisma/schema.prisma
+    startCommand: npm run start:prod --workspace=backend
+    healthCheckPath: /health/ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: FRONTEND_CLIENT_URL
+        sync: false
+      - key: DEFAULT_COMMISSION_PERCENTAGE
+        value: "10"
+      - key: DEFAULT_SHIPPING_FEE_PER_SHOP
+        value: "3000"
+      - key: STOCK_RESERVATION_MINUTES
+        value: "15"
+      - key: SUPER_ADMIN_PASSWORD
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+  - type: web
+    name: malick-buss-storefront
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: .
+    branch: main
+    autoDeployTrigger: "off"
+    buildCommand: npm ci --include=dev && npm run build:shared && npm run build:frontend
+    startCommand: npm run start --workspace=frontend
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+
+  - type: web
+    name: malick-buss-admin
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: .
+    branch: main
+    autoDeployTrigger: "off"
+    buildCommand: npm ci --include=dev && npm run build:shared && npm run build:admin
+    startCommand: npm run start --workspace=back-office
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: NEXT_PUBLIC_API_URL
         sync: false

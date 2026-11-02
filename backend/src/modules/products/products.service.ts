@@ -35,7 +35,7 @@ export class ProductsService {
         title: input.title.trim(),
         slug: `${slugBase}-${randomUUID().slice(0, 8)}`,
         description: input.description?.trim() || null,
-        category: input.category.trim(),
+        category: input.category?.trim() || 'Autre',
         imageUrl: input.imageUrl ?? null,
         additionalImageUrls: input.additionalImageUrls ?? [],
         basePrice: input.basePrice,

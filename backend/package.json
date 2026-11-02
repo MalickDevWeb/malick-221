@@ -6,8 +6,9 @@
   "scripts": {
     "build": "nest build",
     "test": "node --test --require ts-node/register test/checkout-planner.spec.ts test/vendor-transition.policy.spec.ts",
+    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --require ts-node/register test/checkout-planner.spec.ts test/vendor-transition.policy.spec.ts",
     "test:unit": "node --test --require ts-node/register test/checkout-planner.spec.ts test/vendor-transition.policy.spec.ts",
-    "test:api": "node --test --require ts-node/register test/api-*.spec.ts",
+    "test:api": "node --test --test-concurrency=1 --require ts-node/register test/api-*.spec.ts",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",

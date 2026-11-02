@@ -1,0 +1,447 @@
+name: CI/CD
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Build shared package
+        run: npm run build:shared
+
+      - name: Generate Prisma Client
+        run: npm run prisma:generate --workspace=backend
+
+      - name: Validate Prisma schema
+        run: npx prisma validate --schema backend/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+
+      - name: Run backend unit tests
+        run: npm test --workspace=backend
+
+      - name: Build backend
+        run: npm run build:backend
+
+      - name: Build storefront
+        run: npm run build:frontend
+        env:
+          NEXT_PUBLIC_API_URL: https://api.invalid
+
+      - name: Build admin
+        run: npm run build:admin
+        env:
+          NEXT_PUBLIC_API_URL: https://api.invalid
+
+  security:
+    name: Dependency audit and static security analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Audit npm dependencies
+        run: npm audit --audit-level=high
+
+      - name: Initialize CodeQL
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          build-mode: none
+
+      - name: Analyze with CodeQL
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: github/codeql-action/analyze@v3
+
+  sonarcloud:
+    name: SonarQube / SonarCloud Quality Gate
+    needs: [validate, security]
+    if: >-
+      ${{
+        secrets.SONAR_TOKEN != '' &&
+        (github.event_name != 'pull_request' ||
+         github.event.pull_request.head.repo.full_name == github.repository)
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Generate backend test coverage
+        run: |
+          mkdir -p backend/coverage
+          npm run test:coverage --workspace=backend || true
+
+      - name: Analyze with SonarQube / SonarCloud and wait for Quality Gate
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
+        with:
+          args: >
+            ${{ vars.SONAR_ORGANIZATION != '' && format('-Dsonar.organization={0}', vars.SONAR_ORGANIZATION) || '' }}
+            ${{ vars.SONAR_PROJECT_KEY != '' && format('-Dsonar.projectKey={0}', vars.SONAR_PROJECT_KEY) || '-Dsonar.projectKey=malick-buss' }}
+            -Dsonar.qualitygate.wait=true
+
+  deploy-staging:
+    name: Deploy staging
+    needs: [validate, security, sonarcloud]
+    if: >-
+      ${{
+        always() &&
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/develop' &&
+        needs.validate.result == 'success' &&
+        needs.security.result == 'success' &&
+        (needs.sonarcloud.result == 'success' || needs.sonarcloud.result == 'skipped')
+      }}
+    runs-on: ubuntu-latest
+    environment: staging
+    concurrency:
+      group: render-staging-deploy
+      cancel-in-progress: false
+    steps:
+      - name: Trigger Render deployments, wait for live status, and smoke-test staging
+        uses: actions/github-script@v7
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_API_SERVICE_ID: ${{ vars.RENDER_API_SERVICE_ID }}
+          RENDER_STOREFRONT_SERVICE_ID: ${{ vars.RENDER_STOREFRONT_SERVICE_ID }}
+          RENDER_ADMIN_SERVICE_ID: ${{ vars.RENDER_ADMIN_SERVICE_ID }}
+          RENDER_API_URL: ${{ vars.RENDER_API_URL }}
+          RENDER_STOREFRONT_URL: ${{ vars.RENDER_STOREFRONT_URL }}
+          RENDER_ADMIN_URL: ${{ vars.RENDER_ADMIN_URL }}
+        with:
+          script: |
+            const required = (key) => {
+              const value = process.env[key];
+              if (!value) throw new Error(`Missing required staging environment value: ${key}`);
+              return value;
+            };
+            const apiKey = required('RENDER_API_KEY');
+            const apiUrl = required('RENDER_API_URL');
+            const storefrontUrl = required('RENDER_STOREFRONT_URL');
+            const adminUrl = required('RENDER_ADMIN_URL');
+            for (const [label, value] of [
+              ['API', apiUrl],
+              ['Storefront', storefrontUrl],
+              ['Admin', adminUrl]
+            ]) {
+              if (new URL(value).protocol !== 'https:') {
+                throw new Error(`${label} URL must use HTTPS.`);
+              }
+            }
+            const headers = {
+              Authorization: `Bearer ${apiKey}`,
+              Accept: 'application/json',
+              'Content-Type': 'application/json'
+            };
+            const targets = [
+              { label: 'API', id: required('RENDER_API_SERVICE_ID') },
+              { label: 'Storefront', id: required('RENDER_STOREFRONT_SERVICE_ID') },
+              { label: 'Admin', id: required('RENDER_ADMIN_SERVICE_ID') }
+            ];
+            const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+            for (const target of targets) {
+              core.info(`Requesting staging ${target.label} deployment.`);
+              const response = await fetch(
+                `https://api.render.com/v1/services/${encodeURIComponent(target.id)}/deploys`,
+                {
+                  method: 'POST',
+                  headers,
+                  body: JSON.stringify({
+                    clearCache: 'do_not_clear',
+                    commitId: context.sha
+                  })
+                }
+              );
+              if (!response.ok) {
+                throw new Error(`Render deploy request for ${target.label} failed with HTTP ${response.status}.`);
+              }
+              const payload = await response.json();
+              const deployId = payload.id || payload.deploy?.id;
+              if (!deployId) throw new Error(`Render did not return a deployment ID for ${target.label}.`);
+
+              const deadline = Date.now() + 30 * 60 * 1000;
+              let live = false;
+              while (Date.now() < deadline) {
+                const statusResponse = await fetch(
+                  `https://api.render.com/v1/services/${encodeURIComponent(target.id)}/deploys/${encodeURIComponent(deployId)}`,
+                  { headers }
+                );
+                if (!statusResponse.ok) {
+                  throw new Error(`Could not poll Render deployment for ${target.label}: HTTP ${statusResponse.status}.`);
+                }
+                const statusPayload = await statusResponse.json();
+                const status = statusPayload.status || statusPayload.deploy?.status;
+                core.info(`${target.label} deployment status: ${status || 'unknown'}`);
+                if (status === 'live') {
+                  live = true;
+                  break;
+                }
+                if (status && /failed|canceled|deactivated/i.test(status)) {
+                  throw new Error(`${target.label} Render deployment ended with status ${status}.`);
+                }
+                await pause(20_000);
+              }
+              if (!live) throw new Error(`Timed out waiting for ${target.label} deployment to become live.`);
+            }
+
+            const smoke = async (label, baseUrl, paths) => {
+              const base = new URL(baseUrl);
+              for (const path of paths) {
+                const url = new URL(path, base);
+                const deadline = Date.now() + 10 * 60 * 1000;
+                let healthy = false;
+                while (Date.now() < deadline) {
+                  try {
+                    const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+                    if (response.ok) {
+                      healthy = true;
+                      core.info(`${label} ${path}: HTTP ${response.status}`);
+                      break;
+                    }
+                    core.info(`${label} ${path}: HTTP ${response.status}; retrying.`);
+                  } catch (error) {
+                    core.info(`${label} ${path}: ${error.message}; retrying.`);
+                  }
+                  await pause(15_000);
+                }
+                if (!healthy) throw new Error(`${label} health check failed for ${path}.`);
+              }
+            };
+
+            await smoke('Staging API', apiUrl, ['/health/live', '/health/ready', '/docs']);
+            await smoke('Staging storefront', storefrontUrl, ['/']);
+            await smoke('Staging admin', adminUrl, ['/']);
+
+  verify-staging-promotion:
+    name: Require successful staging validation for this production tree
+    if: >-
+      ${{
+        always() &&
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' &&
+        needs.validate.result == 'success' &&
+        needs.security.result == 'success' &&
+        needs.sonarcloud.result == 'success'
+      }}
+    needs: [validate, security, sonarcloud]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Verify matching successful staging deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const production = await github.rest.repos.getCommit({
+              owner, repo, ref: context.sha
+            });
+            const productionTree = production.data.commit.tree.sha;
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: 'ci-cd.yml',
+              branch: 'develop',
+              event: 'push',
+              status: 'completed',
+              per_page: 100
+            });
+
+            for (const run of runs.data.workflow_runs) {
+              if (run.conclusion !== 'success') continue;
+              const staged = await github.rest.repos.getCommit({
+                owner, repo, ref: run.head_sha
+              });
+              if (staged.data.commit.tree.sha !== productionTree) continue;
+
+              const jobs = await github.rest.actions.listJobsForWorkflowRun({
+                owner, repo, run_id: run.id, per_page: 100
+              });
+              const staging = jobs.data.jobs.find((job) => job.name === 'Deploy staging');
+              if (!staging || staging.conclusion !== 'success') continue;
+
+              core.info(`Production tree ${productionTree} was deployed and validated by staging run ${run.id}.`);
+              return;
+            }
+            throw new Error(
+              'No successful develop staging deployment was found for this exact source tree. ' +
+              'Promote only source that has passed staging validation.'
+            );
+
+  deploy-production:
+    name: Deploy production
+    needs: [verify-staging-promotion]
+    if: ${{ needs.verify-staging-promotion.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: render-production-deploy
+      cancel-in-progress: false
+    steps:
+      - name: Trigger Render deployments, wait for live status, and smoke-test production
+        uses: actions/github-script@v7
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_API_SERVICE_ID: ${{ vars.RENDER_API_SERVICE_ID }}
+          RENDER_STOREFRONT_SERVICE_ID: ${{ vars.RENDER_STOREFRONT_SERVICE_ID }}
+          RENDER_ADMIN_SERVICE_ID: ${{ vars.RENDER_ADMIN_SERVICE_ID }}
+          RENDER_API_URL: ${{ vars.RENDER_API_URL }}
+          RENDER_STOREFRONT_URL: ${{ vars.RENDER_STOREFRONT_URL }}
+          RENDER_ADMIN_URL: ${{ vars.RENDER_ADMIN_URL }}
+        with:
+          script: |
+            const required = (key) => {
+              const value = process.env[key];
+              if (!value) throw new Error(`Missing required production environment value: ${key}`);
+              return value;
+            };
+            const apiUrl = required('RENDER_API_URL');
+            const storefrontUrl = required('RENDER_STOREFRONT_URL');
+            const adminUrl = required('RENDER_ADMIN_URL');
+            for (const [label, value] of [
+              ['API', apiUrl],
+              ['Storefront', storefrontUrl],
+              ['Admin', adminUrl]
+            ]) {
+              if (new URL(value).protocol !== 'https:') {
+                throw new Error(`${label} URL must use HTTPS.`);
+              }
+            }
+            const headers = {
+              Authorization: `Bearer ${required('RENDER_API_KEY')}`,
+              Accept: 'application/json',
+              'Content-Type': 'application/json'
+            };
+            const targets = [
+              { label: 'API', id: required('RENDER_API_SERVICE_ID') },
+              { label: 'Storefront', id: required('RENDER_STOREFRONT_SERVICE_ID') },
+              { label: 'Admin', id: required('RENDER_ADMIN_SERVICE_ID') }
+            ];
+            const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+            for (const target of targets) {
+              core.info(`Requesting production ${target.label} deployment.`);
+              const response = await fetch(
+                `https://api.render.com/v1/services/${encodeURIComponent(target.id)}/deploys`,
+                {
+                  method: 'POST',
+                  headers,
+                  body: JSON.stringify({
+                    clearCache: 'do_not_clear',
+                    commitId: context.sha
+                  })
+                }
+              );
+              if (!response.ok) {
+                throw new Error(`Render deploy request for ${target.label} failed with HTTP ${response.status}.`);
+              }
+              const payload = await response.json();
+              const deployId = payload.id || payload.deploy?.id;
+              if (!deployId) throw new Error(`Render did not return a deployment ID for ${target.label}.`);
+
+              const deadline = Date.now() + 30 * 60 * 1000;
+              let live = false;
+              while (Date.now() < deadline) {
+                const statusResponse = await fetch(
+                  `https://api.render.com/v1/services/${encodeURIComponent(target.id)}/deploys/${encodeURIComponent(deployId)}`,
+                  { headers }
+                );
+                if (!statusResponse.ok) {
+                  throw new Error(`Could not poll Render deployment for ${target.label}: HTTP ${statusResponse.status}.`);
+                }
+                const statusPayload = await statusResponse.json();
+                const status = statusPayload.status || statusPayload.deploy?.status;
+                core.info(`${target.label} deployment status: ${status || 'unknown'}`);
+                if (status === 'live') {
+                  live = true;
+                  break;
+                }
+                if (status && /failed|canceled|deactivated/i.test(status)) {
+                  throw new Error(`${target.label} Render deployment ended with status ${status}.`);
+                }
+                await pause(20_000);
+              }
+              if (!live) throw new Error(`Timed out waiting for ${target.label} deployment to become live.`);
+            }
+
+            const smoke = async (label, baseUrl, paths) => {
+              const base = new URL(baseUrl);
+              for (const path of paths) {
+                const url = new URL(path, base);
+                const deadline = Date.now() + 10 * 60 * 1000;
+                let healthy = false;
+                while (Date.now() < deadline) {
+                  try {
+                    const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+                    if (response.ok) {
+                      healthy = true;
+                      core.info(`${label} ${path}: HTTP ${response.status}`);
+                      break;
+                    }
+                    core.info(`${label} ${path}: HTTP ${response.status}; retrying.`);
+                  } catch (error) {
+                    core.info(`${label} ${path}: ${error.message}; retrying.`);
+                  }
+                  await pause(15_000);
+                }
+                if (!healthy) throw new Error(`${label} health check failed for ${path}.`);
+              }
+            };
+
+            await smoke('Production API', apiUrl, ['/health/live', '/health/ready', '/docs']);
+            await smoke('Production storefront', storefrontUrl, ['/']);
+            await smoke('Production admin', adminUrl, ['/']);

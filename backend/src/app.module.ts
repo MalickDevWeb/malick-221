@@ -16,6 +16,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { OrdersModule } from './api/orders/orders.module';
 import { AdminModule } from './api/admin/admin.module';
 import { OrdersController } from './api/orders/orders.controller';
+import { HealthController } from './api/health/health.controller';
 import { RequestIdMiddleware } from './common/middlewares/request-id.middleware';
 
 @Module({
@@ -39,7 +40,7 @@ import { RequestIdMiddleware } from './common/middlewares/request-id.middleware'
     OrdersModule,
     AdminModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [RequestIdMiddleware],
 })
 export class AppModule implements NestModule {
@@ -47,4 +48,3 @@ export class AppModule implements NestModule {
     consumer.apply(RequestIdMiddleware).forRoutes(OrdersController);
   }
 }
-

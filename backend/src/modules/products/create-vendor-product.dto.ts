@@ -26,10 +26,11 @@ export class CreateVendorProductDto {
   @Length(3, 160)
   title!: string;
 
-  @ApiProperty({ minLength: 1, maxLength: 80 })
+  @ApiPropertyOptional({ minLength: 1, maxLength: 80 })
+  @IsOptional()
   @IsString()
   @Length(1, 80)
-  category!: string;
+  category?: string;
 
   @ApiPropertyOptional({ description: 'URL ou data URI de l’image' })
   @IsOptional()
