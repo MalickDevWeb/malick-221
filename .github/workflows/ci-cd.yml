@@ -198,7 +198,7 @@ jobs:
       cancel-in-progress: false
     steps:
       - name: Trigger Render deployments, wait for live status, and smoke-test staging
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_API_SERVICE_ID: ${{ vars.RENDER_API_SERVICE_ID }}
@@ -347,7 +347,7 @@ jobs:
       contents: read
     steps:
       - name: Verify matching successful staging deployment
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -397,7 +397,7 @@ jobs:
       cancel-in-progress: false
     steps:
       - name: Trigger Render deployments, wait for live status, and smoke-test production
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_API_SERVICE_ID: ${{ vars.RENDER_API_SERVICE_ID }}
